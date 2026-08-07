@@ -6,6 +6,7 @@ import { playableLands } from '../engines';
 import { TopBar } from '../components/StatusBar';
 import { Button } from '../components/Button';
 import { LandIcon } from '../components/svg/LandIcon';
+import { HomeBackground } from '../components/svg/Backgrounds';
 import { FlagIcon } from '../components/svg/Icons';
 import type { LandId } from '../types';
 
@@ -30,7 +31,11 @@ export function MapScreen({
   const todayPoints = getTodayPoints();
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', background: 'linear-gradient(#8fd8ff,#58C548)' }}>
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', background: '#8fd8ff' }}>
+      {/* רקע נוף מתגלגל */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+        <HomeBackground />
+      </div>
       {/* כותרת עליונה — כל ההישגים */}
       <div style={{ position: 'sticky', top: 0, zIndex: 5, background: 'rgba(224,244,255,.96)', backdropFilter: 'blur(4px)', paddingTop: 'var(--safe-top)', boxShadow: '0 2px 10px rgba(36,50,71,.12)' }}>
         <TopBar profile={profile} coins={coins} rank={rank} todayPoints={todayPoints} onSwitch={onSwitchProfile} onOpenParent={onOpenParent} />
