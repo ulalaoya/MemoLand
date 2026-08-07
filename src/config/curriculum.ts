@@ -57,6 +57,28 @@ export function multiStepCount(level: number): number {
   return lerp(level, 2, 7);
 }
 
+/* ---------- ארץ 3: יער התמונות (זיכרון מרחבי) ---------- */
+
+/** זיכרון מיקום ברשת: כמה תאים מוארים (2→7), גודל הרשת, וזמן צפייה. */
+export function gridConfig(level: number): { cells: number; grid: number; viewMs: number } {
+  const grid = level <= 4 ? 3 : level <= 9 ? 4 : 5; // 3x3 → 5x5
+  return { cells: lerp(level, 2, 7), grid, viewMs: lerp(level, 3000, 1500) };
+}
+
+/* ---------- ארץ 4: הרי התבניות (לוגיקה) ---------- */
+
+/** אורך התבנית להשלמה (3→7 פריטים מוצגים). */
+export function patternLength(level: number): number {
+  return lerp(level, 3, 7);
+}
+
+/* ---------- ארץ 6: טירת האוצר (שינון) ---------- */
+
+/** שינון רשימה: כמה פריטים (3→7) וזמן חשיפה שיורד עם הרמה. */
+export function memorizeConfig(level: number): { items: number; viewMs: number } {
+  return { items: lerp(level, 3, 7), viewMs: lerp(level, 4000, 2000) };
+}
+
 /* ---------- אלגוריתם המדרגה ---------- */
 
 /**

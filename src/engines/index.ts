@@ -4,6 +4,10 @@
 import type { ExerciseEngine, ExerciseId, LandId } from '../types';
 import { chainMath, digitBackward, digitForward, digitSort } from './numbers';
 import { listenRepeat, multiStep } from './echoes';
+import { forestGrid } from './forest';
+import { patternComplete } from './patterns';
+import { speedMatch } from './speed';
+import { castleMemorize } from './castle';
 
 export const ENGINES: ExerciseEngine[] = [
   // ארץ 1 — עמק המספרים
@@ -14,6 +18,14 @@ export const ENGINES: ExerciseEngine[] = [
   // ארץ 2 — מערת ההדים
   listenRepeat,
   multiStep,
+  // ארץ 3 — יער התמונות
+  forestGrid,
+  // ארץ 4 — הרי התבניות
+  patternComplete,
+  // ארץ 5 — מסלול הזריזות
+  speedMatch,
+  // ארץ 6 — טירת האוצר
+  castleMemorize,
 ];
 
 const BY_ID = new Map<ExerciseId, ExerciseEngine>(ENGINES.map((e) => [e.id, e]));
@@ -31,4 +43,15 @@ export function playableLands(): LandId[] {
   return Array.from(new Set(ENGINES.map((e) => e.landId)));
 }
 
-export { chainMath, digitBackward, digitForward, digitSort, listenRepeat, multiStep };
+export {
+  chainMath,
+  digitBackward,
+  digitForward,
+  digitSort,
+  listenRepeat,
+  multiStep,
+  forestGrid,
+  patternComplete,
+  speedMatch,
+  castleMemorize,
+};

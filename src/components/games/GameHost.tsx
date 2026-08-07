@@ -5,6 +5,10 @@ import { DigitSpanGame } from './DigitSpanGame';
 import { ChainMathGame } from './ChainMathGame';
 import { ListenRepeatGame } from './ListenRepeatGame';
 import { MultiStepGame } from './MultiStepGame';
+import { GridGame } from './GridGame';
+import { PatternGame } from './PatternGame';
+import { QuickMatchGame } from './QuickMatchGame';
+import { MemorizeGame } from './MemorizeGame';
 
 export function GameHost({
   challenge,
@@ -31,6 +35,14 @@ export function GameHost({
       return <ListenRepeatGame {...p} challenge={challenge as never} />;
     case 'echoes.multistep':
       return <MultiStepGame {...p} challenge={challenge as never} />;
+    case 'forest.grid':
+      return <GridGame {...p} challenge={challenge as never} />;
+    case 'patterns.complete':
+      return <PatternGame {...p} challenge={challenge as never} />;
+    case 'speed.match':
+      return <QuickMatchGame {...p} challenge={challenge as never} />;
+    case 'castle.memorize':
+      return <MemorizeGame {...p} challenge={challenge as never} />;
     default:
       return <div style={{ padding: 20 }}>האתגר הזה עוד בבנייה 🚧</div>;
   }
