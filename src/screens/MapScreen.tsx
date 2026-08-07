@@ -53,7 +53,7 @@ export function MapScreen({
           onPointerLeave={endPress}
           title="לחיצה ארוכה — הורים"
         >
-          <Logo variant="compact" width={170} />
+          <Logo variant="compact" width={140} />
         </div>
         {/* צ'יפ המשתמש הפעיל — הקשה מחליפה משתמש */}
         {profile && (
