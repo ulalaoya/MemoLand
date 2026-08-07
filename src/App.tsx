@@ -1,0 +1,76 @@
+import { useEffect, useState } from 'react';
+import { StartTapScreen } from './screens/StartTapScreen';
+import { ProfileScreen } from './screens/ProfileScreen';
+import { MapScreen } from './screens/MapScreen';
+import { SessionScreen } from './screens/SessionScreen';
+import { TreasureScreen, type JourneyResult } from './screens/TreasureScreen';
+import { ParentDashboard } from './screens/ParentDashboard';
+import { setSfxEnabled } from './audio/sfx';
+import { setPreferredVoiceName } from './audio/speech';
+import { getActiveProfileId, logoutProfile, useStore } from './state/store';
+import type { LandId } from './types';
+
+type Screen =
+  | { name: 'start' }
+  | { name: 'profile' }
+  | { name: 'map' }
+  | { name: 'session'; landFocus?: LandId }
+  | { name: 'treasure'; result: JourneyResult }
+  | { name: 'parent' };
+
+export default function App() {
+  const [screen, setScreen] = useState<Screen>({ name: 'start' });
+  const soundEffects = useStore((s) => s.settings.soundEffects);
+  const voiceName = useStore((s) => s.settings.voiceName);
+
+  // מסנכרן הגדרות אודיו עם המנועים
+  useEffect(() => {
+    setSfxEnabled(soundEffects);
+  }, [soundEffects]);
+  useEffect(() => {
+    setPreferredVoiceName(voiceName);
+  }, [voiceName]);
+
+  // אחרי מסך הפתיחה: אם אין פרופיל פעיל — בחירת משתמש; אחרת ישר למפה.
+  function afterStart() {
+    setScreen(getActiveProfileId() ? { name: 'map' } : { name: 'profile' });
+  }
+
+  function switchProfile() {
+    logoutProfile();
+    setScreen({ name: 'profile' });
+  }
+
+  switch (screen.name) {
+    case 'start':
+      return <StartTapScreen onStart={afterStart} />;
+
+    case 'profile':
+      return <ProfileScreen onReady={() => setScreen({ name: 'map' })} />;
+
+    case 'map':
+      return (
+        <MapScreen
+          onStartJourney={() => setScreen({ name: 'session' })}
+          onPlayLand={(land) => setScreen({ name: 'session', landFocus: land })}
+          onOpenParent={() => setScreen({ name: 'parent' })}
+          onSwitchProfile={switchProfile}
+        />
+      );
+
+    case 'session':
+      return (
+        <SessionScreen
+          landFocus={screen.landFocus}
+          onFinish={(result) => setScreen({ name: 'treasure', result })}
+          onQuit={() => setScreen({ name: 'map' })}
+        />
+      );
+
+    case 'treasure':
+      return <TreasureScreen result={screen.result} onHome={() => setScreen({ name: 'map' })} />;
+
+    case 'parent':
+      return <ParentDashboard onExit={() => setScreen({ name: 'map' })} />;
+  }
+}

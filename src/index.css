@@ -1,0 +1,206 @@
+/* =========================================================================
+   MemoLand — טוקני עיצוב גלובליים
+   מקור: ה-Style Guide המצורף. ערכים מדויקים, בלי גוונים סמוכים מומצאים.
+   ========================================================================= */
+:root {
+  /* מותג ולוגו */
+  --red: #f04a3a;
+  --yellow: #f7c93b;
+  --green: #7fd341;
+  --blue: #2e8df6;
+
+  /* כפתורים */
+  --btn-blue: #2d8cff; /* ראשי */
+  --btn-green: #48c84e; /* התחל / הצלחה */
+  --btn-orange: #f59d2a; /* התקדמות */
+  --btn-purple: #8c52d9; /* המסע היומי */
+  --btn-red: #f04a3a; /* התראה */
+
+  /* עולם המשחק */
+  --sky: #67c8ff;
+  --sky-deep: #2fa6f6;
+  --grass: #58c548;
+  --grass-lite: #91e35d;
+  --ground: #8d5b36;
+  --ground-dk: #6a4126;
+  --stone: #a98563;
+
+  /* מטבעות ואוצר */
+  --gold: #ffc928;
+  --gold-deep: #e7a61a;
+  --gold-lite: #ffe26d;
+
+  /* ממשק */
+  --panel: #ffffff;
+  --gray-100: #f5f7fa;
+  --gray-300: #dce3ea;
+  --ink: #243247; /* טקסט וקווי מתאר */
+
+  /* הדמות ממו */
+  --memo-hair: #8b4a1f;
+  --memo-goggles: #2c90ff;
+  --memo-scarf: #f26532;
+  --memo-shirt: #2e8df6;
+  --memo-belt: #6e4325;
+  --memo-boots: #7a4b2b;
+
+  /* דמויות המדריכים */
+  --guide-water: #4fc3ff;
+  --guide-purple: #8450d8;
+  --guide-green: #69c845;
+
+  /* צל כפתורים אחיד */
+  --btn-shadow: 0 4px 0 rgba(36, 50, 71, 0.35);
+
+  /* גופנים */
+  --font-display: 'Lilita One', system-ui, sans-serif;
+  --font-head: 'Rubik', system-ui, sans-serif;
+  --font-body: 'Assistant', system-ui, sans-serif;
+
+  /* גובה כותרת עליונה (לפדינג בטוח מ-notch) */
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  direction: rtl;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--sky);
+  overflow-x: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+#root {
+  height: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+  position: relative;
+  overflow: hidden;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-head);
+  font-weight: 700;
+  margin: 0;
+}
+
+button {
+  font-family: var(--font-head);
+  cursor: pointer;
+}
+
+/* מספרים ומילים באנגלית נשארים LTR בתוך טקסט עברי */
+.ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+
+/* Lilita One היא לטינית בלבד — לספרות ולוגו */
+.display {
+  font-family: var(--font-display);
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* מצבי focus נראים לניווט מקלדת */
+:focus-visible {
+  outline: 3px solid var(--btn-blue);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* אנימציית עלייה של מסך */
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes coin-spin {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+@keyframes memo-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  25% {
+    transform: translateX(-4px) rotate(-2deg);
+  }
+  75% {
+    transform: translateX(4px) rotate(2deg);
+  }
+}
+
+@keyframes flag-raise {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
