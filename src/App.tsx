@@ -5,6 +5,8 @@ import { MapScreen } from './screens/MapScreen';
 import { SessionScreen } from './screens/SessionScreen';
 import { TreasureScreen, type JourneyResult } from './screens/TreasureScreen';
 import { ParentDashboard } from './screens/ParentDashboard';
+import { AchievementsScreen } from './screens/AchievementsScreen';
+import { CollectionsScreen } from './screens/CollectionsScreen';
 import { setSfxEnabled } from './audio/sfx';
 import { setPreferredVoiceName } from './audio/speech';
 import { getActiveProfileId, logoutProfile, useStore } from './state/store';
@@ -16,7 +18,9 @@ type Screen =
   | { name: 'map' }
   | { name: 'session'; landFocus?: LandId }
   | { name: 'treasure'; result: JourneyResult }
-  | { name: 'parent' };
+  | { name: 'parent' }
+  | { name: 'achievements' }
+  | { name: 'collections' };
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'start' });
@@ -55,6 +59,8 @@ export default function App() {
           onPlayLand={(land) => setScreen({ name: 'session', landFocus: land })}
           onOpenParent={() => setScreen({ name: 'parent' })}
           onSwitchProfile={switchProfile}
+          onOpenAchievements={() => setScreen({ name: 'achievements' })}
+          onOpenCollections={() => setScreen({ name: 'collections' })}
         />
       );
 
@@ -72,5 +78,11 @@ export default function App() {
 
     case 'parent':
       return <ParentDashboard onExit={() => setScreen({ name: 'map' })} />;
+
+    case 'achievements':
+      return <AchievementsScreen onExit={() => setScreen({ name: 'map' })} />;
+
+    case 'collections':
+      return <CollectionsScreen onExit={() => setScreen({ name: 'map' })} />;
   }
 }

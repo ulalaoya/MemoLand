@@ -286,8 +286,25 @@ export function addCosmetic(item: CosmeticItem): void {
   set({ ...state, cosmetics: [...state.cosmetics, item] });
 }
 
-export function equipCosmetic(kind: 'hat' | 'background', id: string): void {
+export function equipCosmetic(kind: 'hat' | 'theme', id: string): void {
   set({ ...state, equipped: { ...state.equipped, [kind]: id } });
+}
+
+/** האם הפרופיל מחזיק בפריט אוסף. */
+export function ownsCollectible(id: string): boolean {
+  return state.cosmetics.some((c) => c.id === id);
+}
+
+/** קונה פריט אוסף במטבעות. מחזיר true אם הצליח (מספיק מטבעות). */
+export function buyCollectible(item: { id: string; kind: 'hat' | 'sticker' | 'theme'; name: string; cost: number }): boolean {
+  if (ownsCollectible(item.id)) return true;
+  if (state.coins < item.cost) return false;
+  set({
+    ...state,
+    coins: state.coins - item.cost,
+    cosmetics: [...state.cosmetics, { id: item.id, kind: item.kind, name: item.name }],
+  });
+  return true;
 }
 
 export function addCoins(n: number): void {

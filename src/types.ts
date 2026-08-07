@@ -82,7 +82,7 @@ export interface Medal {
 /** פריט קישוט לחנות (מתיבת האוצר). */
 export interface CosmeticItem {
   id: string;
-  kind: 'hat' | 'color' | 'background';
+  kind: 'hat' | 'sticker' | 'theme' | 'color' | 'background';
   name: string;
 }
 
@@ -104,7 +104,7 @@ export interface SaveState {
   spaced: SpacedItem[];
   medals: Medal[];
   cosmetics: CosmeticItem[];
-  equipped: { hat?: string; background?: string };
+  equipped: { hat?: string; theme?: string };
   streakDays: number;
   lastPlayedDay: string | null; // YYYY-MM-DD
   streakShieldAvailable: boolean;

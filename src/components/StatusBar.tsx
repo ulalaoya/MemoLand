@@ -14,6 +14,7 @@ export function TopBar({
   coins,
   rank,
   todayPoints,
+  equippedHat,
   onSwitch,
   onOpenParent,
 }: {
@@ -21,6 +22,7 @@ export function TopBar({
   coins: number;
   rank: MemoRank;
   todayPoints: number;
+  equippedHat?: string;
   onSwitch: () => void;
   onOpenParent: () => void;
 }) {
@@ -89,7 +91,7 @@ export function TopBar({
             onClick={onSwitch}
             style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, cursor: 'pointer' }}
           >
-            <Character kind={profile.avatar} size={52} bounce />
+            <Character kind={profile.avatar} size={52} bounce hat={equippedHat} />
             <span style={{ fontSize: 11, color: 'var(--btn-blue)', fontWeight: 700 }}>החלף ⇄</span>
           </button>
         )}

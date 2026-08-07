@@ -7,7 +7,8 @@ import { TopBar } from '../components/StatusBar';
 import { Button } from '../components/Button';
 import { LandIcon } from '../components/svg/LandIcon';
 import { HomeBackground } from '../components/svg/Backgrounds';
-import { FlagIcon } from '../components/svg/Icons';
+import { FlagIcon, TrophyIcon } from '../components/svg/Icons';
+import { THEME_GRADIENT } from '../config/collectibles';
 import type { LandId } from '../types';
 
 export function MapScreen({
@@ -15,30 +16,45 @@ export function MapScreen({
   onPlayLand,
   onOpenParent,
   onSwitchProfile,
+  onOpenAchievements,
+  onOpenCollections,
 }: {
   onStartJourney: () => void;
   onPlayLand: (land: LandId) => void;
   onOpenParent: () => void;
   onSwitchProfile: () => void;
+  onOpenAchievements: () => void;
+  onOpenCollections: () => void;
 }) {
   const coins = useStore((s) => s.coins);
   const rank = useStore((s) => s.rank);
   const lands = useStore((s) => s.lands);
+  const equipped = useStore((s) => s.equipped);
   useStore((s) => s.todayPoints); // רה-רנדר כשמשתנה
   useProfiles((r) => r.activeId);
   const profile = getActiveProfile();
   const playable = playableLands();
   const todayPoints = getTodayPoints();
+  const themeBg = THEME_GRADIENT[equipped.theme ?? 'theme.day'] ?? THEME_GRADIENT['theme.day'];
+  const useSceneBg = (equipped.theme ?? 'theme.day') === 'theme.day';
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', background: '#8fd8ff' }}>
-      {/* רקע נוף מתגלגל */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <HomeBackground />
-      </div>
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', background: useSceneBg ? '#8fd8ff' : themeBg }}>
+      {/* רקע נוף מתגלגל (בערכת "יום"); בערכות אחרות — גרדיאנט הערכה */}
+      {useSceneBg && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+          <HomeBackground />
+        </div>
+      )}
       {/* כותרת עליונה — כל ההישגים */}
       <div style={{ position: 'sticky', top: 0, zIndex: 5, background: 'rgba(224,244,255,.96)', backdropFilter: 'blur(4px)', paddingTop: 'var(--safe-top)', boxShadow: '0 2px 10px rgba(36,50,71,.12)' }}>
-        <TopBar profile={profile} coins={coins} rank={rank} todayPoints={todayPoints} onSwitch={onSwitchProfile} onOpenParent={onOpenParent} />
+        <TopBar profile={profile} coins={coins} rank={rank} todayPoints={todayPoints} equippedHat={equipped.hat} onSwitch={onSwitchProfile} onOpenParent={onOpenParent} />
+        {/* תפריט קטגוריות */}
+        <div style={{ display: 'flex', gap: 8, padding: '0 12px 10px', justifyContent: 'center' }}>
+          <MenuBtn label="הישגים" color="var(--btn-orange)" onClick={onOpenAchievements} icon={<TrophyIcon size={20} />} />
+          <MenuBtn label="אוספים" color="var(--btn-purple)" onClick={onOpenCollections} icon={<span style={{ fontSize: 18 }}>🎒</span>} />
+          <MenuBtn label="הורים" color="var(--btn-blue)" onClick={onOpenParent} icon={<span style={{ fontSize: 18 }}>👨‍👩‍👧</span>} />
+        </div>
       </div>
 
       {/* השביל המתפתל */}
@@ -118,6 +134,17 @@ export function MapScreen({
         </Button>
       </div>
     </div>
+  );
+}
+
+function MenuBtn({ label, color, icon, onClick }: { label: string; color: string; icon: React.ReactNode; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{ display: 'flex', alignItems: 'center', gap: 6, background: color, color: '#fff', border: '2px solid #fff', borderRadius: 999, padding: '7px 14px', fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 14, boxShadow: '0 3px 0 rgba(36,50,71,.25)' }}
+    >
+      {icon} {label}
+    </button>
   );
 }
 
