@@ -46,6 +46,8 @@ export function defaultSave(): SaveState {
     streakDays: 0,
     lastPlayedDay: null,
     streakShieldAvailable: true,
+    todayPoints: 0,
+    todayPointsDay: null,
     settings: defaultSettings(),
     parentContent: { wordLists: [], sentences: [], paragraphs: [] },
     history: [],

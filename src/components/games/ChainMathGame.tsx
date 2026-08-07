@@ -18,6 +18,9 @@ export function ChainMathGame({
   const [phase, setPhase] = useState<Phase>('ready');
   const [step, setStep] = useState(-1); // -1 = מספר התחלה, 0.. = שלבים
   const [entered, setEntered] = useState<number[]>([]);
+  const enteredRef = useRef<number[]>([]);
+  enteredRef.current = entered;
+  const submittedRef = useRef(false);
   const [result, setResult] = useState<boolean | null>(null);
   const startRef = useRef(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -36,11 +39,11 @@ export function ChainMathGame({
       timers.current.push(
         setTimeout(() => {
           setStep(s);
-          if (s === -1) speak(String(stim.start), speechRate);
+          if (s === -1) speak(String(stim.start), speechRate, { queue: true });
           else {
             const st = stim.steps[s];
             const word = st.op === '+' ? 'ועוד' : st.op === '-' ? 'פחות' : 'כפול';
-            speak(`${word} ${st.value}`, speechRate);
+            speak(`${word} ${st.value}`, speechRate, { queue: true });
           }
         }, i * stim.revealMs),
       );
@@ -55,13 +58,28 @@ export function ChainMathGame({
   }
 
   function submit() {
+    if (submittedRef.current) return;
+    submittedRef.current = true;
     const rtMs = performance.now() - startRef.current;
-    const val = Number(entered.join(''));
+    const val = Number(enteredRef.current.join(''));
     const correct = val === challenge.answer;
     setResult(correct);
     setPhase('done');
     setTimeout(() => onResult({ correct, rtMs }), 1300);
   }
+
+  // מקלדת פיזית (מחשב)
+  useEffect(() => {
+    if (phase !== 'input') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key >= '0' && e.key <= '9') setEntered((p) => (p.length < 5 ? [...p, Number(e.key)] : p));
+      else if (e.key === 'Backspace') { e.preventDefault(); setEntered((p) => p.slice(0, -1)); }
+      else if (e.key === 'Enter') { if (enteredRef.current.length > 0) submit(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   const currentText =
     step === -1
@@ -73,9 +91,9 @@ export function ChainMathGame({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
       {phase === 'ready' && (
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
-          <p style={{ fontSize: 20, fontFamily: 'var(--font-head)', fontWeight: 600 }}>{challenge.prompt}</p>
-          <p style={{ opacity: 0.7 }}>אסור לרשום — רק לזכור בראש!</p>
+        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
+          <p style={{ fontSize: 26, fontFamily: 'var(--font-head)', fontWeight: 700, lineHeight: 1.3 }}>{challenge.prompt}</p>
+          <p style={{ fontSize: 18, fontWeight: 600 }}>אסור לרשום — רק לזכור בראש!</p>
           <Button variant="green" size="lg" onClick={run} icon="▶">
             אני מוכן
           </Button>
@@ -92,7 +110,7 @@ export function ChainMathGame({
 
       {phase === 'input' && (
         <>
-          <p style={{ fontFamily: 'var(--font-head)', fontWeight: 600 }}>כמה יצא בסוף?</p>
+          <p style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 22 }}>כמה יצא בסוף?</p>
           <EnteredDigits digits={entered} />
           <NumberPad
             color={color}

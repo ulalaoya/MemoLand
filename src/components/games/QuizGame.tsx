@@ -36,7 +36,7 @@ export function QuizGame({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-      <p style={{ fontSize: 20, fontFamily: 'var(--font-head)', fontWeight: 700, textAlign: 'center' }}>{question}</p>
+      <p style={{ fontSize: 24, fontFamily: 'var(--font-head)', fontWeight: 700, textAlign: 'center', lineHeight: 1.3 }}>{question}</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 320 }}>
         {options.map((opt) => {
           const isChosen = chosen === opt;

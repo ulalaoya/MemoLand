@@ -139,6 +139,21 @@ function todayKey(now = Date.now()): string {
   return new Date(now).toISOString().slice(0, 10);
 }
 
+/** היעד היומי בנקודות — סיום המסע היומי מובטח בהגעה אליו. */
+export const DAILY_GOAL = 1000;
+
+/** מחזיר את שדות הנקודות היומיות אחרי הוספה (מתאפס עם החלפת יום). */
+function addTodayPoints(s: SaveState, add: number): Pick<SaveState, 'todayPoints' | 'todayPointsDay'> {
+  const day = todayKey();
+  const base = s.todayPointsDay === day ? s.todayPoints : 0;
+  return { todayPoints: base + add, todayPointsDay: day };
+}
+
+/** נקודות היום (0 אם התחלף יום). */
+export function getTodayPoints(): number {
+  return state.todayPointsDay === todayKey() ? state.todayPoints : 0;
+}
+
 /* ------------------------------ פעולות ------------------------------ */
 
 export interface RecordAttemptInput {
@@ -188,6 +203,7 @@ export function recordAttempt(input: RecordAttemptInput): RecordAttemptResult {
     stats: { ...state.stats, [input.exerciseId]: nextStats },
     coins: state.coins + coinsGained,
     history: history.slice(-90), // 90 ימים אחרונים
+    ...addTodayPoints(state, coinsGained),
   };
   next.rank = rankForCoins(next.coins);
 
@@ -276,7 +292,7 @@ export function equipCosmetic(kind: 'hat' | 'background', id: string): void {
 
 export function addCoins(n: number): void {
   const coins = state.coins + n;
-  set({ ...state, coins, rank: rankForCoins(coins) });
+  set({ ...state, coins, rank: rankForCoins(coins), ...addTodayPoints(state, n) });
 }
 
 export function updateSettings(patch: Partial<Settings>): void {

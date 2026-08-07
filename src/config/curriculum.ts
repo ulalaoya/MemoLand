@@ -24,9 +24,10 @@ export function digitSpanLength(level: number): number {
   return lerp(level, 3, 9);
 }
 
-/** זמן חשיפת כל ספרה במילישניות (קבוע 700ms לפי הפרומפט, מעט מאיץ). */
+/** זמן חשיפת כל ספרה במילישניות. מספיק ארוך כדי שההקראה של כל מספר תסתיים
+    לפני הבא (אחרת מספרים נבלעים). */
 export function digitFlashMs(level: number): number {
-  return lerp(level, 750, 600);
+  return lerp(level, 1000, 850);
 }
 
 /** חשבון בשרשרת: כמה שלבים (2→6) וטווח מספרים. */

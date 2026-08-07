@@ -9,6 +9,7 @@ import { clampLevel } from '../config/curriculum';
 import { getEngine } from '../engines';
 import { landColor, LANDS } from '../config/lands';
 import {
+  DAILY_GOAL,
   addCoins,
   addMinutes,
   addSpacedItems,
@@ -39,7 +40,10 @@ interface JourneyResult {
   bestSpan: number;
   streakDays: number;
   castleOpened: boolean;
+  reachedGoal: boolean;
 }
+
+const MAX_ACTIVITIES = 70; // תקרת ביטחון למספר האתגרים במסע
 
 export function SessionScreen({
   landFocus,
@@ -57,6 +61,8 @@ export function SessionScreen({
   const stats = useRef({ correct: 0, total: 0, bestSpan: 0 });
   const coinsStart = useRef(getState().coins);
   const genSeed = useRef(Date.now());
+  // נקודות שנצברו במסע הנוכחי — קובעות את אורך המסע (יעד ~1000 ≈ 20 דק').
+  const sessionPoints = useRef(0);
 
   // מנגנון הלבבות — 3 לבבות למסע; טעות מורידה לב. באפס: "רוצה לנסות שוב?"
   const MAX_HEARTS = 3;
@@ -76,21 +82,19 @@ export function SessionScreen({
     return false;
   }
 
-  /** "לנסות שוב" — ממלא לבבות וממשיך במסע (בלי איבוד התקדמות). */
+  /** "לנסות שוב" — ממלא לבבות וממשיך לנסות את אותו האתגר (בלי איבוד התקדמות). */
   function revive() {
     heartsRef.current = MAX_HEARTS;
     setHearts(MAX_HEARTS);
     setReviveOpen(false);
-    sessionWrong.current = 0;
     sfxLevelUp();
-    next();
+    setRetry((n) => n + 1); // אתגר חדש מאותו הסוג, מעט קל יותר
   }
 
-  // בונים את הפעילויות פעם אחת.
-  const activities = useMemo<Activity[]>(() => {
+  // בונים את הפעילויות ההתחלתיות פעם אחת; אפשר להוסיף סבבים עד היעד היומי.
+  const [activities, setActivities] = useState<Activity[]>(() => {
     const now = Date.now();
     if (landFocus) {
-      // משחק חופשי: 5 אתגרים מהארץ הנבחרת
       const list: Activity[] = [];
       const ids = getEnginesForLand(landFocus);
       for (let i = 0; i < 5; i++) {
@@ -101,31 +105,51 @@ export function SessionScreen({
     const st = getState();
     const due = dueItems(st.spaced, now);
     const session = buildDailySession(st.stats, settings.sessionMinutes, due.length > 0, now);
-    const built = buildActivities(session, due, now);
-    return built.activities;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return buildActivities(session, due, now).activities;
+  });
+  // ספירת חזרות על אותו אתגר (retry-until-success) — משנה seed ומקל את הרמה.
+  const [retry, setRetry] = useState(0);
 
   const activity = activities[idx];
-  const progress = activities.length ? idx / activities.length : 0;
+  // התקדמות המסע נמדדת לפי הנקודות שנצברו במסע (לא טיימר פנימי).
+  const progress = landFocus
+    ? activities.length
+      ? idx / activities.length
+      : 0
+    : Math.min(1, sessionPoints.current / DAILY_GOAL);
 
   function showToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(null), 1100);
   }
 
+  /** יוצר אתגר-משחק נוסף (סבב הרפתקה) כשעדיין לא הגענו ליעד היומי. */
+  function makeExtraRotation(atIndex: number): Activity {
+    const lands = getPlayableLands();
+    const land = lands[atIndex % lands.length];
+    const ids = getEnginesForLand(land);
+    const id = ids[atIndex % ids.length];
+    return { kind: 'game', exerciseId: id, landId: land, levelDelta: 0, label: 'הרפתקה' };
+  }
+
   function next() {
-    if (idx + 1 >= activities.length) {
-      finalize();
-    } else {
+    setRetry(0);
+    if (idx + 1 < activities.length) {
       setIdx((i) => i + 1);
+      return;
     }
+    // סיימנו את המבנה — אם עוד לא הגענו ליעד, מוסיפים סבב ומתקדמים.
+    if (!landFocus && sessionPoints.current < DAILY_GOAL && activities.length < MAX_ACTIVITIES) {
+      setActivities((a) => [...a, makeExtraRotation(a.length)]);
+      setIdx((i) => i + 1);
+      return;
+    }
+    finalize();
   }
 
   function finalize() {
     addMinutes(settings.sessionMinutes);
     const streakRes = landFocus ? { streakDays: getState().streakDays } : finishDailyJourney();
-    // התקדמות מסלול בארץ המרכזית (עמק המספרים כברירת מחדל אם קיים)
     const focusLand: LandId = landFocus ?? 'numbers';
     const trackRes = completeTrack(focusLand);
     onFinish({
@@ -136,6 +160,7 @@ export function SessionScreen({
       bestSpan: stats.current.bestSpan,
       streakDays: streakRes.streakDays,
       castleOpened: trackRes.castleOpened,
+      reachedGoal: !landFocus && sessionPoints.current >= DAILY_GOAL,
     });
   }
 
@@ -153,21 +178,25 @@ export function SessionScreen({
         sfxCorrect();
       }
       if (res.coinsGained > 0) {
+        sessionPoints.current += res.coinsGained;
         sfxCoin();
         showToast(`+${res.coinsGained} מטבעות`);
       }
+      next();
     } else {
+      // טעות: לא מתקדמים — נותנים עוד אתגר מאותו הסוג עד שמצליחים.
       sessionWrong.current += 1;
       sfxSoft();
       if (loseHeartAndMaybePause()) return; // נגמרו לבבות — ממתינים לבחירה
+      setRetry((n) => n + 1);
     }
-    next();
   }
 
   function handleQuizResult(a: Extract<Activity, { kind: 'quiz' }>, correct: boolean) {
     stats.current.total += 1;
     if (correct) {
       stats.current.correct += 1;
+      sessionPoints.current += 8;
       addCoins(8);
       sfxCoin();
       showToast('+8 מטבעות');
@@ -237,9 +266,9 @@ export function SessionScreen({
           <button
             onClick={onQuit}
             aria-label="חזרה למפה"
-            style={{ background: 'var(--panel)', border: '2px solid var(--gray-300)', borderRadius: 999, width: 40, height: 40, fontSize: 20 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--panel)', border: '2px solid var(--gray-300)', borderRadius: 999, height: 40, padding: '0 14px', fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}
           >
-            →
+            <span style={{ fontSize: 18 }}>→</span> חזרה
           </button>
           <div style={{ flex: 1, height: 14, background: 'rgba(255,255,255,.6)', borderRadius: 999, overflow: 'hidden', border: '2px solid #fff' }}>
             <div style={{ width: `${progress * 100}%`, height: '100%', background: color, transition: 'width .4s' }} />
@@ -291,10 +320,10 @@ export function SessionScreen({
           boxShadow: '0 6px 0 rgba(36,50,71,.2)',
         }}
       >
-        {/* key={idx} מאלץ remount של המשחק בכל פעילות — כדי לאפס state פנימי */}
-        <div key={idx} style={{ width: '100%' }}>
+        {/* key מאלץ remount בכל פעילות ובכל ניסיון חוזר — כדי לאפס state ולתת אתגר חדש */}
+        <div key={`${idx}-${retry}`} style={{ width: '100%' }}>
           {activity.kind === 'game' && (
-            <GameHostForActivity a={activity} color={color} speechRate={settings.speechRate} softenBy={sessionWrong.current >= 2 ? 2 : 0} seed={genSeed.current + idx} onResult={(r) => handleGameResult(activity, r)} />
+            <GameHostForActivity a={activity} color={color} speechRate={settings.speechRate} softenBy={retry} seed={genSeed.current + idx * 100 + retry} onResult={(r) => handleGameResult(activity, r)} />
           )}
           {activity.kind === 'quiz' && (
             <QuizGame question={activity.question} answer={activity.answer} options={activity.options} color={color} speechRate={settings.speechRate} onResult={(c) => handleQuizResult(activity, c)} />
@@ -305,6 +334,7 @@ export function SessionScreen({
               seconds={activity.seconds}
               color={color}
               onDone={(score) => {
+                sessionPoints.current += score * 2;
                 addCoins(score * 2);
                 if (score > 0) sfxCoin();
                 showToast(`אספת ${score}! +${score * 2} מטבעות`);
@@ -437,7 +467,7 @@ function CenterScreen({ children, land }: { children: React.ReactNode; land: Lan
 
 /* עזרי תוכן */
 import { STORIES } from '../engines/echoesContent';
-import { enginesForLand as _enginesForLand } from '../engines';
+import { enginesForLand as _enginesForLand, playableLands as _playableLands } from '../engines';
 
 function getStoryQuestion(storyId: string) {
   const s = STORIES.find((x) => x.id === storyId);
@@ -448,4 +478,8 @@ function getStoryQuestion(storyId: string) {
 
 function getEnginesForLand(land: LandId): string[] {
   return _enginesForLand(land).map((e) => e.id);
+}
+
+function getPlayableLands(): LandId[] {
+  return _playableLands();
 }

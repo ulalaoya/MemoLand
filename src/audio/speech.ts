@@ -71,15 +71,17 @@ if (typeof window !== 'undefined' && window.speechSynthesis) {
 export interface SpeakOptions {
   rate?: number;
   onEnd?: () => void;
+  /** אל תבטל הקראה קודמת — הוסף לתור. חשוב לרצפי ספרות כדי שאף מספר לא ייבלע. */
+  queue?: boolean;
 }
 
-/** מקריא טקסט עברי. עוצר הקראה קודמת. */
+/** מקריא טקסט עברי. כברירת מחדל עוצר הקראה קודמת; עם queue מוסיף לתור. */
 export function speak(text: string, rate = 0.9, opts: SpeakOptions = {}): void {
   if (typeof window === 'undefined' || !window.speechSynthesis) {
     opts.onEnd?.();
     return;
   }
-  window.speechSynthesis.cancel();
+  if (!opts.queue) window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'he-IL';
   u.rate = rate;

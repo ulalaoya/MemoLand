@@ -1,15 +1,12 @@
-/* מסך הבית — מפת ממו לנד: 6 ארצות על שביל מתפתל עם דגלים וטירות,
-   דרגת ממו, וכפתור "המסע של היום". לחיצה ארוכה על הלוגו פותחת שער הורים. */
-import { useRef } from 'react';
-import { getActiveProfile, useProfiles, useStore } from '../state/store';
+/* מסך הבית — מפת ממו לנד: שביל מתפתל עם אבנים שמחבר בין הארצות,
+   אמבלמה תמטית לכל ארץ, סרגל הישגים עליון, וכפתור "המסע של היום". */
+import { getActiveProfile, getTodayPoints, useProfiles, useStore } from '../state/store';
 import { LAND_ORDER, LANDS, TRACKS_PER_LAND, landColor } from '../config/lands';
 import { playableLands } from '../engines';
-import { StatusBar } from '../components/StatusBar';
+import { TopBar } from '../components/StatusBar';
 import { Button } from '../components/Button';
-import { Logo } from '../components/Logo';
-import { Memo, Guide, guideKindFor } from '../components/svg/Memo';
+import { LandIcon } from '../components/svg/LandIcon';
 import { FlagIcon } from '../components/svg/Icons';
-import { rankLabel, rankProgress } from '../state/rewards';
 import type { LandId } from '../types';
 
 export function MapScreen({
@@ -26,64 +23,34 @@ export function MapScreen({
   const coins = useStore((s) => s.coins);
   const rank = useStore((s) => s.rank);
   const lands = useStore((s) => s.lands);
-  // עדכון כשמחליפים פרופיל
+  useStore((s) => s.todayPoints); // רה-רנדר כשמשתנה
   useProfiles((r) => r.activeId);
   const profile = getActiveProfile();
   const playable = playableLands();
-  const rp = rankProgress(coins);
-  const journeyGoal = 500;
-  const journeyDone = Math.min(journeyGoal, coins % 500 || (coins > 0 ? 500 : 0));
-
-  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const startPress = () => {
-    pressTimer.current = setTimeout(onOpenParent, 750);
-  };
-  const endPress = () => {
-    if (pressTimer.current) clearTimeout(pressTimer.current);
-  };
+  const todayPoints = getTodayPoints();
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', background: 'linear-gradient(#8fd8ff,#58C548)' }}>
-      {/* כותרת עליונה */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 5, background: 'rgba(103,200,255,.92)', backdropFilter: 'blur(4px)', paddingTop: 'var(--safe-top)' }}>
-        <div
-          style={{ display: 'flex', justifyContent: 'center', paddingTop: 8 }}
-          onPointerDown={startPress}
-          onPointerUp={endPress}
-          onPointerLeave={endPress}
-          title="לחיצה ארוכה — הורים"
-        >
-          <Logo variant="compact" width={140} />
-        </div>
-        {/* צ'יפ המשתמש הפעיל — הקשה מחליפה משתמש */}
-        {profile && (
-          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 4 }}>
-            <button
-              onClick={onSwitchProfile}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--panel)', border: '2px solid var(--gray-300)', borderRadius: 999, padding: '3px 12px 3px 6px', boxShadow: '0 2px 0 rgba(36,50,71,.12)' }}
-            >
-              <Guide kind={profile.avatar} size={26} />
-              <span style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>{profile.name}</span>
-              <span style={{ fontSize: 12, color: 'var(--btn-blue)', fontWeight: 700 }}>החלף ⇄</span>
-            </button>
-          </div>
-        )}
-        <StatusBar coins={coins} journeyDone={journeyDone} journeyGoal={journeyGoal} />
-      </div>
-
-      {/* דרגת ממו */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', padding: '6px 16px' }}>
-        <Memo size={72} rank={rank} bounce />
-        <div style={{ background: 'var(--panel)', border: '2px solid var(--gray-300)', borderRadius: 14, padding: '8px 14px' }}>
-          <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, color: 'var(--ink)' }}>{rankLabel(rank)}</div>
-          <div style={{ width: 150, height: 10, background: 'var(--gray-300)', borderRadius: 999, overflow: 'hidden', marginTop: 4 }}>
-            <div style={{ width: `${rp.ratio * 100}%`, height: '100%', background: 'var(--btn-purple)' }} />
-          </div>
-        </div>
+      {/* כותרת עליונה — כל ההישגים */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 5, background: 'rgba(224,244,255,.96)', backdropFilter: 'blur(4px)', paddingTop: 'var(--safe-top)', boxShadow: '0 2px 10px rgba(36,50,71,.12)' }}>
+        <TopBar profile={profile} coins={coins} rank={rank} todayPoints={todayPoints} onSwitch={onSwitchProfile} onOpenParent={onOpenParent} />
       </div>
 
       {/* השביל המתפתל */}
-      <div style={{ position: 'relative', padding: '10px 0 24px' }}>
+      <div style={{ position: 'relative', padding: '18px 0 24px' }}>
+        {/* קו השביל המקווקו מאחורי הכרטיסים */}
+        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+          <path
+            d={buildTrailPath(LAND_ORDER.length)}
+            fill="none"
+            stroke="rgba(255,255,255,.75)"
+            strokeWidth="7"
+            strokeLinecap="round"
+            strokeDasharray="0.5 9"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+
         {LAND_ORDER.map((id, i) => {
           const meta = LANDS[id];
           const prog = lands[id];
@@ -91,14 +58,14 @@ export function MapScreen({
           const side = i % 2 === 0 ? 'flex-start' : 'flex-end';
           const color = landColor(id);
           return (
-            <div key={id} style={{ display: 'flex', justifyContent: side, padding: '0 22px', margin: '10px 0' }}>
+            <div key={id} style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: side, padding: '0 20px', margin: '12px 0' }}>
               <button
                 onClick={() => isPlayable && onPlayLand(id)}
                 disabled={!isPlayable}
                 style={{
                   position: 'relative',
-                  width: 260,
-                  maxWidth: '80%',
+                  width: 268,
+                  maxWidth: '82%',
                   background: 'var(--panel)',
                   border: `4px solid ${color}`,
                   borderRadius: 20,
@@ -107,13 +74,13 @@ export function MapScreen({
                   alignItems: 'center',
                   gap: 12,
                   boxShadow: '0 5px 0 rgba(36,50,71,.25)',
-                  opacity: isPlayable ? 1 : 0.75,
+                  opacity: isPlayable ? 1 : 0.78,
                   cursor: isPlayable ? 'pointer' : 'default',
                   textAlign: 'start',
                 }}
               >
                 <div style={{ position: 'relative', flexShrink: 0 }}>
-                  <Guide kind={guideKindFor(meta.guide)} size={58} />
+                  <LandIcon land={id} size={62} />
                   {prog.castleOpen && (
                     <span style={{ position: 'absolute', insetInlineEnd: -6, top: -6, fontSize: 20 }}>🏰</span>
                   )}
@@ -140,11 +107,22 @@ export function MapScreen({
       </div>
 
       {/* כפתור המסע היומי — צף בתחתית */}
-      <div style={{ position: 'sticky', bottom: 0, padding: '12px 16px calc(16px + var(--safe-top))', background: 'linear-gradient(transparent, rgba(88,197,72,.9) 40%)' }}>
+      <div style={{ position: 'sticky', bottom: 0, padding: '12px 16px calc(16px + var(--safe-top))', background: 'linear-gradient(transparent, rgba(88,197,72,.92) 40%)' }}>
         <Button variant="purple" size="lg" block icon="🧠" onClick={onStartJourney}>
           המסע של היום
         </Button>
       </div>
     </div>
   );
+}
+
+/** בונה נתיב מתפתל (זיגזג) בין מרכזי הכרטיסים, ב-viewBox 0..100. */
+function buildTrailPath(n: number): string {
+  const pts: [number, number][] = [];
+  for (let i = 0; i < n; i++) {
+    const x = i % 2 === 0 ? 28 : 72;
+    const y = ((i + 0.5) / n) * 100;
+    pts.push([x, y]);
+  }
+  return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`).join(' ');
 }

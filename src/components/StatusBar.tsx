@@ -1,59 +1,99 @@
-/* כרטיסי הסטטוס הקבועים בראש המסך (סעיף 9):
-   לבבות (תמיד מלאים — אין game over), מטבעות, ומד המסע היומי.
-   כרטיס = גלולה לבנה, מסגרת אפורה, אייקון עגול צבעוני בקצה, מספר Rubik 600. */
+/* סרגל עליון — כל ההישגים למעלה:
+   ימין: שם המשתמש + לבבות. מרכז: הדרגה + התקדמות בדרגה.
+   שמאל: מטבעות + בר התקדמות יומית. מתחת: לוגו MemoLand + האוואטר שנבחר. */
+import { useRef } from 'react';
+import type { MemoRank, Profile } from '../types';
 import { Coin, HeartIcon } from './svg/Icons';
+import { Character } from './svg/Memo';
+import { Logo } from './Logo';
+import { rankLabel, rankProgress } from '../state/rewards';
+import { DAILY_GOAL } from '../state/store';
 
-function Pill({ children }: { children: React.ReactNode }) {
+export function TopBar({
+  profile,
+  coins,
+  rank,
+  todayPoints,
+  onSwitch,
+  onOpenParent,
+}: {
+  profile: Profile | null;
+  coins: number;
+  rank: MemoRank;
+  todayPoints: number;
+  onSwitch: () => void;
+  onOpenParent: () => void;
+}) {
+  const rp = rankProgress(coins);
+  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startPress = () => { pressTimer.current = setTimeout(onOpenParent, 750); };
+  const endPress = () => { if (pressTimer.current) clearTimeout(pressTimer.current); };
+  const dailyPct = Math.max(0, Math.min(1, todayPoints / DAILY_GOAL));
+
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        background: 'var(--panel)',
-        border: '2px solid var(--gray-300)',
-        borderRadius: 999,
-        padding: '5px 12px 5px 8px',
-        boxShadow: '0 2px 0 rgba(36,50,71,.12)',
-        fontFamily: 'var(--font-head)',
-        fontWeight: 600,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-export function StatusBar({ coins, journeyDone, journeyGoal }: { coins: number; journeyDone: number; journeyGoal: number }) {
-  const pct = Math.max(0, Math.min(1, journeyGoal ? journeyDone / journeyGoal : 0));
-  return (
-    <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', padding: '8px 10px' }}>
-      {/* לבבות — תמיד מלאים, אין איבוד */}
-      <Pill>
-        <span style={{ display: 'flex' }}>
-          {[0, 1, 2].map((i) => (
-            <HeartIcon key={i} size={18} style={{ marginInlineStart: i ? -2 : 0 }} />
-          ))}
-        </span>
-      </Pill>
-
-      {/* מטבעות */}
-      <Pill>
-        <Coin size={22} />
-        <span className="ltr" style={{ minWidth: 28, textAlign: 'center' }}>
-          {coins}
-        </span>
-      </Pill>
-
-      {/* מד המסע היומי */}
-      <Pill>
-        <div style={{ width: 70, height: 12, background: 'var(--gray-300)', borderRadius: 999, overflow: 'hidden', border: '1px solid var(--gray-300)' }}>
-          <div style={{ width: `${pct * 100}%`, height: '100%', background: 'var(--btn-blue)', transition: 'width .4s' }} />
+    <div style={{ padding: '8px 12px 10px' }}>
+      {/* שורת ההישגים */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+        {/* ימין: שם + לבבות */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, minWidth: 78 }}>
+          <span style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 15, color: 'var(--ink)', maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {profile?.name ?? ''}
+          </span>
+          <span style={{ display: 'flex' }}>
+            {[0, 1, 2].map((i) => (
+              <HeartIcon key={i} size={17} style={{ marginInlineStart: i ? -2 : 0 }} />
+            ))}
+          </span>
         </div>
-        <span className="ltr" style={{ fontSize: 13, color: 'var(--ink)' }}>
-          {journeyDone}/{journeyGoal}
-        </span>
-      </Pill>
+
+        {/* מרכז: דרגה + התקדמות */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flex: 1 }}>
+          <span style={{ fontSize: 11, color: 'var(--ink)', opacity: 0.6, fontWeight: 600 }}>דרגה</span>
+          <span style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 15, color: 'var(--btn-purple)' }}>{rankLabel(rank)}</span>
+          <div style={{ width: 108, height: 9, background: 'var(--gray-300)', borderRadius: 999, overflow: 'hidden' }}>
+            <div style={{ width: `${rp.ratio * 100}%`, height: '100%', background: 'var(--btn-purple)', transition: 'width .4s' }} />
+          </div>
+          {rp.next !== null ? (
+            <span style={{ fontSize: 10, opacity: 0.6 }}>
+              עוד <span className="ltr">{Math.max(0, rp.next - coins)}</span> לדרגה הבאה
+            </span>
+          ) : (
+            <span style={{ fontSize: 10, opacity: 0.6 }}>הדרגה הגבוהה ביותר!</span>
+          )}
+        </div>
+
+        {/* שמאל: מטבעות + בר יומי */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, minWidth: 78 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 15 }}>
+            <span className="ltr">{coins}</span>
+            <Coin size={20} />
+          </span>
+          <div style={{ width: 84, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+            <div style={{ width: '100%', height: 9, background: 'var(--gray-300)', borderRadius: 999, overflow: 'hidden' }}>
+              <div style={{ width: `${dailyPct * 100}%`, height: '100%', background: 'var(--gold)', transition: 'width .4s' }} />
+            </div>
+            <span style={{ fontSize: 10, opacity: 0.6 }}>
+              היום <span className="ltr">{todayPoints}/{DAILY_GOAL}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* לוגו + אוואטר */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 8 }}>
+        <div onPointerDown={startPress} onPointerUp={endPress} onPointerLeave={endPress} title="לחיצה ארוכה — הורים">
+          <Logo variant="compact" width={128} />
+        </div>
+        {profile && (
+          <button
+            onClick={onSwitch}
+            style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, cursor: 'pointer' }}
+          >
+            <Character kind={profile.avatar} size={52} bounce />
+            <span style={{ fontSize: 11, color: 'var(--btn-blue)', fontWeight: 700 }}>החלף ⇄</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 }

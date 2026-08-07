@@ -19,6 +19,7 @@ export function ListenRepeatGame({
   const [assembled, setAssembled] = useState<number[]>([]); // אינדקסים ב-scrambled
   const [result, setResult] = useState<boolean | null>(null);
   const startRef = useRef(0);
+  const submittedRef = useRef(false);
 
   useEffect(() => {
     if (phase === 'input' && assembled.length === stim.words.length) submit();
@@ -42,6 +43,8 @@ export function ListenRepeatGame({
   }
 
   function submit() {
+    if (submittedRef.current) return;
+    submittedRef.current = true;
     const rtMs = performance.now() - startRef.current;
     const given = assembled.map((i) => stim.scrambled[i]);
     const correct = given.length === challenge.answer.length && given.every((w, i) => w === challenge.answer[i]);
@@ -76,7 +79,7 @@ export function ListenRepeatGame({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center' }}>
       {phase === 'ready' && (
         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
-          <p style={{ fontSize: 20, fontFamily: 'var(--font-head)', fontWeight: 600 }}>הקשב למשפט — ואז הרכב אותו</p>
+          <p style={{ fontSize: 25, fontFamily: 'var(--font-head)', fontWeight: 700, lineHeight: 1.3 }}>הקשב למשפט — ואז הרכב אותו</p>
           <Button variant="green" size="lg" onClick={play} icon="🔊">
             הקשב
           </Button>

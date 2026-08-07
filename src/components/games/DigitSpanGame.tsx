@@ -18,6 +18,9 @@ export function DigitSpanGame({
   const [phase, setPhase] = useState<Phase>('ready');
   const [shownIdx, setShownIdx] = useState(-1);
   const [entered, setEntered] = useState<number[]>([]);
+  const enteredRef = useRef<number[]>([]);
+  enteredRef.current = entered;
+  const submittedRef = useRef(false);
   const [result, setResult] = useState<boolean | null>(null);
   const startRef = useRef(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -36,7 +39,8 @@ export function DigitSpanGame({
       timers.current.push(
         setTimeout(() => {
           setShownIdx(i);
-          speak(String(d), speechRate);
+          // queue=true — כל ספרה נאמרת עד הסוף בלי לבטל את הקודמת
+          speak(String(d), speechRate, { queue: true });
         }, i * stim.flashMs),
       );
     });
@@ -50,13 +54,34 @@ export function DigitSpanGame({
   }
 
   function submit() {
+    if (submittedRef.current) return; // הגנה מפני שליחה כפולה
+    submittedRef.current = true;
     const rtMs = performance.now() - startRef.current;
     const exp = challenge.answer;
-    const correct = entered.length === exp.length && entered.every((d, i) => d === exp[i]);
+    const given = enteredRef.current;
+    const correct = given.length === exp.length && given.every((d, i) => d === exp[i]);
     setResult(correct);
     setPhase('done');
     setTimeout(() => onResult({ correct, rtMs, span: correct ? stim.digits.length : undefined }), 1300);
   }
+
+  // תמיכה במקלדת פיזית (למחשב): ספרות, מחיקה, Enter לאישור
+  useEffect(() => {
+    if (phase !== 'input') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key >= '0' && e.key <= '9') {
+        setEntered((prev) => (prev.length < stim.digits.length ? [...prev, Number(e.key)] : prev));
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        setEntered((prev) => prev.slice(0, -1));
+      } else if (e.key === 'Enter') {
+        if (enteredRef.current.length > 0) submit();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, stim.digits.length]);
 
   const modeHint =
     stim.mode === 'backward' ? 'מהסוף להתחלה' : stim.mode === 'sort' ? 'מהקטן לגדול' : 'לפי הסדר';
@@ -64,9 +89,9 @@ export function DigitSpanGame({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
       {phase === 'ready' && (
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
-          <p style={{ fontSize: 20, fontFamily: 'var(--font-head)', fontWeight: 600 }}>{challenge.prompt}</p>
-          <p style={{ color: 'var(--ink)', opacity: 0.7 }}>
+        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
+          <p style={{ fontSize: 26, fontFamily: 'var(--font-head)', fontWeight: 700, lineHeight: 1.3 }}>{challenge.prompt}</p>
+          <p style={{ color: 'var(--ink)', fontSize: 19, fontWeight: 600 }}>
             תזכור <b className="ltr">{stim.digits.length}</b> ספרות — ותקליד אותן {modeHint}
           </p>
           <Button variant="green" size="lg" onClick={runShow} icon="▶">
@@ -94,7 +119,7 @@ export function DigitSpanGame({
 
       {phase === 'input' && (
         <>
-          <p style={{ fontFamily: 'var(--font-head)', fontWeight: 600 }}>הקלד {modeHint}:</p>
+          <p style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 22 }}>הקלד {modeHint}:</p>
           <EnteredDigits digits={entered} />
           <NumberPad
             color={color}

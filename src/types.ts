@@ -108,6 +108,8 @@ export interface SaveState {
   streakDays: number;
   lastPlayedDay: string | null; // YYYY-MM-DD
   streakShieldAvailable: boolean;
+  todayPoints: number; // נקודות שנצברו היום (ליעד היומי)
+  todayPointsDay: string | null; // היום שאליו שייך todayPoints
   settings: Settings;
   parentContent: ParentContent;
   history: DayRecord[]; // רשומות יומיות לדשבורד
