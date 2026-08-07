@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Challenge } from '../../types';
 import type { ListenRepeatStimulus } from '../../engines/echoes';
 import { speak } from '../../audio/speech';
+import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import { Button } from '../Button';
 import { FeedbackBanner, ReplayButton } from './common';
 import type { GameProps } from './common';
@@ -48,6 +49,7 @@ export function ListenRepeatGame({
     const rtMs = performance.now() - startRef.current;
     const given = assembled.map((i) => stim.scrambled[i]);
     const correct = given.length === challenge.answer.length && given.every((w, i) => w === challenge.answer[i]);
+    correct ? sfxCorrect() : sfxSoft();
     setResult(correct);
     setPhase('done');
     setTimeout(() => onResult({ correct, rtMs, span: correct ? stim.words.length : undefined }), 1300);

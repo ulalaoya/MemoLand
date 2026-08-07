@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Challenge } from '../../types';
 import type { DigitSpanStimulus } from '../../engines/numbers';
 import { speak } from '../../audio/speech';
+import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import { Button } from '../Button';
 import { EnteredDigits, FeedbackBanner, NumberPad, ReplayButton } from './common';
 import type { GameProps } from './common';
@@ -60,6 +61,7 @@ export function DigitSpanGame({
     const exp = challenge.answer;
     const given = enteredRef.current;
     const correct = given.length === exp.length && given.every((d, i) => d === exp[i]);
+    correct ? sfxCorrect() : sfxSoft(); // צליל מיידי בזמן התשובה
     setResult(correct);
     setPhase('done');
     setTimeout(() => onResult({ correct, rtMs, span: correct ? stim.digits.length : undefined }), 1300);

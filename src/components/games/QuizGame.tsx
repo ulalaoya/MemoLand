@@ -1,6 +1,7 @@
 /* שאלת בחירה מרובה — לשליפה מושהית, "מה שזכרת אתמול", וסיפורי מערת ההדים. */
 import { useEffect, useRef, useState } from 'react';
 import { speak } from '../../audio/speech';
+import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import { Button } from '../Button';
 import { FeedbackBanner } from './common';
 
@@ -30,6 +31,7 @@ export function QuizGame({
   function pick(opt: string) {
     if (chosen) return;
     const correct = opt === answer;
+    correct ? sfxCorrect() : sfxSoft();
     setChosen(opt);
     setTimeout(() => onResult(correct), 1300);
   }

@@ -29,7 +29,7 @@ import { Coin, HeartIcon } from '../components/svg/Icons';
 import { LandBackground } from '../components/svg/Backgrounds';
 import { Guide, guideKindFor } from '../components/svg/Memo';
 import { speak } from '../audio/speech';
-import { sfxCoin, sfxCorrect, sfxLevelUp, sfxSoft } from '../audio/sfx';
+import { sfxLevelUp } from '../audio/sfx';
 import type { LandId } from '../types';
 
 interface JourneyResult {
@@ -171,22 +171,16 @@ export function SessionScreen({
       stats.current.correct += 1;
       if (r.span) stats.current.bestSpan = Math.max(stats.current.bestSpan, r.span);
       sessionWrong.current = 0;
-      if (res.leveledUp) {
-        sfxLevelUp();
-        showToast('המסלול נעשה תלול יותר! 🔥');
-      } else {
-        sfxCorrect();
-      }
+      // צליל ההצלחה כבר נוגן ברכיב המשחק בזמן התשובה; כאן רק חיווי ויזואלי.
+      if (res.leveledUp) showToast('המסלול נעשה תלול יותר! 🔥');
       if (res.coinsGained > 0) {
         sessionPoints.current += res.coinsGained;
-        sfxCoin();
         showToast(`+${res.coinsGained} מטבעות`);
       }
       next();
     } else {
       // טעות: לא מתקדמים — נותנים עוד אתגר מאותו הסוג עד שמצליחים.
       sessionWrong.current += 1;
-      sfxSoft();
       if (loseHeartAndMaybePause()) return; // נגמרו לבבות — ממתינים לבחירה
       setRetry((n) => n + 1);
     }
@@ -198,10 +192,7 @@ export function SessionScreen({
       stats.current.correct += 1;
       sessionPoints.current += 8;
       addCoins(8);
-      sfxCoin();
       showToast('+8 מטבעות');
-    } else {
-      sfxSoft();
     }
     // עדכון חזרות במרווחים לפריט מאתמול
     if (a.spacedId) {
@@ -336,7 +327,6 @@ export function SessionScreen({
               onDone={(score) => {
                 sessionPoints.current += score * 2;
                 addCoins(score * 2);
-                if (score > 0) sfxCoin();
                 showToast(`אספת ${score}! +${score * 2} מטבעות`);
                 next();
               }}

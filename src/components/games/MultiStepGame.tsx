@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Challenge } from '../../types';
 import type { MultiStepStimulus } from '../../engines/echoes';
 import { speak } from '../../audio/speech';
+import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import { Button } from '../Button';
 import { FeedbackBanner, ReplayButton } from './common';
 import type { GameProps } from './common';
@@ -55,6 +56,7 @@ export function MultiStepGame({
     const rtMs = performance.now() - startRef.current;
     const correct =
       tapped.length === challenge.answer.length && tapped.every((id, i) => id === challenge.answer[i]);
+    correct ? sfxCorrect() : sfxSoft();
     setResult(correct);
     setPhase('done');
     setTimeout(() => onResult({ correct, rtMs, span: correct ? stim.sequence.length : undefined }), 1300);

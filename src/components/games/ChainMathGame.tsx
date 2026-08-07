@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Challenge } from '../../types';
 import type { ChainMathStimulus } from '../../engines/numbers';
 import { speak } from '../../audio/speech';
+import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import { Button } from '../Button';
 import { EnteredDigits, FeedbackBanner, NumberPad } from './common';
 import type { GameProps } from './common';
@@ -63,6 +64,7 @@ export function ChainMathGame({
     const rtMs = performance.now() - startRef.current;
     const val = Number(enteredRef.current.join(''));
     const correct = val === challenge.answer;
+    correct ? sfxCorrect() : sfxSoft();
     setResult(correct);
     setPhase('done');
     setTimeout(() => onResult({ correct, rtMs }), 1300);
