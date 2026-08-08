@@ -17,8 +17,59 @@
   transform: translateY(3px) scale(0.985);
 }
 
+@keyframes ml-gentle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes ml-route-flow {
+  to { stroke-dashoffset: -52; }
+}
+
+@keyframes ml-checkpoint-pulse {
+  0%, 100% {
+    box-shadow: 0 5px 0 rgba(36, 50, 71, 0.28), 0 0 0 6px var(--land-glow), 0 10px 22px var(--land-glow);
+  }
+  50% {
+    box-shadow: 0 5px 0 rgba(36, 50, 71, 0.28), 0 0 0 10px transparent, 0 12px 26px var(--land-glow);
+  }
+}
+
+@keyframes ml-card-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes ml-sparkle {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(0.86) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12) rotate(12deg);
+  }
+}
+
+@keyframes ml-soft-breathe {
+  0%, 100% { opacity: 0.44; }
+  50% { opacity: 0.66; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .ml-pressable {
-    transition-duration: 0.001ms;
+  .ml-pressable,
+  .ml-world-map-screen *,
+  .ml-world-map-screen *::before,
+  .ml-world-map-screen *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
   }
 }
