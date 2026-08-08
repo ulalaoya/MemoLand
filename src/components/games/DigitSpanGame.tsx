@@ -3,11 +3,20 @@ import type { Challenge } from '../../types';
 import type { DigitSpanStimulus } from '../../engines/numbers';
 import { speak } from '../../audio/speech';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
-import { Button } from '../Button';
-import { EnteredDigits, FeedbackBanner, NumberPad, ReplayButton } from './common';
+import { FeedbackBanner, ReplayButton } from './common';
 import type { GameProps } from './common';
+import {
+  NumbersValleyChallenge,
+  ValleyEnteredDigits,
+  ValleyFocusBreath,
+  ValleyNumberPad,
+  ValleyNumberToken,
+  ValleyReadyButton,
+  type NumbersChallengePhase,
+} from './NumbersValleyChallenge';
 
 type Phase = 'ready' | 'showing' | 'input' | 'done';
+const FOCUS_BREATH_MS = 480;
 
 export function DigitSpanGame({
   challenge,
@@ -42,7 +51,7 @@ export function DigitSpanGame({
           setShownIdx(i);
           // queue=true — כל ספרה נאמרת עד הסוף בלי לבטל את הקודמת
           speak(String(d), speechRate, { queue: true });
-        }, i * stim.flashMs),
+        }, FOCUS_BREATH_MS + i * stim.flashMs),
       );
     });
     timers.current.push(
@@ -50,7 +59,7 @@ export function DigitSpanGame({
         setShownIdx(-1);
         setPhase('input');
         startRef.current = performance.now();
-      }, stim.digits.length * stim.flashMs + 300),
+      }, FOCUS_BREATH_MS + stim.digits.length * stim.flashMs + 300),
     );
   }
 
@@ -88,57 +97,56 @@ export function DigitSpanGame({
   const modeHint =
     stim.mode === 'backward' ? 'מהסוף להתחלה' : stim.mode === 'sort' ? 'מהקטן לגדול' : 'לפי הסדר';
 
+  const challengePhase: NumbersChallengePhase =
+    phase === 'showing'
+      ? 'encoding'
+      : phase === 'input'
+        ? 'recall'
+        : phase === 'done' && result
+          ? 'success'
+          : phase;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
+    <NumbersValleyChallenge phase={challengePhase}>
       {phase === 'ready' && (
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-          <p style={{ fontSize: 26, fontFamily: 'var(--font-head)', fontWeight: 700, lineHeight: 1.3 }}>{challenge.prompt}</p>
-          <p style={{ color: 'var(--ink)', fontSize: 19, fontWeight: 600 }}>
+        <div className="ml-valley-ready">
+          <span className="ml-valley-ready__eyebrow">אתגר הזיכרון</span>
+          <p className="ml-valley-ready__prompt">{challenge.prompt}</p>
+          <p className="ml-valley-ready__hint">
             תזכור <b className="ltr">{stim.digits.length}</b> ספרות — ותקליד אותן {modeHint}
           </p>
-          <Button variant="green" size="lg" onClick={runShow} icon="▶">
-            אני מוכן
-          </Button>
+          <ValleyReadyButton onClick={runShow} />
         </div>
       )}
 
       {phase === 'showing' && (
-        <div style={{ height: 180, display: 'grid', placeItems: 'center' }}>
-          <span
-            key={shownIdx}
-            className="display"
-            style={{
-              fontSize: 96,
-              color,
-              animation: 'pop .25s ease',
-              textShadow: '0 3px 0 rgba(36,50,71,.25)',
-            }}
-          >
-            {shownIdx >= 0 ? stim.digits[shownIdx] : ''}
-          </span>
-        </div>
+        shownIdx >= 0
+          ? <ValleyNumberToken key={shownIdx}>{stim.digits[shownIdx]}</ValleyNumberToken>
+          : <ValleyFocusBreath />
       )}
 
       {phase === 'input' && (
-        <>
-          <p style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 22 }}>הקלד {modeHint}:</p>
-          <EnteredDigits digits={entered} />
-          <NumberPad
-            color={color}
+        <div className="ml-valley-recall">
+          <div className="ml-valley-recall__header">
+            <span className="ml-valley-recall__eyebrow">עכשיו תורך</span>
+            <p className="ml-valley-recall__prompt">הקלד {modeHint}</p>
+          </div>
+          <ValleyEnteredDigits digits={entered} />
+          <ValleyNumberPad
             onDigit={(d) => setEntered((e) => (e.length < stim.digits.length ? [...e, d] : e))}
             onBackspace={() => setEntered((e) => e.slice(0, -1))}
             onSubmit={submit}
             submitDisabled={entered.length === 0}
           />
-          <ReplayButton onReplay={runShow} limit={2} />
-        </>
+          <span className="ml-valley-replay"><ReplayButton onReplay={runShow} limit={2} /></span>
+        </div>
       )}
 
       {phase === 'done' && result !== null && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+        <div className="ml-valley-result">
           <FeedbackBanner correct={result} />
           {!result && (
-            <p style={{ fontFamily: 'var(--font-head)' }}>
+            <p className="ml-valley-result__answer">
               הדרך הייתה:{' '}
               <b className="ltr" style={{ color }}>
                 {challenge.answer.join(' ')}
@@ -147,6 +155,6 @@ export function DigitSpanGame({
           )}
         </div>
       )}
-    </div>
+    </NumbersValleyChallenge>
   );
 }

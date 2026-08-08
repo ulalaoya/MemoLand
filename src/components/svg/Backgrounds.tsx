@@ -80,35 +80,80 @@ function Numbers() {
   return (
     <>
       <defs>
-        <Grad id="n-sky" stops={[['0', '#7fd0ff'], ['0.6', '#67C8FF'], ['1', '#9fe0ff']]} />
+        <Grad id="n-sky" stops={[['0', '#58b9f4'], ['0.55', '#8edcff'], ['1', '#d9f4ff']]} />
         <radialGradient id="n-sun" cx="0.5" cy="0.5" r="0.5">
           <stop offset="0" stopColor="#FFF6C8" />
           <stop offset="1" stopColor="#FFE26D" stopOpacity="0" />
         </radialGradient>
+        <linearGradient id="n-mountain" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#8dbde2" />
+          <stop offset="1" stopColor="#b7d9df" />
+        </linearGradient>
+        <linearGradient id="n-path" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#f6dc8b" />
+          <stop offset="1" stopColor="#d7a35d" />
+        </linearGradient>
+        <linearGradient id="n-grass-front" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#58c548" />
+          <stop offset="1" stopColor="#30963b" />
+        </linearGradient>
       </defs>
       <rect width="400" height="800" fill="url(#n-sky)" />
-      <circle cx="320" cy="120" r="90" fill="url(#n-sun)" />
-      <circle cx="320" cy="120" r="34" fill="#FFE26D" />
-      <Cloud x={90} y={110} /> <Cloud x={300} y={220} s={0.7} o={0.85} /> <Cloud x={160} y={300} s={0.5} o={0.7} />
+      <circle cx="322" cy="112" r="104" fill="url(#n-sun)" />
+      <circle cx="322" cy="112" r="31" fill="#ffe26d" />
+      <circle cx="313" cy="102" r="9" fill="#fff6c8" opacity="0.72" />
+      <Cloud x={82} y={92} s={0.86} />
+      <Cloud x={305} y={205} s={0.66} o={0.82} />
+      <Cloud x={166} y={246} s={0.46} o={0.7} />
+
+      <path d="M0 430L70 290L118 368L176 250L238 372L302 274L400 430Z" fill="url(#n-mountain)" opacity="0.6" />
+      <path d="M142 305L176 250L205 307L183 292L170 309L159 291Z" fill="#eef9ff" opacity="0.78" />
+      <path d="M275 320L302 274L331 325L306 306L297 321L288 306Z" fill="#eef9ff" opacity="0.68" />
       {/* גבעות מרובדות */}
-      <Hill y={560} color="#8fe06a" amp={50} />
-      <Hill y={620} color="#6fd04f" amp={36} />
-      <Hill y={690} color="#58C548" amp={26} />
-      {/* לבני מספרים */}
-      {[[60, 720], [150, 700], [250, 715], [330, 700]].map(([x, y], i) => (
-        <g key={i}>
-          <rect x={x} y={y} width="42" height="42" rx="7" fill="#B98A5E" stroke="#6A4126" strokeWidth="3" />
-          <rect x={x + 5} y={y + 5} width="32" height="10" rx="3" fill="#fff" opacity="0.25" />
+      <path d="M0 430Q92 372 194 429T400 416V800H0Z" fill="#a6e96e" />
+      <path d="M0 515Q104 458 209 520T400 493V800H0Z" fill="#7bd759" />
+      <path d="M0 620Q93 556 207 615T400 586V800H0Z" fill="#58c548" />
+
+      <path
+        d="M130 800C151 742 264 700 245 632C228 570 139 555 172 493C194 451 237 416 220 354L244 352C267 421 224 463 207 506C188 553 278 575 286 641C296 720 215 754 205 800Z"
+        fill="#8d5b36"
+        opacity="0.48"
+      />
+      <path
+        d="M141 800C164 746 257 703 238 637C221 582 153 564 184 501C204 461 239 422 226 358L239 357C258 422 218 468 201 511C184 557 265 582 273 644C282 714 207 757 195 800Z"
+        fill="url(#n-path)"
+      />
+      <path d="M180 735Q222 711 249 682M180 575Q213 559 241 574M203 455Q226 437 238 412" fill="none" stroke="#fff2b6" strokeWidth="5" strokeLinecap="round" opacity="0.58" />
+
+      {[[36, 490, 0.8], [358, 470, 0.72], [66, 606, 0.62], [340, 592, 0.58]].map(([x, y, s], i) => (
+        <g key={`nt${i}`} transform={`translate(${x} ${y}) scale(${s})`}>
+          <rect x="-7" y="0" width="14" height="45" rx="5" fill="#8d5b36" />
+          <circle cx="0" cy="-18" r="31" fill="#319f47" stroke="#247d36" strokeWidth="3" />
+          <circle cx="-16" cy="-8" r="22" fill="#58c548" />
+          <circle cx="17" cy="-5" r="20" fill="#6bd256" />
+          <circle cx="-7" cy="-27" r="15" fill="#91e35d" opacity="0.88" />
         </g>
       ))}
-      {/* פרחים */}
-      {[[30, 760], [200, 775], [370, 765]].map(([x, y], i) => (
-        <g key={i}>
-          <circle cx={x} cy={y} r="5" fill="#FFD34E" />
+      {[[18, 620, 34], [112, 655, 27], [294, 620, 30], [384, 648, 33]].map(([x, y, rx], i) => (
+        <g key={`nb${i}`}>
+          <ellipse cx={x} cy={y} rx={rx} ry="19" fill="#2f9e43" />
+          <ellipse cx={(x as number) - 12} cy={(y as number) - 5} rx={(rx as number) * 0.56} ry="14" fill="#58c548" />
+        </g>
+      ))}
+
+      {[[92, 681, 17], [307, 706, 14], [41, 735, 12], [354, 750, 18]].map(([x, y, r], i) => (
+        <path key={`nr${i}`} d={`M${(x as number) - (r as number)} ${y}Q${x} ${(y as number) - (r as number) * 1.25} ${(x as number) + (r as number)} ${y}L${(x as number) + (r as number) - 3} ${(y as number) + 10}H${(x as number) - (r as number) + 2}Z`} fill="#9b7653" stroke="#765235" strokeWidth="2" />
+      ))}
+
+      <path d="M0 734Q86 704 176 748T400 726V800H0Z" fill="url(#n-grass-front)" />
+      {[[24, 760], [116, 748], [288, 764], [378, 750]].map(([x, y], i) => (
+        <g key={`nf${i}`}>
+          <line x1={x} y1={(y as number) + 5} x2={x} y2={(y as number) + 25} stroke="#247d36" strokeWidth="3" />
+          <circle cx={x} cy={y} r="5" fill="#ffc928" />
           {[0, 90, 180, 270].map((a) => (
-            <circle key={a} cx={x + Math.cos((a * Math.PI) / 180) * 8} cy={y + Math.sin((a * Math.PI) / 180) * 8} r="4" fill="#fff" />
+            <circle key={a} cx={(x as number) + Math.cos((a * Math.PI) / 180) * 8} cy={(y as number) + Math.sin((a * Math.PI) / 180) * 8} r="4" fill={i % 2 ? '#fff' : '#fce8ff'} />
           ))}
-          <circle cx={x} cy={y} r="3" fill="#F59D2A" />
+          <circle cx={x} cy={y} r="3" fill="#f59d2a" />
         </g>
       ))}
     </>

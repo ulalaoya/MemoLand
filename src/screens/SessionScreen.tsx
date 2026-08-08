@@ -248,9 +248,11 @@ export function SessionScreen({
   const color = landColor(activityLand);
   const meta = LANDS[activityLand];
   const isEchoChallenge = activity.kind === 'game' && activityLand === 'echoes';
+  const isNumbersChallenge = activity.kind === 'game' && activityLand === 'numbers';
+  const isImmersiveChallenge = isEchoChallenge || isNumbersChallenge;
 
   return (
-    <div className={`ml-session-screen${isEchoChallenge ? ' ml-session-screen--echo' : ''}`}>
+    <div className={`ml-session-screen${isEchoChallenge ? ' ml-session-screen--echo' : ''}${isNumbersChallenge ? ' ml-session-screen--numbers' : ''}`}>
       <LandBackground land={activityLand} />
 
       <header className="ml-session-hud">
@@ -277,7 +279,7 @@ export function SessionScreen({
           <div className="ml-session-hud__hearts" aria-label={`${hearts} לבבות`}>
             {Array.from({ length: MAX_HEARTS }).map((_, i) => (
               <span key={i} style={{ animation: hearts === i ? 'wiggle .4s ease' : undefined }}>
-                <HeartIcon size={isEchoChallenge ? 20 : 24} empty={i >= hearts} />
+                <HeartIcon size={isImmersiveChallenge ? 20 : 24} empty={i >= hearts} />
               </span>
             ))}
           </div>
@@ -289,7 +291,7 @@ export function SessionScreen({
       </header>
 
       <div
-        className={`ml-session-board${isEchoChallenge ? ' ml-session-board--echo' : ''}`}
+        className={`ml-session-board${isEchoChallenge ? ' ml-session-board--echo' : ''}${isNumbersChallenge ? ' ml-session-board--numbers' : ''}`}
         style={{ '--ml-session-color': color } as React.CSSProperties}
       >
         {/* key מאלץ remount בכל פעילות ובכל ניסיון חוזר — כדי לאפס state ולתת אתגר חדש */}

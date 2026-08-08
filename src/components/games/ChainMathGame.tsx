@@ -3,11 +3,20 @@ import type { Challenge } from '../../types';
 import type { ChainMathStimulus } from '../../engines/numbers';
 import { speak } from '../../audio/speech';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
-import { Button } from '../Button';
-import { EnteredDigits, FeedbackBanner, NumberPad } from './common';
+import { FeedbackBanner } from './common';
 import type { GameProps } from './common';
+import {
+  NumbersValleyChallenge,
+  ValleyEnteredDigits,
+  ValleyFocusBreath,
+  ValleyNumberPad,
+  ValleyNumberToken,
+  ValleyReadyButton,
+  type NumbersChallengePhase,
+} from './NumbersValleyChallenge';
 
 type Phase = 'ready' | 'showing' | 'input' | 'done';
+const FOCUS_BREATH_MS = 480;
 
 export function ChainMathGame({
   challenge,
@@ -35,6 +44,7 @@ export function ChainMathGame({
   function run() {
     clearTimers();
     setPhase('showing');
+    setStep(-3); // רגע מיקוד חזותי קצר לפני הופעת המספר הראשון
     const seq = [-1, ...stim.steps.map((_, i) => i)];
     seq.forEach((s, i) => {
       timers.current.push(
@@ -46,7 +56,7 @@ export function ChainMathGame({
             const word = st.op === '+' ? 'ועוד' : st.op === '-' ? 'פחות' : 'כפול';
             speak(`${word} ${st.value}`, speechRate, { queue: true });
           }
-        }, i * stim.revealMs),
+        }, FOCUS_BREATH_MS + i * stim.revealMs),
       );
     });
     timers.current.push(
@@ -54,7 +64,7 @@ export function ChainMathGame({
         setStep(-2); // הסתרה
         setPhase('input');
         startRef.current = performance.now();
-      }, seq.length * stim.revealMs),
+      }, FOCUS_BREATH_MS + seq.length * stim.revealMs),
     );
   }
 
@@ -90,45 +100,53 @@ export function ChainMathGame({
         ? `${stim.steps[step].op === '×' ? '×' : stim.steps[step].op} ${stim.steps[step].value}`
         : '';
 
+  const challengePhase: NumbersChallengePhase =
+    phase === 'showing'
+      ? 'encoding'
+      : phase === 'input'
+        ? 'recall'
+        : phase === 'done' && result
+          ? 'success'
+          : phase;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
+    <NumbersValleyChallenge phase={challengePhase}>
       {phase === 'ready' && (
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-          <p style={{ fontSize: 26, fontFamily: 'var(--font-head)', fontWeight: 700, lineHeight: 1.3 }}>{challenge.prompt}</p>
-          <p style={{ fontSize: 18, fontWeight: 600 }}>אסור לרשום — רק לזכור בראש!</p>
-          <Button variant="green" size="lg" onClick={run} icon="▶">
-            אני מוכן
-          </Button>
+        <div className="ml-valley-ready">
+          <span className="ml-valley-ready__eyebrow">אתגר הדרך</span>
+          <p className="ml-valley-ready__prompt">{challenge.prompt}</p>
+          <p className="ml-valley-ready__hint">אסור לרשום — רק לזכור בראש!</p>
+          <ValleyReadyButton onClick={run} />
         </div>
       )}
 
       {phase === 'showing' && (
-        <div style={{ height: 180, display: 'grid', placeItems: 'center' }}>
-          <span key={step} className="display" style={{ fontSize: 72, color, animation: 'pop .25s ease' }}>
-            {currentText}
-          </span>
-        </div>
+        currentText
+          ? <ValleyNumberToken key={step}>{currentText}</ValleyNumberToken>
+          : <ValleyFocusBreath />
       )}
 
       {phase === 'input' && (
-        <>
-          <p style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 22 }}>כמה יצא בסוף?</p>
-          <EnteredDigits digits={entered} />
-          <NumberPad
-            color={color}
+        <div className="ml-valley-recall">
+          <div className="ml-valley-recall__header">
+            <span className="ml-valley-recall__eyebrow">עכשיו תורך</span>
+            <p className="ml-valley-recall__prompt">כמה יצא בסוף?</p>
+          </div>
+          <ValleyEnteredDigits digits={entered} />
+          <ValleyNumberPad
             onDigit={(d) => setEntered((e) => (e.length < 5 ? [...e, d] : e))}
             onBackspace={() => setEntered((e) => e.slice(0, -1))}
             onSubmit={submit}
             submitDisabled={entered.length === 0}
           />
-        </>
+        </div>
       )}
 
       {phase === 'done' && result !== null && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+        <div className="ml-valley-result">
           <FeedbackBanner correct={result} />
           {!result && (
-            <p style={{ fontFamily: 'var(--font-head)' }}>
+            <p className="ml-valley-result__answer">
               התשובה הייתה:{' '}
               <b className="ltr" style={{ color }}>
                 {challenge.answer}
@@ -137,6 +155,6 @@ export function ChainMathGame({
           )}
         </div>
       )}
-    </div>
+    </NumbersValleyChallenge>
   );
 }
