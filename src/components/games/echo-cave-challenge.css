@@ -67,6 +67,7 @@
 
 .ml-echo-challenge__crystal {
   position: absolute;
+  z-index: 3;
   bottom: 5%;
   width: 34px;
   height: 96px;
@@ -110,28 +111,126 @@
   opacity: 0.66;
 }
 
-.ml-echo-challenge__memo {
+.ml-echo-challenge__tunnel {
   position: absolute;
-  left: 7%;
-  bottom: 7%;
-  width: clamp(64px, 18vw, 78px);
-  aspect-ratio: 1;
-  overflow: hidden;
-  background: linear-gradient(145deg, #fff, #dff8ff);
-  border: 3px solid rgba(169, 235, 255, 0.86);
-  border-radius: 50%;
-  box-shadow: 0 0 0 5px rgba(103, 200, 255, 0.1), 0 8px 18px rgba(8, 8, 35, 0.45);
-  transform-origin: 50% 100%;
-  transition: opacity 240ms ease, transform 240ms ease;
+  z-index: 0;
+  left: 50%;
+  bottom: 17%;
+  width: min(54%, 232px);
+  height: 43%;
+  background: radial-gradient(ellipse at 50% 82%, #252858 0 16%, #141538 46%, #080822 72%);
+  border: 3px solid rgba(82, 103, 217, 0.16);
+  border-bottom: 0;
+  border-radius: 48% 48% 14% 14%;
+  box-shadow: inset 0 0 34px rgba(8, 8, 34, 0.86), 0 0 38px rgba(103, 200, 255, 0.07);
+  opacity: 0.72;
+  transform: translateX(-50%);
 }
 
-.ml-echo-challenge__memo img {
-  width: 138%;
-  height: 138%;
-  max-width: none;
-  object-fit: cover;
-  object-position: 50% 14%;
-  transform: translate(-14%, -7%);
+.ml-echo-challenge__tunnel::before {
+  content: '';
+  position: absolute;
+  inset: 12% 13% 0;
+  background: radial-gradient(ellipse at 50% 82%, rgba(103, 200, 255, 0.18), rgba(82, 103, 217, 0.05) 38%, transparent 64%);
+  border: solid rgba(103, 200, 255, 0.08);
+  border-width: 2px 2px 0;
+  border-radius: 48% 48% 12% 12%;
+}
+
+.ml-echo-challenge__tunnel::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  width: 66%;
+  height: 12%;
+  background: rgba(103, 200, 255, 0.13);
+  border-radius: 50%;
+  filter: blur(6px);
+  transform: translateX(-50%);
+}
+
+.ml-echo-challenge__floor {
+  position: absolute;
+  z-index: 1;
+  inset: auto 0 0;
+  height: 31%;
+  background:
+    radial-gradient(ellipse at 48% 34%, rgba(103, 200, 255, 0.14), transparent 34%),
+    linear-gradient(180deg, rgba(28, 30, 77, 0.48), #0b0d2c 58%, #080822);
+  clip-path: polygon(0 20%, 11% 13%, 23% 18%, 38% 8%, 53% 15%, 69% 6%, 84% 16%, 100% 10%, 100% 100%, 0 100%);
+}
+
+.ml-echo-challenge__water {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 2%;
+  width: 82%;
+  height: 17%;
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(169, 235, 255, 0.26), transparent 46%),
+    linear-gradient(180deg, rgba(103, 200, 255, 0.18), rgba(29, 44, 110, 0.34));
+  border-top: 2px solid rgba(169, 235, 255, 0.28);
+  border-radius: 50%;
+  box-shadow: inset 0 7px 18px rgba(103, 200, 255, 0.09), 0 -8px 28px rgba(103, 200, 255, 0.06);
+  transform: translateX(-50%);
+  animation: ml-cave-water-shimmer 6.8s ease-in-out infinite;
+}
+
+.ml-echo-challenge__reflection {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  height: 11px;
+  border: solid rgba(169, 235, 255, 0.2);
+  border-width: 1px 0 0;
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+.ml-echo-challenge__reflection--one { bottom: 11%; width: 48%; }
+.ml-echo-challenge__reflection--two { bottom: 6%; width: 63%; opacity: 0.62; }
+
+.ml-echo-challenge__rocks {
+  position: absolute;
+  z-index: 3;
+  bottom: -1%;
+  width: 31%;
+  height: 18%;
+  background: linear-gradient(155deg, #282650, #101130 70%);
+  filter: drop-shadow(0 -7px 14px rgba(8, 8, 34, 0.24));
+}
+
+.ml-echo-challenge__rocks::after {
+  content: '';
+  position: absolute;
+  bottom: 20%;
+  width: 54%;
+  height: 54%;
+  background: linear-gradient(145deg, #3a3570, #17173d 72%);
+  border-radius: 50% 42% 18% 24%;
+}
+
+.ml-echo-challenge__rocks--left {
+  left: -4%;
+  clip-path: polygon(0 34%, 18% 20%, 36% 31%, 54% 7%, 72% 30%, 100% 43%, 100% 100%, 0 100%);
+}
+
+.ml-echo-challenge__rocks--left::after { left: 18%; }
+
+.ml-echo-challenge__rocks--right {
+  right: -5%;
+  clip-path: polygon(0 47%, 23% 25%, 46% 35%, 64% 8%, 82% 26%, 100% 19%, 100% 100%, 0 100%);
+}
+
+.ml-echo-challenge__rocks--right::after { right: 17%; }
+
+.ml-echo-challenge__memo {
+  z-index: 5;
+  left: 4%;
+  bottom: 3.5%;
+  --ml-memo-size: clamp(94px, 29vw, 124px);
 }
 
 .ml-echo-challenge__surface {
@@ -286,24 +385,28 @@
 .ml-echo-word {
   min-height: 46px;
   padding: 9px 14px;
-  color: var(--ml-navy);
-  background: linear-gradient(180deg, #f7fbff, #dff3ff);
-  border: 2px solid #fff;
+  color: #fff;
+  background:
+    radial-gradient(circle at 72% 12%, rgba(255, 255, 255, 0.18), transparent 34%),
+    linear-gradient(160deg, #5267d9, #304baf);
+  border: 2px solid #a9ebff;
   border-radius: 14px;
-  box-shadow: 0 4px 0 #6370a8, 0 7px 12px rgba(8, 8, 35, 0.24);
+  box-shadow: 0 4px 0 #202b83, 0 7px 12px rgba(8, 8, 35, 0.28);
   font-family: var(--ml-font-body);
   font-size: 1rem;
   font-weight: 700;
 }
 
 .ml-echo-word--assembled {
-  color: #fff;
-  background: linear-gradient(145deg, #5267d9, #2e8df6);
-  box-shadow: 0 4px 0 #27389d, 0 7px 12px rgba(8, 8, 35, 0.24);
+  color: #101033;
+  background: linear-gradient(180deg, #dff8ff, #8bdcff);
+  border-color: #fff;
+  box-shadow: 0 4px 0 #477ca8, 0 7px 12px rgba(8, 8, 35, 0.24);
 }
 
 .ml-echo-word:disabled { opacity: 0.28; }
-.ml-echo-word:focus-visible { outline: none; box-shadow: 0 4px 0 #6370a8, var(--ml-focus-ring); }
+.ml-echo-word:not(:disabled):active { transform: translateY(3px); box-shadow: 0 1px 0 #202b83; }
+.ml-echo-word:focus-visible { outline: none; box-shadow: 0 4px 0 #202b83, var(--ml-focus-ring); }
 
 .ml-echo-replay-button {
   min-height: 44px;
@@ -338,15 +441,15 @@
   display: grid;
   place-items: center;
   gap: 3px;
-  color: var(--ml-navy);
-  background: linear-gradient(160deg, #f7fbff, #dff3ff);
-  border: 2px solid #fff;
+  color: #fff;
+  background: linear-gradient(160deg, #5267d9, #304baf);
+  border: 2px solid #a9ebff;
   border-radius: 16px;
   box-shadow: 0 4px 0 #6370a8, 0 7px 13px rgba(8, 8, 35, 0.24);
 }
 
 .ml-echo-step span { font-size: 0.74rem; font-weight: 700; }
-.ml-echo-step--flash { color: #fff; background: linear-gradient(145deg, #5267d9, #2e8df6); transform: translateY(2px) scale(1.04); }
+.ml-echo-step--flash { color: #101033; background: linear-gradient(180deg, #dff8ff, #8bdcff); transform: translateY(2px) scale(1.04); }
 
 .ml-echo-challenge--playing .ml-echo-challenge__halo {
   filter: blur(1px) brightness(1.45);
@@ -364,28 +467,25 @@
   filter: drop-shadow(0 0 20px rgba(103, 200, 255, 0.9)) brightness(1.25);
 }
 
-.ml-echo-challenge--playing .ml-echo-challenge__memo {
-  animation: ml-memo-listens 2.6s ease-in-out infinite;
-}
-
-.ml-echo-challenge--response .ml-echo-challenge__memo { opacity: 0.76; transform: scale(0.92); }
+.ml-echo-challenge--playing .ml-echo-challenge__water { filter: brightness(1.16); }
+.ml-echo-challenge--success .ml-echo-challenge__crystal { filter: drop-shadow(0 0 22px rgba(255, 201, 40, 0.72)) brightness(1.24); }
+.ml-echo-challenge--success .ml-echo-challenge__water { filter: brightness(1.22); }
 
 @keyframes ml-cave-echo {
   0% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.62); }
   100% { opacity: 0; transform: translate(-50%, -50%) scale(1.48); }
 }
 
-@keyframes ml-memo-listens {
-  0%, 68%, 100% { transform: rotate(0); }
-  76% { transform: rotate(-4deg); }
-  85% { transform: rotate(3deg); }
+@keyframes ml-cave-water-shimmer {
+  0%, 100% { opacity: 0.78; transform: translateX(-50%) scaleX(0.98); }
+  50% { opacity: 1; transform: translateX(-50%) scaleX(1.02); }
 }
 
 @media (max-width: 359px) {
   .ml-echo-challenge__surface { width: calc(100% - 22px); padding-top: 14px; padding-bottom: 102px; }
   .ml-echo-ready { padding-top: 12px; gap: 13px; }
   .ml-echo-listen-button { min-width: 202px; min-height: 70px; }
-  .ml-echo-challenge__memo { left: 5%; bottom: 5%; }
+  .ml-echo-challenge__memo { left: 2%; bottom: 3%; --ml-memo-size: 82px; }
   .ml-echo-challenge__crystal--left-two,
   .ml-echo-challenge__crystal--right-two { display: none; }
   .ml-echo-word-bank { padding: 10px; }
@@ -396,8 +496,10 @@
 @media (max-height: 680px) {
   .ml-echo-challenge__surface { padding-top: 10px; padding-bottom: 88px; }
   .ml-echo-ready { padding-top: 4px; gap: 11px; }
-  .ml-echo-challenge__memo { width: 58px; bottom: 3%; }
+  .ml-echo-challenge__memo { bottom: 1%; --ml-memo-size: 72px; }
   .ml-echo-challenge__crystal { height: 70px; }
+  .ml-echo-challenge__floor { height: 25%; }
+  .ml-echo-challenge__water { height: 13%; }
   .ml-echo-response { gap: 8px; }
   .ml-echo-word-bank { padding-block: 9px; }
 }

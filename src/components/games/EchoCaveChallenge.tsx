@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
+import { MemoCompanion, type MemoCompanionPose } from './MemoCompanion';
 import './echo-cave-challenge.css';
 
-export type EchoChallengePhase = 'ready' | 'playing' | 'response' | 'error' | 'done';
+export type EchoChallengePhase = 'ready' | 'playing' | 'response' | 'error' | 'success' | 'done';
 
 export function EchoCaveChallenge({
   phase,
@@ -10,6 +11,15 @@ export function EchoCaveChallenge({
   phase: EchoChallengePhase;
   children: ReactNode;
 }) {
+  const memoPose: MemoCompanionPose =
+    phase === 'playing'
+      ? 'listening'
+      : phase === 'response' || phase === 'error' || phase === 'done'
+        ? 'thinking'
+        : phase === 'success'
+          ? 'success'
+          : 'ready';
+
   return (
     <section className={`ml-echo-challenge ml-echo-challenge--${phase}`} aria-label="אתגר במערת ההדים">
       <div className="ml-echo-challenge__world" aria-hidden>
@@ -25,9 +35,14 @@ export function EchoCaveChallenge({
         <span className="ml-echo-challenge__crystal ml-echo-challenge__crystal--right-two" />
         <span className="ml-echo-challenge__mist ml-echo-challenge__mist--one" />
         <span className="ml-echo-challenge__mist ml-echo-challenge__mist--two" />
-        <span className="ml-echo-challenge__memo">
-          <img src="./characters/memo.png" alt="" draggable={false} />
-        </span>
+        <span className="ml-echo-challenge__tunnel" />
+        <span className="ml-echo-challenge__floor" />
+        <span className="ml-echo-challenge__water" />
+        <span className="ml-echo-challenge__reflection ml-echo-challenge__reflection--one" />
+        <span className="ml-echo-challenge__reflection ml-echo-challenge__reflection--two" />
+        <span className="ml-echo-challenge__rocks ml-echo-challenge__rocks--left" />
+        <span className="ml-echo-challenge__rocks ml-echo-challenge__rocks--right" />
+        <MemoCompanion pose={memoPose} className="ml-echo-challenge__memo" />
       </div>
 
       <div className="ml-echo-challenge__surface">{children}</div>

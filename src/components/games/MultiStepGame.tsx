@@ -107,7 +107,13 @@ export function MultiStepGame({
   }
 
   const challengePhase: EchoChallengePhase =
-    phase === 'audioError' ? 'error' : phase === 'input' ? 'response' : phase;
+    phase === 'audioError'
+      ? 'error'
+      : phase === 'input'
+        ? 'response'
+        : phase === 'done' && result
+          ? 'success'
+          : phase;
 
   return (
     <EchoCaveChallenge phase={challengePhase}>
