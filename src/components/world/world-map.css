@@ -612,6 +612,129 @@
   background: linear-gradient(transparent, rgba(57, 164, 67, 0.92) 45%);
 }
 
+.ml-daily-journey {
+  position: relative;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
+  align-items: center;
+  width: min(100%, 730px);
+  min-height: 106px;
+  margin-inline: auto;
+  padding: 11px 14px 11px 10px;
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(255, 255, 255, 0.22), transparent 26%),
+    linear-gradient(125deg, #6f47e8 0%, #8b55ef 48%, #c651d8 100%);
+  border: 3px solid rgba(255, 255, 255, 0.92);
+  border-radius: var(--ml-radius-xl);
+  box-shadow: 0 8px 0 #4d2aa3, 0 16px 30px rgba(52, 22, 112, 0.32);
+  isolation: isolate;
+}
+
+.ml-daily-journey::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.45;
+  background-image:
+    radial-gradient(circle at 12% 82%, #fff 0 2px, transparent 3px),
+    radial-gradient(circle at 45% 18%, #fff 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 72% 74%, #fff 0 2px, transparent 3px),
+    radial-gradient(circle at 92% 16%, #fff 0 1.5px, transparent 2.5px);
+}
+
+.ml-daily-journey__art {
+  position: relative;
+  align-self: stretch;
+  min-width: 0;
+}
+
+.ml-daily-journey__compass {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 94px;
+  height: 94px;
+  overflow: visible;
+  transform: translate(-50%, -50%) rotate(-5deg);
+  filter: drop-shadow(0 5px 3px rgba(50, 32, 92, 0.28));
+}
+
+.ml-daily-journey__spark {
+  position: absolute;
+  z-index: 2;
+  color: var(--ml-yellow);
+  font-size: 18px;
+  text-shadow: 0 2px 0 rgba(65, 36, 109, 0.35);
+}
+
+.ml-daily-journey__spark--one {
+  top: 3px;
+  right: 1px;
+}
+
+.ml-daily-journey__spark--two {
+  bottom: 3px;
+  left: 3px;
+  font-size: 13px;
+}
+
+.ml-daily-journey__copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-inline: 10px;
+  text-shadow: 0 2px 0 rgba(54, 28, 103, 0.26);
+}
+
+.ml-daily-journey__eyebrow {
+  color: #ffe783;
+  font-size: clamp(0.68rem, 2.4vw, 0.8rem);
+  font-weight: 900;
+}
+
+.ml-daily-journey__copy strong {
+  font-family: var(--ml-font-display);
+  font-size: clamp(1.2rem, 4.7vw, 1.7rem);
+  line-height: 1.05;
+}
+
+.ml-daily-journey__copy small {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: clamp(0.68rem, 2.5vw, 0.82rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.ml-daily-journey__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 48px;
+  padding: 9px 15px;
+  color: #3f285f;
+  background: linear-gradient(#fff9c9, #ffd95d);
+  border: 2px solid #fff;
+  border-radius: var(--ml-radius-pill);
+  box-shadow: 0 5px 0 #b07816, 0 8px 16px rgba(49, 27, 82, 0.25);
+  font-family: var(--ml-font-display);
+  font-size: 0.92rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.ml-daily-journey__arrow {
+  font-size: 1.2em;
+  transition: transform var(--ml-motion-fast) var(--ml-ease-bounce);
+}
+
+.ml-daily-journey__button:hover .ml-daily-journey__arrow {
+  transform: translateX(-3px);
+}
+
 @media (min-width: 560px) {
   .ml-world-map-main {
     padding-inline: 24px;
@@ -670,5 +793,42 @@
 
   .ml-land-row--right .ml-route-checkpoint {
     right: calc(79% + 5px);
+  }
+
+  .ml-daily-journey-slot {
+    padding-inline: 7px;
+  }
+
+  .ml-daily-journey {
+    grid-template-columns: 66px minmax(0, 1fr) 42px;
+    min-height: 96px;
+    padding: 8px 7px;
+  }
+
+  .ml-daily-journey__compass {
+    width: 76px;
+    height: 76px;
+  }
+
+  .ml-daily-journey__copy {
+    padding-inline: 4px;
+  }
+
+  .ml-daily-journey__copy small {
+    display: none;
+  }
+
+  .ml-daily-journey__button {
+    width: 42px;
+    min-height: 42px;
+    padding: 0;
+  }
+
+  .ml-daily-journey__button span:first-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
   }
 }

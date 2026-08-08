@@ -3,11 +3,11 @@ import type { CSSProperties } from 'react';
 import { getActiveProfile, getTodayPoints, useProfiles, useStore } from '../state/store';
 import { LAND_ORDER, LANDS, TRACKS_PER_LAND } from '../config/lands';
 import { playableLands } from '../engines';
-import { Button } from '../components/Button';
 import { HomeBackground } from '../components/svg/Backgrounds';
 import { PlayerHUD } from '../components/world/PlayerHUD';
 import { LandCard } from '../components/world/LandCard';
 import { WorldMapPath } from '../components/world/WorldMapPath';
+import { DailyJourneyBanner } from '../components/world/DailyJourneyBanner';
 import { LAND_THEMES } from '../design/themes';
 import { THEME_GRADIENT } from '../config/collectibles';
 import type { LandId } from '../types';
@@ -100,11 +100,8 @@ export function MapScreen({
         </section>
       </main>
 
-      {/* כפתור המסע היומי — צף בתחתית */}
       <div className="ml-daily-journey-slot">
-        <Button variant="purple" size="lg" block icon="🧠" onClick={onStartJourney}>
-          המסע של היום
-        </Button>
+        <DailyJourneyBanner onStart={onStartJourney} />
       </div>
     </div>
   );
