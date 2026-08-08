@@ -3,10 +3,15 @@ import type { Challenge } from '../../types';
 import type { ListenRepeatStimulus } from '../../engines/echoes';
 import { speak, stopSpeech } from '../../audio/speech';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
-import { Button } from '../Button';
-import { FeedbackBanner, ReplayButton } from './common';
+import { FeedbackBanner } from './common';
 import type { GameProps } from './common';
 import { EchoAudioState } from './EchoAudioState';
+import {
+  EchoCaveChallenge,
+  EchoListenButton,
+  EchoReplayButton,
+  type EchoChallengePhase,
+} from './EchoCaveChallenge';
 
 type Phase = 'ready' | 'playing' | 'audioError' | 'input' | 'done';
 
@@ -20,6 +25,7 @@ export function ListenRepeatGame({
   const [phase, setPhase] = useState<Phase>('ready');
   const [assembled, setAssembled] = useState<number[]>([]); // אינדקסים ב-scrambled
   const [result, setResult] = useState<boolean | null>(null);
+  const [replaysLeft, setReplaysLeft] = useState(2);
   const startRef = useRef(0);
   const submittedRef = useRef(false);
   const playbackRef = useRef(0);
@@ -86,36 +92,34 @@ export function ListenRepeatGame({
     setTimeout(() => onResult({ correct, rtMs, span: correct ? stim.words.length : undefined }), 1300);
   }
 
+  function replay() {
+    if (replaysLeft <= 0) return;
+    setReplaysLeft((left) => left - 1);
+    play();
+  }
+
   const tile = (label: string, onClick: (() => void) | undefined, active: boolean, key: React.Key) => (
     <button
       key={key}
+      type="button"
       onClick={onClick}
       disabled={!onClick}
-      style={{
-        fontFamily: 'var(--font-body)',
-        fontWeight: 600,
-        fontSize: 18,
-        padding: '10px 14px',
-        borderRadius: 12,
-        border: `2px solid ${active ? '#fff' : 'var(--gray-300)'}`,
-        background: active ? color : 'var(--panel)',
-        color: active ? '#fff' : 'var(--ink)',
-        boxShadow: '0 3px 0 rgba(36,50,71,.15)',
-        opacity: onClick ? 1 : 0.35,
-      }}
+      className={`ml-echo-word ml-pressable${active ? ' ml-echo-word--assembled' : ''}`}
     >
       {label}
     </button>
   );
 
+  const challengePhase: EchoChallengePhase =
+    phase === 'audioError' ? 'error' : phase === 'input' ? 'response' : phase;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center' }}>
+    <EchoCaveChallenge phase={challengePhase}>
       {phase === 'ready' && (
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
-          <p style={{ fontSize: 25, fontFamily: 'var(--font-head)', fontWeight: 700, lineHeight: 1.3 }}>הקשב למשפט — ואז הרכב אותו</p>
-          <Button variant="green" size="lg" onClick={play} icon="🔊">
-            הקשב
-          </Button>
+        <div className="ml-echo-ready">
+          <span className="ml-echo-ready__eyebrow">אתגר ההד</span>
+          <p className="ml-echo-ready__instruction">הקשב... ואז החזר את ההד</p>
+          <EchoListenButton onClick={play} />
         </div>
       )}
 
@@ -123,38 +127,34 @@ export function ListenRepeatGame({
       {phase === 'audioError' && <EchoAudioState state="error" onRetry={play} />}
 
       {phase === 'input' && (
-        <>
-          {/* המשפט המורכב */}
-          <div style={{ minHeight: 50, display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
-            {assembled.length === 0 && <span style={{ color: 'var(--gray-300)' }}>בחר מילים לפי הסדר…</span>}
+        <div className="ml-echo-response">
+          <span className="ml-echo-response__eyebrow">עכשיו תורך</span>
+          <p className="ml-echo-response__instruction">החזר את ההד לפי הסדר</p>
+          <div className="ml-echo-response__well">
+            {assembled.length === 0 && <span className="ml-echo-response__placeholder">ההד שלך יופיע כאן...</span>}
             {assembled.map((idx, pos) =>
               tile(stim.scrambled[idx], () => setAssembled((a) => a.filter((_, p) => p !== pos)), true, `a${pos}`),
             )}
           </div>
-          <hr style={{ width: '80%', border: 'none', borderTop: '2px dashed var(--gray-300)' }} />
-          {/* אריחי המקור */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div className="ml-echo-word-bank">
             {stim.scrambled.map((w, i) =>
               tile(w, assembled.includes(i) ? undefined : () => setAssembled((a) => [...a, i]), false, `s${i}`),
             )}
           </div>
-          <ReplayButton
-            onReplay={() => speak(stim.words.join(' '), speechRate, { onError: () => setPhase('audioError') })}
-            limit={2}
-          />
-        </>
+          <EchoReplayButton onClick={replay} remaining={replaysLeft} />
+        </div>
       )}
 
       {phase === 'done' && result !== null && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+        <div className="ml-echo-result">
           <FeedbackBanner correct={result} />
           {!result && (
-            <p style={{ fontFamily: 'var(--font-head)', textAlign: 'center' }}>
+            <p className="ml-echo-response__instruction">
               המשפט היה: <b style={{ color }}>{challenge.answer.join(' ')}</b>
             </p>
           )}
         </div>
       )}
-    </div>
+    </EchoCaveChallenge>
   );
 }

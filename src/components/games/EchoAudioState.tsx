@@ -1,27 +1,30 @@
-import { Button } from '../Button';
+import { EchoSpeakerGlyph } from './EchoCaveChallenge';
 import './echo-audio.css';
 
 export function EchoAudioState({ state, onRetry }: { state: 'playing' | 'error'; onRetry?: () => void }) {
   return (
     <div className={`ml-echo-audio ml-echo-audio--${state}`} role={state === 'error' ? 'alert' : 'status'}>
-      <div className="ml-echo-audio__scene" aria-hidden>
-        <span className="ml-echo-audio__memo">
-          <img src="./characters/memo.png" alt="" draggable={false} />
-        </span>
+      <div className="ml-echo-audio__portal" aria-hidden>
+        <span className="ml-echo-audio__speaker"><EchoSpeakerGlyph /></span>
         <span className="ml-echo-audio__wave ml-echo-audio__wave--one" />
         <span className="ml-echo-audio__wave ml-echo-audio__wave--two" />
         <span className="ml-echo-audio__wave ml-echo-audio__wave--three" />
       </div>
       {state === 'playing' ? (
-        <div>
-          <strong>האוזניים מוכנות?</strong>
-          <p>ממו שולח הד דרך המערה…</p>
+        <div className="ml-echo-audio__copy">
+          <strong>המערה מדברת...</strong>
+          <p>עצור והקשב להד</p>
         </div>
       ) : (
         <div className="ml-echo-audio__error-copy">
           <strong>ההד לא יצא מהמערה</strong>
           <p>אפשר לנסות שוב. שום דבר לא אבד.</p>
-          {onRetry ? <Button variant="green" onClick={onRetry}>🔊 נסו שוב</Button> : null}
+          {onRetry ? (
+            <button type="button" className="ml-echo-audio__retry ml-pressable" onClick={onRetry}>
+              <span aria-hidden><EchoSpeakerGlyph /></span>
+              נסו שוב
+            </button>
+          ) : null}
         </div>
       )}
     </div>

@@ -31,6 +31,7 @@ import { Guide, guideKindFor } from '../components/svg/Memo';
 import { speak } from '../audio/speech';
 import { sfxLevelUp } from '../audio/sfx';
 import type { LandId } from '../types';
+import './session-screen.css';
 
 interface JourneyResult {
   coinsStart: number;
@@ -246,73 +247,53 @@ export function SessionScreen({
   const activityLand: LandId = 'landId' in activity ? activity.landId : 'echoes';
   const color = landColor(activityLand);
   const meta = LANDS[activityLand];
+  const isEchoChallenge = activity.kind === 'game' && activityLand === 'echoes';
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+    <div className={`ml-session-screen${isEchoChallenge ? ' ml-session-screen--echo' : ''}`}>
       <LandBackground land={activityLand} />
 
-      {/* כותרת השלב */}
-      <div style={{ position: 'relative', zIndex: 2, paddingTop: 'calc(10px + var(--safe-top))' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px' }}>
+      <header className="ml-session-hud">
+        <div className="ml-session-hud__top-row">
           <button
             onClick={onQuit}
             aria-label="חזרה למפה"
-            style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--panel)', border: '2px solid var(--gray-300)', borderRadius: 999, height: 40, padding: '0 14px', fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}
+            className="ml-session-hud__back ml-pressable"
           >
-            <span style={{ fontSize: 18 }}>→</span> חזרה
+            <span aria-hidden>→</span>
+            <span className="ml-session-hud__back-label">חזרה</span>
           </button>
-          <div style={{ flex: 1, height: 14, background: 'rgba(255,255,255,.6)', borderRadius: 999, overflow: 'hidden', border: '2px solid #fff' }}>
-            <div style={{ width: `${progress * 100}%`, height: '100%', background: color, transition: 'width .4s' }} />
+
+          <div className="ml-session-hud__progress" aria-label={`התקדמות ${Math.round(progress * 100)} אחוז`}>
+            <span style={{ width: `${progress * 100}%`, background: color }} />
           </div>
-          <Guide kind={guideKindFor(meta.guide)} size={38} />
+
+          <span className="ml-session-hud__guide">
+            <Guide kind={guideKindFor(meta.guide)} size={36} />
+          </span>
         </div>
 
-        {/* לבבות המסע */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 8 }} aria-label={`${hearts} לבבות`}>
-          {Array.from({ length: MAX_HEARTS }).map((_, i) => (
-            <span key={i} style={{ animation: hearts === i ? 'wiggle .4s ease' : undefined, filter: 'drop-shadow(0 2px 2px rgba(36,50,71,.25))' }}>
-              <HeartIcon size={28} empty={i >= hearts} />
-            </span>
-          ))}
-        </div>
+        <div className="ml-session-hud__meta-row">
+          <div className="ml-session-hud__hearts" aria-label={`${hearts} לבבות`}>
+            {Array.from({ length: MAX_HEARTS }).map((_, i) => (
+              <span key={i} style={{ animation: hearts === i ? 'wiggle .4s ease' : undefined }}>
+                <HeartIcon size={isEchoChallenge ? 20 : 24} empty={i >= hearts} />
+              </span>
+            ))}
+          </div>
 
-        <div
-          style={{
-            margin: '10px auto',
-            width: 'fit-content',
-            background: color,
-            color: '#fff',
-            fontFamily: 'var(--font-head)',
-            fontWeight: 700,
-            padding: '6px 18px',
-            borderRadius: 999,
-            border: '2px solid #fff',
-            boxShadow: 'var(--btn-shadow)',
-          }}
-        >
-          {activity.label}
+          <div className="ml-session-hud__world" style={{ background: color }}>
+            {activity.label}
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* לוח המשחק */}
       <div
-        style={{
-          position: 'relative',
-          zIndex: 2,
-          margin: '6px 12px',
-          background: 'rgba(255,255,255,.94)',
-          borderRadius: 24,
-          border: `3px solid ${color}`,
-          padding: '20px 16px',
-          minHeight: 380,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          boxShadow: '0 6px 0 rgba(36,50,71,.2)',
-        }}
+        className={`ml-session-board${isEchoChallenge ? ' ml-session-board--echo' : ''}`}
+        style={{ '--ml-session-color': color } as React.CSSProperties}
       >
         {/* key מאלץ remount בכל פעילות ובכל ניסיון חוזר — כדי לאפס state ולתת אתגר חדש */}
-        <div key={`${idx}-${retry}`} style={{ width: '100%' }}>
+        <div key={`${idx}-${retry}`} className="ml-session-board__activity">
           {activity.kind === 'game' && (
             <GameHostForActivity a={activity} color={color} speechRate={settings.speechRate} softenBy={retry} seed={genSeed.current + idx * 100 + retry} onResult={(r) => handleGameResult(activity, r)} />
           )}

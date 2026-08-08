@@ -3,11 +3,16 @@ import type { Challenge } from '../../types';
 import type { MultiStepStimulus } from '../../engines/echoes';
 import { speak, stopSpeech } from '../../audio/speech';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
-import { Button } from '../Button';
-import { FeedbackBanner, ReplayButton } from './common';
+import { FeedbackBanner } from './common';
 import type { GameProps } from './common';
 import { TapGlyph } from '../svg/TapIcon';
 import { EchoAudioState } from './EchoAudioState';
+import {
+  EchoCaveChallenge,
+  EchoListenButton,
+  EchoReplayButton,
+  type EchoChallengePhase,
+} from './EchoCaveChallenge';
 
 type Phase = 'ready' | 'playing' | 'audioError' | 'input' | 'done';
 
@@ -22,6 +27,7 @@ export function MultiStepGame({
   const [tapped, setTapped] = useState<string[]>([]);
   const [flash, setFlash] = useState<string | null>(null);
   const [result, setResult] = useState<boolean | null>(null);
+  const [replaysLeft, setReplaysLeft] = useState(2);
   const startRef = useRef(0);
   const finishedRef = useRef(false);
   const playbackRef = useRef(0);
@@ -94,66 +100,57 @@ export function MultiStepGame({
     setTimeout(() => onResult({ correct, rtMs, span: correct ? stim.sequence.length : undefined }), 1300);
   }
 
+  function replay() {
+    if (replaysLeft <= 0) return;
+    setReplaysLeft((left) => left - 1);
+    play();
+  }
+
+  const challengePhase: EchoChallengePhase =
+    phase === 'audioError' ? 'error' : phase === 'input' ? 'response' : phase;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center' }}>
+    <EchoCaveChallenge phase={challengePhase}>
       {phase === 'ready' && (
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
-          <p style={{ fontSize: 25, fontFamily: 'var(--font-head)', fontWeight: 700, lineHeight: 1.3 }}>הקשב להוראות — ואז בצע לפי הסדר</p>
-          <Button variant="green" size="lg" onClick={play} icon="🔊">
-            הקשב
-          </Button>
+        <div className="ml-echo-ready">
+          <span className="ml-echo-ready__eyebrow">אתגר ההד</span>
+          <p className="ml-echo-ready__instruction">הקשב... ואז החזר את הסדר</p>
+          <EchoListenButton onClick={play} />
         </div>
       )}
 
       {phase === 'playing' && <EchoAudioState state="playing" />}
       {phase === 'audioError' && <EchoAudioState state="error" onRetry={play} />}
 
-      {(phase === 'input' || phase === 'done') && (
-        <>
-          {phase === 'input' && (
-            <p style={{ fontFamily: 'var(--font-head)', fontWeight: 600 }}>
-              נלחצו <span className="ltr">{tapped.length}</span>/<span className="ltr">{stim.sequence.length}</span>
-            </p>
-          )}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+      {phase === 'input' && (
+        <div className="ml-echo-response">
+          <span className="ml-echo-response__eyebrow">עכשיו תורך</span>
+          <p className="ml-echo-response__instruction">
+            החזר את הסדר <span className="ltr">{tapped.length}/{stim.sequence.length}</span>
+          </p>
+          <div className="ml-echo-step-grid">
             {stim.board.map((ic) => (
               <button
                 key={ic.id}
-                disabled={phase !== 'input'}
+                type="button"
                 onClick={() => tap(ic.id)}
                 aria-label={ic.label}
-                style={{
-                  background: flash === ic.id ? color : 'var(--panel)',
-                  border: `3px solid ${flash === ic.id ? '#fff' : 'var(--gray-300)'}`,
-                  borderRadius: 16,
-                  padding: 12,
-                  display: 'grid',
-                  placeItems: 'center',
-                  gap: 4,
-                  boxShadow: '0 3px 0 rgba(36,50,71,.15)',
-                  transition: 'transform .1s',
-                  transform: flash === ic.id ? 'scale(1.08)' : 'scale(1)',
-                }}
+                className={`ml-echo-step ml-pressable${flash === ic.id ? ' ml-echo-step--flash' : ''}`}
               >
                 <TapGlyph id={ic.id} />
-                <span style={{ fontSize: 13, fontWeight: 600, color: flash === ic.id ? '#fff' : 'var(--ink)' }}>{ic.label}</span>
+                <span>{ic.label}</span>
               </button>
             ))}
           </div>
-          {phase === 'input' && (
-            <ReplayButton
-              onReplay={() => speak(challenge.prompt ?? '', speechRate, { onError: () => setPhase('audioError') })}
-              limit={2}
-            />
-          )}
-        </>
+          <EchoReplayButton onClick={replay} remaining={replaysLeft} />
+        </div>
       )}
 
       {phase === 'done' && result !== null && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
+        <div className="ml-echo-result">
           <FeedbackBanner correct={result} />
           {!result && (
-            <p style={{ fontFamily: 'var(--font-head)', textAlign: 'center' }}>
+            <p className="ml-echo-response__instruction">
               הסדר היה:{' '}
               <b style={{ color }}>
                 {challenge.answer.map((id) => stim.board.find((b) => b.id === id)?.label).join(' ← ')}
@@ -162,6 +159,6 @@ export function MultiStepGame({
           )}
         </div>
       )}
-    </div>
+    </EchoCaveChallenge>
   );
 }

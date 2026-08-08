@@ -125,9 +125,25 @@ function Echoes() {
           <stop offset="0" stopColor="#5fc8ff" stopOpacity="0.6" />
           <stop offset="1" stopColor="#5fc8ff" stopOpacity="0" />
         </radialGradient>
+        <radialGradient id="e-depth" cx="0.5" cy="0.38" r="0.64">
+          <stop offset="0" stopColor="#5267D9" stopOpacity="0.26" />
+          <stop offset="0.54" stopColor="#252858" stopOpacity="0.12" />
+          <stop offset="1" stopColor="#080822" stopOpacity="0.52" />
+        </radialGradient>
+        <linearGradient id="e-water" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#5267D9" stopOpacity="0.08" />
+          <stop offset="0.5" stopColor="#67C8FF" stopOpacity="0.48" />
+          <stop offset="1" stopColor="#8C52D9" stopOpacity="0.08" />
+        </linearGradient>
       </defs>
       <rect width="400" height="800" fill="url(#e-bg)" />
+      <rect width="400" height="800" fill="url(#e-depth)" />
       <circle cx="200" cy="420" r="220" fill="url(#e-glow)" />
+      {/* קשתות עומק שממקמות את האתגר בתוך חלל המערה */}
+      <path d="M28 655V300Q28 88 200 60Q372 88 372 300V655" fill="none" stroke="#3A3570" strokeWidth="22" opacity="0.28" />
+      <path d="M72 648V326Q72 156 200 126Q328 156 328 326V648" fill="none" stroke="#5267D9" strokeWidth="8" opacity="0.18" />
+      <path d="M0 120Q82 190 55 365T0 650Z" fill="#111136" opacity="0.66" />
+      <path d="M400 120Q318 190 345 365T400 650Z" fill="#111136" opacity="0.66" />
       {/* נטיפים מלמעלה */}
       {[20, 70, 130, 200, 270, 330, 380].map((x, i) => (
         <path key={x} d={`M${x - 16} 0 L${x + 16} 0 L${x} ${70 + (i % 3) * 30} Z`} fill="#241f52" stroke="#3a3570" strokeWidth="2" />
@@ -142,8 +158,11 @@ function Echoes() {
           <path d={`M${x as number} ${(y as number) - 46} L${(x as number) + 14} ${y as number} L${x as number} ${(y as number) + 10} L${(x as number) - 14} ${y as number} Z`} fill={c as string} stroke="#fff" strokeWidth="1.5" opacity="0.9" />
         </g>
       ))}
-      {/* בריכת מים */}
-      <ellipse cx="200" cy="740" rx="150" ry="26" fill="#3aa0d8" opacity="0.4" />
+      {/* ערפל ובריכת אור תת-קרקעית */}
+      <ellipse cx="200" cy="660" rx="172" ry="38" fill="#67C8FF" opacity="0.07" />
+      <ellipse cx="200" cy="710" rx="178" ry="34" fill="#8C52D9" opacity="0.08" />
+      <ellipse cx="200" cy="740" rx="150" ry="26" fill="url(#e-water)" />
+      <path d="M75 742Q132 726 200 741T325 740" fill="none" stroke="#A9EBFF" strokeWidth="2" opacity="0.22" />
       {/* ניצוצות */}
       {[[80, 160], [320, 200], [150, 120], [260, 300], [200, 90]].map(([x, y], i) => (
         <circle key={i} cx={x} cy={y} r="2" fill="#fff" opacity="0.8" />
