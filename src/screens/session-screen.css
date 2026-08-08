@@ -126,9 +126,9 @@
 .ml-session-screen--echo .ml-session-hud__top-row { gap: 7px; }
 
 .ml-session-screen--echo .ml-session-hud__back {
-  min-width: 42px;
-  width: 42px;
-  height: 36px;
+  min-width: 44px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   color: #fff;
   background: rgba(25, 27, 71, 0.78);
@@ -215,9 +215,9 @@
 .ml-session-screen--numbers .ml-session-hud__top-row { gap: 7px; }
 
 .ml-session-screen--numbers .ml-session-hud__back {
-  min-width: 42px;
-  width: 42px;
-  height: 36px;
+  min-width: 44px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   color: #fff;
   background: rgba(34, 118, 54, 0.78);
