@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Challenge } from '../../types';
 import type { MultiStepStimulus } from '../../engines/echoes';
-import { speak } from '../../audio/speech';
+import { speak, stopSpeech } from '../../audio/speech';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import { Button } from '../Button';
 import { FeedbackBanner, ReplayButton } from './common';
 import type { GameProps } from './common';
 import { TapGlyph } from '../svg/TapIcon';
+import { EchoAudioState } from './EchoAudioState';
 
-type Phase = 'ready' | 'input' | 'done';
+type Phase = 'ready' | 'playing' | 'audioError' | 'input' | 'done';
 
 export function MultiStepGame({
   challenge,
@@ -23,6 +24,14 @@ export function MultiStepGame({
   const [result, setResult] = useState<boolean | null>(null);
   const startRef = useRef(0);
   const finishedRef = useRef(false);
+  const playbackRef = useRef(0);
+  const playbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    playbackRef.current += 1;
+    if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+    stopSpeech();
+  }, []);
 
   useEffect(() => {
     if (phase === 'input' && tapped.length === stim.sequence.length) finish();
@@ -30,18 +39,41 @@ export function MultiStepGame({
   }, [tapped, phase]);
 
   function play() {
-    speak(challenge.prompt ?? '', speechRate, {
-      onEnd: () => {
-        setPhase('input');
-        startRef.current = performance.now();
+    const playbackId = ++playbackRef.current;
+    let started = false;
+    if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+    setPhase('playing');
+
+    const beginInput = () => {
+      if (playbackRef.current !== playbackId) return;
+      if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+      startRef.current = performance.now();
+      setPhase('input');
+    };
+
+    const startedPlayback = speak(challenge.prompt ?? '', speechRate, {
+      onStart: () => {
+        if (playbackRef.current !== playbackId) return;
+        started = true;
+        if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+        playbackTimerRef.current = setTimeout(beginInput, (challenge.prompt?.length ?? 20) * 140 + 1400);
+      },
+      onEnd: beginInput,
+      onError: () => {
+        if (playbackRef.current !== playbackId) return;
+        playbackRef.current += 1;
+        if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+        setPhase('audioError');
       },
     });
-    setTimeout(() => {
-      setPhase((p) => {
-        if (p === 'ready') startRef.current = performance.now();
-        return p === 'ready' ? 'input' : p;
-      });
-    }, (challenge.prompt?.length ?? 20) * 90 + 800);
+
+    if (!startedPlayback) return;
+    playbackTimerRef.current = setTimeout(() => {
+      if (!started && playbackRef.current === playbackId) {
+        playbackRef.current += 1;
+        setPhase('audioError');
+      }
+    }, 2400);
   }
 
   function tap(id: string) {
@@ -72,6 +104,9 @@ export function MultiStepGame({
           </Button>
         </div>
       )}
+
+      {phase === 'playing' && <EchoAudioState state="playing" />}
+      {phase === 'audioError' && <EchoAudioState state="error" onRetry={play} />}
 
       {(phase === 'input' || phase === 'done') && (
         <>
@@ -105,7 +140,12 @@ export function MultiStepGame({
               </button>
             ))}
           </div>
-          {phase === 'input' && <ReplayButton onReplay={() => speak(challenge.prompt ?? '', speechRate)} limit={2} />}
+          {phase === 'input' && (
+            <ReplayButton
+              onReplay={() => speak(challenge.prompt ?? '', speechRate, { onError: () => setPhase('audioError') })}
+              limit={2}
+            />
+          )}
         </>
       )}
 

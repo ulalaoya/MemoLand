@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Challenge } from '../../types';
 import type { ListenRepeatStimulus } from '../../engines/echoes';
-import { speak } from '../../audio/speech';
+import { speak, stopSpeech } from '../../audio/speech';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import { Button } from '../Button';
 import { FeedbackBanner, ReplayButton } from './common';
 import type { GameProps } from './common';
+import { EchoAudioState } from './EchoAudioState';
 
-type Phase = 'ready' | 'input' | 'done';
+type Phase = 'ready' | 'playing' | 'audioError' | 'input' | 'done';
 
 export function ListenRepeatGame({
   challenge,
@@ -21,6 +22,14 @@ export function ListenRepeatGame({
   const [result, setResult] = useState<boolean | null>(null);
   const startRef = useRef(0);
   const submittedRef = useRef(false);
+  const playbackRef = useRef(0);
+  const playbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    playbackRef.current += 1;
+    if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+    stopSpeech();
+  }, []);
 
   useEffect(() => {
     if (phase === 'input' && assembled.length === stim.words.length) submit();
@@ -28,19 +37,41 @@ export function ListenRepeatGame({
   }, [assembled, phase]);
 
   function play() {
-    speak(stim.words.join(' '), speechRate, {
-      onEnd: () => {
-        setPhase('input');
-        startRef.current = performance.now();
+    const playbackId = ++playbackRef.current;
+    let started = false;
+    if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+    setPhase('playing');
+
+    const beginInput = () => {
+      if (playbackRef.current !== playbackId) return;
+      if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+      startRef.current = performance.now();
+      setPhase('input');
+    };
+
+    const startedPlayback = speak(stim.words.join(' '), speechRate, {
+      onStart: () => {
+        if (playbackRef.current !== playbackId) return;
+        started = true;
+        if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+        playbackTimerRef.current = setTimeout(beginInput, stim.words.length * 1100 + 1200);
+      },
+      onEnd: beginInput,
+      onError: () => {
+        if (playbackRef.current !== playbackId) return;
+        playbackRef.current += 1;
+        if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+        setPhase('audioError');
       },
     });
-    // גיבוי אם onEnd לא נורה (חלק מהמכשירים)
-    setTimeout(() => {
-      setPhase((p) => {
-        if (p === 'ready') startRef.current = performance.now();
-        return p === 'ready' ? 'input' : p;
-      });
-    }, stim.words.length * 900 + 600);
+
+    if (!startedPlayback) return;
+    playbackTimerRef.current = setTimeout(() => {
+      if (!started && playbackRef.current === playbackId) {
+        playbackRef.current += 1;
+        setPhase('audioError');
+      }
+    }, 2400);
   }
 
   function submit() {
@@ -88,6 +119,9 @@ export function ListenRepeatGame({
         </div>
       )}
 
+      {phase === 'playing' && <EchoAudioState state="playing" />}
+      {phase === 'audioError' && <EchoAudioState state="error" onRetry={play} />}
+
       {phase === 'input' && (
         <>
           {/* המשפט המורכב */}
@@ -104,7 +138,10 @@ export function ListenRepeatGame({
               tile(w, assembled.includes(i) ? undefined : () => setAssembled((a) => [...a, i]), false, `s${i}`),
             )}
           </div>
-          <ReplayButton onReplay={() => speak(stim.words.join(' '), speechRate)} limit={2} />
+          <ReplayButton
+            onReplay={() => speak(stim.words.join(' '), speechRate, { onError: () => setPhase('audioError') })}
+            limit={2}
+          />
         </>
       )}
 

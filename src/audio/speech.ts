@@ -9,6 +9,9 @@ let unlocked = false;
 let autoHebrewVoice: SpeechSynthesisVoice | null = null;
 /** שם קול שנבחר ידנית בהגדרות (גובר על האוטומטי). */
 let preferredVoiceName: string | null = null;
+/** Keep utterances alive until the browser reports completion. Some Chromium builds can
+ * garbage-collect an unreferenced utterance before its callbacks fire. */
+const activeUtterances = new Set<SpeechSynthesisUtterance>();
 
 export function isSpeechUnlocked(): boolean {
   return unlocked;
@@ -70,28 +73,53 @@ if (typeof window !== 'undefined' && window.speechSynthesis) {
 
 export interface SpeakOptions {
   rate?: number;
+  onStart?: () => void;
   onEnd?: () => void;
+  onError?: (reason?: string) => void;
   /** אל תבטל הקראה קודמת — הוסף לתור. חשוב לרצפי ספרות כדי שאף מספר לא ייבלע. */
   queue?: boolean;
 }
 
 /** מקריא טקסט עברי. כברירת מחדל עוצר הקראה קודמת; עם queue מוסיף לתור. */
-export function speak(text: string, rate = 0.9, opts: SpeakOptions = {}): void {
+export function speak(text: string, rate = 0.9, opts: SpeakOptions = {}): boolean {
   if (typeof window === 'undefined' || !window.speechSynthesis) {
-    opts.onEnd?.();
-    return;
+    opts.onError?.('not-supported');
+    return false;
   }
-  if (!opts.queue) window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'he-IL';
-  u.rate = rate;
-  u.pitch = 1.05;
-  const voice = activeVoice();
-  if (voice) u.voice = voice;
-  if (opts.onEnd) u.onend = () => opts.onEnd!();
-  window.speechSynthesis.speak(u);
+  try {
+    const synth = window.speechSynthesis;
+    if (!opts.queue) synth.cancel();
+    refreshVoices();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'he-IL';
+    utterance.rate = opts.rate ?? rate;
+    utterance.pitch = 1.05;
+    const voice = activeVoice();
+    if (voice) utterance.voice = voice;
+
+    const release = () => activeUtterances.delete(utterance);
+    utterance.onstart = () => opts.onStart?.();
+    utterance.onend = () => {
+      release();
+      opts.onEnd?.();
+    };
+    utterance.onerror = (event) => {
+      release();
+      opts.onError?.(event.error);
+    };
+
+    activeUtterances.add(utterance);
+    synth.resume();
+    synth.speak(utterance);
+    return true;
+  } catch {
+    opts.onError?.('speak-failed');
+    return false;
+  }
 }
 
 export function stopSpeech(): void {
   if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+  activeUtterances.clear();
 }

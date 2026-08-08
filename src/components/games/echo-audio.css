@@ -1,0 +1,70 @@
+.ml-echo-audio {
+  width: min(100%, 390px);
+  padding: 20px 18px;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 50% 36%, rgba(103, 200, 255, 0.36), transparent 36%),
+    linear-gradient(155deg, #343879, #1c1e4d);
+  border: 3px solid rgba(169, 235, 255, 0.82);
+  border-radius: 24px;
+  box-shadow: 0 7px 0 #151737, 0 15px 28px rgba(25, 24, 64, 0.28);
+  text-align: center;
+}
+
+.ml-echo-audio__scene {
+  position: relative;
+  width: 176px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+}
+
+.ml-echo-audio__memo {
+  position: relative;
+  z-index: 2;
+  width: 84px;
+  height: 84px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.96);
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 22px rgba(103, 200, 255, 0.62);
+  animation: ml-echo-listen 2.4s ease-in-out infinite;
+}
+
+.ml-echo-audio__memo img { width: 94%; height: 94%; object-fit: contain; }
+
+.ml-echo-audio__wave {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 82px;
+  height: 82px;
+  border: 3px solid rgba(169, 235, 255, 0.72);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: ml-echo-wave 2.1s ease-out infinite;
+}
+
+.ml-echo-audio__wave--two { animation-delay: -0.7s; }
+.ml-echo-audio__wave--three { animation-delay: -1.4s; }
+.ml-echo-audio strong { font-family: var(--ml-font-heading); font-size: 1.25rem; }
+.ml-echo-audio p { margin: 5px 0 0; color: rgba(255, 255, 255, 0.86); font-weight: 700; }
+.ml-echo-audio__error-copy { display: grid; justify-items: center; gap: 8px; }
+.ml-echo-audio--error { border-color: rgba(255, 233, 141, 0.9); }
+.ml-echo-audio--error .ml-echo-audio__wave { animation: none; opacity: 0.18; }
+
+@keyframes ml-echo-wave {
+  0% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.72); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.75); }
+}
+
+@keyframes ml-echo-listen {
+  0%, 72%, 100% { transform: rotate(0) translateY(0); }
+  80% { transform: rotate(-4deg) translateY(-2px); }
+  88% { transform: rotate(3deg) translateY(0); }
+}
