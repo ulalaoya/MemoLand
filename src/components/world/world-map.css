@@ -409,7 +409,7 @@
   min-height: 162px;
   padding: 13px;
   display: grid;
-  grid-template-columns: 82px minmax(0, 1fr);
+  grid-template-columns: minmax(98px, 43%) minmax(0, 1fr);
   align-items: center;
   gap: 11px;
   overflow: hidden;
@@ -463,8 +463,13 @@
   place-items: center;
 }
 
-.ml-land-card__art > div {
-  transform: rotate(-2deg) scale(1.04);
+.ml-world-illustration {
+  display: block;
+  width: 100%;
+  max-width: 154px;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 5px 4px rgba(36, 50, 71, 0.2));
 }
 
 .ml-land-card__world-number {
@@ -647,12 +652,12 @@
     width: 79%;
     min-height: 154px;
     padding: 10px;
-    grid-template-columns: 68px minmax(0, 1fr);
+    grid-template-columns: minmax(84px, 42%) minmax(0, 1fr);
     gap: 8px;
   }
 
-  .ml-land-card__art > div {
-    transform: scale(0.9);
+  .ml-world-illustration {
+    min-width: 84px;
   }
 
   .ml-land-card__subtitle {

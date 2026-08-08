@@ -1,8 +1,8 @@
 import type { CSSProperties } from 'react';
 import type { LandId } from '../../types';
 import type { LandVisualTheme } from '../../design/themes';
-import { LandIcon } from '../svg/LandIcon';
 import { FlagIcon } from '../svg/Icons';
+import { WorldIllustration } from './WorldIllustrations';
 
 interface LandCardProps {
   landId: LandId;
@@ -53,7 +53,7 @@ export function LandCard({
         aria-label={`${name}, עולם ${worldNumber}, ${completedTracks} מתוך ${totalTracks} מסלולים${available ? '' : ', לא זמין'}`}
       >
         <span className="ml-land-card__art" aria-hidden>
-          <LandIcon land={landId} size={70} />
+          <WorldIllustration land={landId} />
           <span className="ml-land-card__world-number ml-display-text">{worldNumber}</span>
         </span>
 
