@@ -773,6 +773,48 @@
   }
 }
 
+@media (min-width: 360px) and (max-width: 399px) {
+  .ml-daily-journey {
+    grid-template-columns: 74px minmax(0, 1fr) 48px;
+    min-height: 100px;
+    padding: 9px 8px;
+  }
+
+  .ml-daily-journey__compass {
+    width: 82px;
+    height: 82px;
+  }
+
+  .ml-daily-journey__copy {
+    padding-inline: 5px;
+  }
+
+  .ml-daily-journey__button {
+    width: 48px;
+    min-height: 48px;
+    padding: 0;
+  }
+
+  .ml-daily-journey__button span:first-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+}
+
+@media (max-height: 650px) and (orientation: landscape) {
+  .ml-map-hud-shell,
+  .ml-daily-journey-slot {
+    position: relative;
+  }
+
+  .ml-world-map-main {
+    padding-bottom: 36px;
+  }
+}
+
 @media (max-width: 359px) {
   .ml-world-map-main {
     padding-inline: 6px;
