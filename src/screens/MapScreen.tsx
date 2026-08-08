@@ -1,13 +1,14 @@
-/* מסך הבית — מפת ממו לנד: שביל מתפתל עם אבנים שמחבר בין הארצות,
-   אמבלמה תמטית לכל ארץ, סרגל הישגים עליון, וכפתור "המסע של היום". */
+/* מסך הבית — מפת ממו לנד: מסלול הרפתקה אנכי שמחבר בין כל הארצות. */
+import type { CSSProperties } from 'react';
 import { getActiveProfile, getTodayPoints, useProfiles, useStore } from '../state/store';
-import { LAND_ORDER, LANDS, TRACKS_PER_LAND, landColor } from '../config/lands';
+import { LAND_ORDER, LANDS, TRACKS_PER_LAND } from '../config/lands';
 import { playableLands } from '../engines';
 import { Button } from '../components/Button';
-import { LandIcon } from '../components/svg/LandIcon';
 import { HomeBackground } from '../components/svg/Backgrounds';
-import { FlagIcon } from '../components/svg/Icons';
 import { PlayerHUD } from '../components/world/PlayerHUD';
+import { LandCard } from '../components/world/LandCard';
+import { WorldMapPath } from '../components/world/WorldMapPath';
+import { LAND_THEMES } from '../design/themes';
 import { THEME_GRADIENT } from '../config/collectibles';
 import type { LandId } from '../types';
 import '../components/world/world-map.css';
@@ -38,15 +39,17 @@ export function MapScreen({
   const todayPoints = getTodayPoints();
   const themeBg = THEME_GRADIENT[equipped.theme ?? 'theme.day'] ?? THEME_GRADIENT['theme.day'];
   const useSceneBg = (equipped.theme ?? 'theme.day') === 'theme.day';
+  const currentLandIndex = getCurrentLandIndex(playable, lands);
+  const mapStyle = { '--ml-map-theme': useSceneBg ? '#8fd8ff' : themeBg } as CSSProperties;
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', background: useSceneBg ? '#8fd8ff' : themeBg }}>
-      {/* רקע נוף מתגלגל (בערכת "יום"); בערכות אחרות — גרדיאנט הערכה */}
-      {useSceneBg && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-          <HomeBackground />
-        </div>
-      )}
+    <div className="ml-world-map-screen" style={mapStyle}>
+      <div className="ml-world-map-scene" aria-hidden>
+        {useSceneBg ? <HomeBackground /> : null}
+        <span className="ml-world-map-cloud ml-world-map-cloud--one" />
+        <span className="ml-world-map-cloud ml-world-map-cloud--two" />
+      </div>
+
       <header className="ml-map-hud-shell">
         <PlayerHUD
           profile={profile}
@@ -61,78 +64,44 @@ export function MapScreen({
         />
       </header>
 
-      {/* השביל המתפתל */}
-      <div style={{ position: 'relative', padding: '18px 0 24px' }}>
-        {/* קו השביל המקווקו מאחורי הכרטיסים */}
-        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
-          <path
-            d={buildTrailPath(LAND_ORDER.length)}
-            fill="none"
-            stroke="rgba(255,255,255,.75)"
-            strokeWidth="7"
-            strokeLinecap="round"
-            strokeDasharray="0.5 9"
-            vectorEffect="non-scaling-stroke"
-          />
-        </svg>
+      <main className="ml-world-map-main">
+        <div className="ml-world-map-intro">
+          <span className="ml-world-map-intro__kicker">מפת ההרפתקה</span>
+          <h1>איזה עולם נגלה היום?</h1>
+          <p>בחרו תחנה, אספו מטבעות והתקדמו לאורך המסלול.</p>
+        </div>
 
-        {LAND_ORDER.map((id, i) => {
-          const meta = LANDS[id];
-          const prog = lands[id];
-          const isPlayable = playable.includes(id);
-          const side = i % 2 === 0 ? 'flex-start' : 'flex-end';
-          const color = landColor(id);
-          return (
-            <div key={id} style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: side, padding: '0 20px', margin: '12px 0' }}>
-              <button
-                onClick={() => isPlayable && onPlayLand(id)}
-                disabled={!isPlayable}
-                style={{
-                  position: 'relative',
-                  width: 268,
-                  maxWidth: '82%',
-                  background: 'var(--panel)',
-                  border: `4px solid ${color}`,
-                  borderRadius: 20,
-                  padding: 12,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  boxShadow: '0 5px 0 rgba(36,50,71,.25)',
-                  opacity: isPlayable ? 1 : 0.78,
-                  cursor: isPlayable ? 'pointer' : 'default',
-                  textAlign: 'start',
-                }}
-              >
-                <div style={{ position: 'relative', flexShrink: 0 }}>
-                  <LandIcon land={id} size={62} />
-                  {prog.castleOpen && (
-                    <span style={{ position: 'absolute', insetInlineEnd: -6, top: -6, fontSize: 20 }}>🏰</span>
-                  )}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 18, color }}>{meta.name}</div>
-                  <div style={{ fontSize: 13, color: 'var(--ink)', opacity: 0.7 }}>{meta.subtitle}</div>
-                  {isPlayable ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                      <FlagIcon size={16} />
-                      <span className="ltr" style={{ fontFamily: 'var(--font-head)', fontWeight: 600, fontSize: 13 }}>
-                        {prog.completedTracks}/{TRACKS_PER_LAND}
-                      </span>
-                      <span style={{ fontSize: 12, opacity: 0.6 }}>מסלולים</span>
-                    </div>
-                  ) : (
-                    <div style={{ marginTop: 4, fontSize: 13, fontWeight: 700, color: 'var(--btn-orange)' }}>בקרוב 🚧</div>
-                  )}
-                </div>
-              </button>
-            </div>
-          );
-        })}
-      </div>
+        <section className="ml-world-map-route" aria-label="עולמות ממו לנד">
+          <WorldMapPath total={LAND_ORDER.length} currentIndex={currentLandIndex} />
+          <div className="ml-world-map-route__cards">
+            {LAND_ORDER.map((id, index) => {
+              const meta = LANDS[id];
+              const progress = lands[id];
+              const available = playable.includes(id);
+              return (
+                <LandCard
+                  key={id}
+                  landId={id}
+                  worldNumber={index + 1}
+                  name={meta.name}
+                  subtitle={meta.subtitle}
+                  completedTracks={progress.completedTracks}
+                  totalTracks={TRACKS_PER_LAND}
+                  castleOpen={progress.castleOpen}
+                  available={available}
+                  current={index === currentLandIndex}
+                  side={index % 2 === 0 ? 'left' : 'right'}
+                  theme={LAND_THEMES[id]}
+                  onSelect={() => available && onPlayLand(id)}
+                />
+              );
+            })}
+          </div>
+        </section>
+      </main>
 
       {/* כפתור המסע היומי — צף בתחתית */}
-      <div style={{ position: 'sticky', bottom: 0, padding: '12px 16px calc(16px + var(--safe-top))', background: 'linear-gradient(transparent, rgba(88,197,72,.92) 40%)' }}>
+      <div className="ml-daily-journey-slot">
         <Button variant="purple" size="lg" block icon="🧠" onClick={onStartJourney}>
           המסע של היום
         </Button>
@@ -141,13 +110,9 @@ export function MapScreen({
   );
 }
 
-/** בונה נתיב מתפתל (זיגזג) בין מרכזי הכרטיסים, ב-viewBox 0..100. */
-function buildTrailPath(n: number): string {
-  const pts: [number, number][] = [];
-  for (let i = 0; i < n; i++) {
-    const x = i % 2 === 0 ? 28 : 72;
-    const y = ((i + 0.5) / n) * 100;
-    pts.push([x, y]);
-  }
-  return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`).join(' ');
+function getCurrentLandIndex(playable: LandId[], lands: Record<LandId, { completedTracks: number }>): number {
+  const firstIncomplete = LAND_ORDER.findIndex((id) => playable.includes(id) && lands[id].completedTracks < TRACKS_PER_LAND);
+  if (firstIncomplete >= 0) return firstIncomplete;
+  const reverseIndex = [...LAND_ORDER].reverse().findIndex((id) => playable.includes(id));
+  return reverseIndex < 0 ? 0 : LAND_ORDER.length - 1 - reverseIndex;
 }
