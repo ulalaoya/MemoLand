@@ -1,6 +1,6 @@
 /* מסך הבית — מפת ממו לנד: מסלול הרפתקה אנכי שמחבר בין כל הארצות. */
 import type { CSSProperties } from 'react';
-import { getActiveProfile, getTodayPoints, useProfiles, useStore } from '../state/store';
+import { DAILY_GOAL, getActiveProfile, getTodayPoints, useProfiles, useStore } from '../state/store';
 import { LAND_ORDER, LANDS, TRACKS_PER_LAND } from '../config/lands';
 import { playableLands } from '../engines';
 import { HomeBackground } from '../components/svg/Backgrounds';
@@ -8,6 +8,7 @@ import { PlayerHUD } from '../components/world/PlayerHUD';
 import { LandCard } from '../components/world/LandCard';
 import { WorldMapPath } from '../components/world/WorldMapPath';
 import { DailyJourneyBanner } from '../components/world/DailyJourneyBanner';
+import { WorldMapAtmosphere } from '../components/world/WorldMapAtmosphere';
 import { LAND_THEMES } from '../design/themes';
 import { THEME_GRADIENT } from '../config/collectibles';
 import type { LandId } from '../types';
@@ -55,7 +56,6 @@ export function MapScreen({
           profile={profile}
           coins={coins}
           rank={rank}
-          todayPoints={todayPoints}
           equippedHat={equipped.hat}
           onSwitchProfile={onSwitchProfile}
           onOpenAchievements={onOpenAchievements}
@@ -72,6 +72,7 @@ export function MapScreen({
         </div>
 
         <section className="ml-world-map-route" aria-label="עולמות ממו לנד">
+          <WorldMapAtmosphere />
           <WorldMapPath total={LAND_ORDER.length} currentIndex={currentLandIndex} />
           <div className="ml-world-map-route__cards">
             {LAND_ORDER.map((id, index) => {
@@ -101,7 +102,7 @@ export function MapScreen({
       </main>
 
       <div className="ml-daily-journey-slot">
-        <DailyJourneyBanner onStart={onStartJourney} />
+        <DailyJourneyBanner todayPoints={todayPoints} dailyGoal={DAILY_GOAL} onStart={onStartJourney} />
       </div>
     </div>
   );

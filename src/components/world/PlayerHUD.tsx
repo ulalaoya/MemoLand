@@ -1,15 +1,13 @@
 import type { MemoRank, Profile } from '../../types';
-import { DAILY_GOAL } from '../../state/store';
 import { rankLabel, rankProgress } from '../../state/rewards';
 import { Logo } from '../Logo';
-import { Character } from '../svg/Memo';
 import { Coin, HeartIcon, TrophyIcon } from '../svg/Icons';
+import { PlayerIdentity } from './PlayerIdentity';
 
 interface PlayerHUDProps {
   profile: Profile | null;
   coins: number;
   rank: MemoRank;
-  todayPoints: number;
   equippedHat?: string;
   onSwitchProfile: () => void;
   onOpenAchievements: () => void;
@@ -21,7 +19,6 @@ export function PlayerHUD({
   profile,
   coins,
   rank,
-  todayPoints,
   equippedHat,
   onSwitchProfile,
   onOpenAchievements,
@@ -29,24 +26,17 @@ export function PlayerHUD({
   onOpenParent,
 }: PlayerHUDProps) {
   const rankState = rankProgress(coins);
-  const todayRatio = Math.max(0, Math.min(1, todayPoints / DAILY_GOAL));
   const remainingCoins = rankState.next === null ? null : Math.max(0, rankState.next - coins);
 
   return (
     <section className="ml-player-hud" aria-label="מצב השחקן">
       <div className="ml-player-hud__main-row">
-        <button
-          type="button"
-          className="ml-player-hud__player ml-pressable"
-          onClick={onSwitchProfile}
-          aria-label={`החלפת שחקן${profile?.name ? `, השחקן הנוכחי ${profile.name}` : ''}`}
-        >
-          {profile ? <Character kind={profile.avatar} size={54} bounce hat={equippedHat} /> : null}
-          <span className="ml-player-hud__player-copy">
-            <strong>{profile?.name ?? 'שחקן'}</strong>
-            <small>החלפה</small>
-          </span>
-        </button>
+        <PlayerIdentity
+          profile={profile}
+          equippedHat={equippedHat}
+          rankLabel={rankLabel(rank)}
+          onSelect={onSwitchProfile}
+        />
 
         <div className="ml-player-hud__logo" aria-label="MemoLand">
           <Logo variant="compact" width={126} />
@@ -65,30 +55,21 @@ export function PlayerHUD({
         </div>
       </div>
 
-      <div className="ml-player-hud__progress-grid">
-        <div className="ml-hud-progress ml-hud-progress--rank">
+      <div className="ml-player-hud__lower-row">
+        <div className="ml-hud-progress ml-hud-progress--rank" aria-label={`התקדמות בדרגה. ${remainingCoins === null ? 'דרגת שיא' : `עוד ${remainingCoins} מטבעות`}`}>
           <div className="ml-hud-progress__label">
-            <span>דרגה</span>
-            <strong>{rankLabel(rank)}</strong>
-            <small>{remainingCoins === null ? 'דרגת שיא!' : `עוד ${remainingCoins} מטבעות`}</small>
+            <strong>התקדמות</strong>
+            <small>{remainingCoins === null ? 'דרגת שיא!' : `עוד ${remainingCoins}`}</small>
           </div>
           <ProgressTrack value={rankState.ratio} />
         </div>
 
-        <div className="ml-hud-progress ml-hud-progress--today">
-          <div className="ml-hud-progress__label">
-            <span>התקדמות היום</span>
-            <strong className="ml-number-text">{todayPoints}/{DAILY_GOAL}</strong>
-          </div>
-          <ProgressTrack value={todayRatio} />
-        </div>
+        <nav className="ml-player-hud__actions" aria-label="פעולות במפה">
+          <HudAction label="הישגים" onClick={onOpenAchievements} icon={<TrophyIcon size={20} />} />
+          <HudAction label="אוספים" onClick={onOpenCollections} icon={<CollectionGlyph />} />
+          <HudAction label="הורים" onClick={onOpenParent} icon={<ParentGlyph />} />
+        </nav>
       </div>
-
-      <nav className="ml-player-hud__actions" aria-label="פעולות במפה">
-        <HudAction label="הישגים" onClick={onOpenAchievements} icon={<TrophyIcon size={20} />} />
-        <HudAction label="אוספים" onClick={onOpenCollections} icon={<CollectionGlyph />} />
-        <HudAction label="הורים" onClick={onOpenParent} icon={<ParentGlyph />} />
-      </nav>
     </section>
   );
 }

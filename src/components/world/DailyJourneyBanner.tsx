@@ -1,27 +1,36 @@
 interface DailyJourneyBannerProps {
+  todayPoints: number;
+  dailyGoal: number;
   onStart: () => void;
 }
 
-export function DailyJourneyBanner({ onStart }: DailyJourneyBannerProps) {
+export function DailyJourneyBanner({ todayPoints, dailyGoal, onStart }: DailyJourneyBannerProps) {
+  const progress = Math.max(0, Math.min(1, todayPoints / dailyGoal));
+
   return (
-    <section className="ml-daily-journey" aria-label="המסע של היום">
-      <div className="ml-daily-journey__art" aria-hidden>
+    <button type="button" className="ml-daily-journey ml-pressable" onClick={onStart} aria-label="לצאת למסע של היום">
+      <span className="ml-daily-journey__art" aria-hidden>
         <JourneyCompass />
         <span className="ml-daily-journey__spark ml-daily-journey__spark--one">✦</span>
         <span className="ml-daily-journey__spark ml-daily-journey__spark--two">✦</span>
-      </div>
+      </span>
 
-      <div className="ml-daily-journey__copy">
-        <span className="ml-daily-journey__eyebrow">משימה חדשה מחכה</span>
+      <span className="ml-daily-journey__copy">
+        <span className="ml-daily-journey__eyebrow">ההרפתקה היומית</span>
         <strong>המסע של היום</strong>
-        <small>משחקים קצרים, הפתעות ופרס יומי</small>
-      </div>
+        <span className="ml-daily-journey__progress" aria-label={`${todayPoints} מתוך ${dailyGoal} נקודות היום`}>
+          <span className="ml-daily-journey__track" aria-hidden>
+            <span style={{ width: `${progress * 100}%` }} />
+          </span>
+          <small className="ml-number-text">{todayPoints}/{dailyGoal}</small>
+        </span>
+      </span>
 
-      <button type="button" className="ml-daily-journey__button ml-pressable" onClick={onStart}>
+      <span className="ml-daily-journey__button" aria-hidden>
         <span>יוצאים לדרך</span>
         <span className="ml-daily-journey__arrow" aria-hidden>←</span>
-      </button>
-    </section>
+      </span>
+    </button>
   );
 }
 

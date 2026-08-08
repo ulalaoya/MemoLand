@@ -62,8 +62,53 @@
   50% { opacity: 0.66; }
 }
 
+@keyframes ml-opening-breathe {
+  from { transform: scale(1.012); }
+  to { transform: scale(1.035); }
+}
+
+@keyframes ml-opening-orb {
+  0%, 100% {
+    opacity: 0.45;
+    transform: translateY(0) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-13px) scale(1.08);
+  }
+}
+
+@keyframes ml-cta-glint {
+  0%, 72%, 100% { transform: translateX(0) skewX(-20deg); }
+  88% { transform: translateX(520%) skewX(-20deg); }
+}
+
+@keyframes ml-cloud-cross {
+  0% { transform: translateX(0) scale(0.92); }
+  100% { transform: translateX(calc(100vw + 180px)) scale(1.04); }
+}
+
+@keyframes ml-leaf-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-18deg); }
+  35% { transform: translate3d(18px, 28px, 0) rotate(58deg); }
+  70% { transform: translate3d(-9px, 54px, 0) rotate(136deg); }
+}
+
+@keyframes ml-memo-peek {
+  0%, 58%, 100% { transform: translateY(0) rotate(0); }
+  64% { transform: translateY(-4px) rotate(-4deg); }
+  70% { transform: translateY(0) rotate(3deg); }
+  76% { transform: translateY(-2px) rotate(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ml-pressable,
+  .ml-opening-screen *,
+  .ml-opening-screen *::before,
+  .ml-opening-screen *::after,
+  .ml-echo-audio *,
+  .ml-echo-audio *::before,
+  .ml-echo-audio *::after,
   .ml-world-map-screen *,
   .ml-world-map-screen *::before,
   .ml-world-map-screen *::after {

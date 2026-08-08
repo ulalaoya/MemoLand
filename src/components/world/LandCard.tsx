@@ -55,6 +55,11 @@ export function LandCard({
         <span className="ml-land-card__art" aria-hidden>
           <WorldIllustration land={landId} />
           <span className="ml-land-card__world-number ml-display-text">{worldNumber}</span>
+          {current ? (
+            <span className="ml-land-card__memo-scout">
+              <img src="./characters/memo.png" alt="" draggable={false} />
+            </span>
+          ) : null}
         </span>
 
         <span className="ml-land-card__content">
