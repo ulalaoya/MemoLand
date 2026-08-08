@@ -19,6 +19,9 @@ import '@fontsource/assistant/latin-600.css';
 import '@fontsource/assistant/latin-700.css';
 import '@fontsource/lilita-one/latin-400.css';
 
+import './design/tokens.css';
+import './design/typography.css';
+import './design/motion.css';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(

@@ -1,0 +1,61 @@
+:root {
+  /* MemoLand core palette */
+  --ml-blue: #2e8df6;
+  --ml-sky: #67c8ff;
+  --ml-green: #58c548;
+  --ml-green-light: #91e35d;
+  --ml-yellow: #ffc928;
+  --ml-red: #f04a3a;
+  --ml-orange: #f59d2a;
+  --ml-purple: #8c52d9;
+  --ml-earth: #8d5b36;
+  --ml-navy: #243247;
+  --ml-white: #ffffff;
+  --ml-surface: #f7fbff;
+
+  /* Derived supporting shades */
+  --ml-blue-deep: #176bc6;
+  --ml-blue-soft: #dff3ff;
+  --ml-green-deep: #32983a;
+  --ml-yellow-light: #ffe98d;
+  --ml-yellow-deep: #dc9611;
+  --ml-purple-deep: #6231ad;
+  --ml-purple-light: #c8a7f4;
+  --ml-earth-deep: #654025;
+  --ml-navy-soft: #40536c;
+  --ml-surface-blue: #eaf7ff;
+
+  /* Typography */
+  --ml-font-display: 'Lilita One', system-ui, sans-serif;
+  --ml-font-heading: 'Rubik', system-ui, sans-serif;
+  --ml-font-body: 'Assistant', system-ui, sans-serif;
+
+  /* Spacing */
+  --ml-space-1: 4px;
+  --ml-space-2: 8px;
+  --ml-space-3: 12px;
+  --ml-space-4: 16px;
+  --ml-space-5: 20px;
+  --ml-space-6: 24px;
+  --ml-space-8: 32px;
+  --ml-space-10: 40px;
+
+  /* Shape and depth */
+  --ml-radius-sm: 10px;
+  --ml-radius-md: 16px;
+  --ml-radius-lg: 22px;
+  --ml-radius-xl: 30px;
+  --ml-radius-pill: 999px;
+  --ml-outline: 3px solid var(--ml-white);
+  --ml-shadow-soft: 0 8px 20px rgba(36, 50, 71, 0.16);
+  --ml-shadow-card: 0 8px 0 rgba(36, 50, 71, 0.22), 0 14px 28px rgba(36, 50, 71, 0.15);
+  --ml-shadow-button: 0 5px 0 rgba(36, 50, 71, 0.3), 0 10px 18px rgba(36, 50, 71, 0.14);
+  --ml-shadow-float: 0 12px 30px rgba(36, 50, 71, 0.2);
+
+  /* Interaction and layout */
+  --ml-touch-target: 44px;
+  --ml-content-max: 768px;
+  --ml-safe-top: env(safe-area-inset-top, 0px);
+  --ml-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --ml-focus-ring: 0 0 0 4px rgba(46, 141, 246, 0.28);
+}
