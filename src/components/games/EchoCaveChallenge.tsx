@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { MemoCompanion, type MemoCompanionPose } from './MemoCompanion';
+import { MemoCompanion, type MemoBehavior } from './MemoCompanion';
 import './echo-cave-challenge.css';
 
 export type EchoChallengePhase = 'ready' | 'playing' | 'response' | 'error' | 'success' | 'done';
@@ -11,14 +11,14 @@ export function EchoCaveChallenge({
   phase: EchoChallengePhase;
   children: ReactNode;
 }) {
-  const memoPose: MemoCompanionPose =
+  const memoBehavior: MemoBehavior =
     phase === 'playing'
       ? 'listening'
-      : phase === 'response' || phase === 'error' || phase === 'done'
+      : phase === 'response' || phase === 'done'
         ? 'thinking'
         : phase === 'success'
           ? 'success'
-          : 'ready';
+          : 'idle';
 
   return (
     <section className={`ml-echo-challenge ml-echo-challenge--${phase}`} aria-label="אתגר במערת ההדים">
@@ -42,7 +42,7 @@ export function EchoCaveChallenge({
         <span className="ml-echo-challenge__reflection ml-echo-challenge__reflection--two" />
         <span className="ml-echo-challenge__rocks ml-echo-challenge__rocks--left" />
         <span className="ml-echo-challenge__rocks ml-echo-challenge__rocks--right" />
-        <MemoCompanion pose={memoPose} className="ml-echo-challenge__memo" />
+        <MemoCompanion behavior={memoBehavior} className="ml-echo-challenge__memo" />
       </div>
 
       <div className="ml-echo-challenge__surface">{children}</div>

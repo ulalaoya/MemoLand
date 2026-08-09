@@ -1,24 +1,31 @@
 import type { ReactNode } from 'react';
-import { MemoCompanion, type MemoCompanionPose } from './MemoCompanion';
+import { MemoCompanion, type MemoBehavior } from './MemoCompanion';
 import './numbers-valley-challenge.css';
 
-export type NumbersChallengePhase = 'ready' | 'encoding' | 'recall' | 'success' | 'done';
+export type NumbersChallengePhase = 'ready' | 'focus' | 'encoding' | 'recall' | 'success' | 'done';
+
+const VALLEY_DIGIT_ROWS = [
+  [1, 2, 3, 4, 5],
+  [6, 7, 8, 9, 0],
+] as const;
 
 export function NumbersValleyChallenge({
   phase,
+  memoBeat = 0,
   children,
 }: {
   phase: NumbersChallengePhase;
+  memoBeat?: number;
   children: ReactNode;
 }) {
-  const memoPose: MemoCompanionPose =
-    phase === 'encoding'
-      ? 'listening'
+  const memoBehavior: MemoBehavior =
+    phase === 'focus' || phase === 'encoding'
+      ? 'attentive'
       : phase === 'recall' || phase === 'done'
         ? 'thinking'
         : phase === 'success'
           ? 'success'
-          : 'ready';
+          : 'idle';
 
   return (
     <section className={`ml-numbers-challenge ml-numbers-challenge--${phase}`} aria-label="אתגר בעמק המספרים">
@@ -33,7 +40,11 @@ export function NumbersValleyChallenge({
         <span className="ml-numbers-challenge__flower ml-numbers-challenge__flower--two" />
         <span className="ml-numbers-challenge__success-spark ml-numbers-challenge__success-spark--one">✦</span>
         <span className="ml-numbers-challenge__success-spark ml-numbers-challenge__success-spark--two">✦</span>
-        <MemoCompanion pose={memoPose} className="ml-numbers-challenge__memo" />
+        <MemoCompanion
+          key={`${memoBehavior}-${memoBeat}`}
+          behavior={memoBehavior}
+          className="ml-numbers-challenge__memo"
+        />
       </div>
 
       <div className="ml-numbers-challenge__surface">{children}</div>
@@ -56,7 +67,9 @@ export function ValleyReadyButton({ onClick }: { onClick: () => void }) {
 export function ValleyNumberToken({ children }: { children: ReactNode }) {
   return (
     <div className="ml-valley-number-stage" aria-live="polite">
+      <span className="ml-valley-number-stage__beam" aria-hidden />
       <span className="ml-valley-number-stage__glow" aria-hidden />
+      <span className="ml-valley-number-stage__landing" aria-hidden />
       <span className="ml-valley-number-token" dir="ltr">{children}</span>
     </div>
   );
@@ -65,7 +78,8 @@ export function ValleyNumberToken({ children }: { children: ReactNode }) {
 export function ValleyFocusBreath() {
   return (
     <div className="ml-valley-focus-breath" role="status" aria-label="המסלול מתכונן">
-      <span aria-hidden />
+      <span className="ml-valley-focus-breath__ring" aria-hidden />
+      <span className="ml-valley-focus-breath__stone" aria-hidden />
     </div>
   );
 }
@@ -95,16 +109,20 @@ export function ValleyNumberPad({
   return (
     <div className="ml-valley-number-pad" dir="ltr">
       <div className="ml-valley-number-pad__digits">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((digit) => (
-          <button
-            key={digit}
-            type="button"
-            className="ml-valley-key ml-pressable"
-            onClick={() => onDigit(digit)}
-            aria-label={`ספרה ${digit}`}
-          >
-            {digit}
-          </button>
+        {VALLEY_DIGIT_ROWS.map((row, rowIndex) => (
+          <div key={row[0]} className={`ml-valley-number-pad__row ml-valley-number-pad__row--${rowIndex + 1}`}>
+            {row.map((digit) => (
+              <button
+                key={digit}
+                type="button"
+                className="ml-valley-key ml-pressable"
+                onClick={() => onDigit(digit)}
+                aria-label={`ספרה ${digit}`}
+              >
+                {digit}
+              </button>
+            ))}
+          </div>
         ))}
       </div>
       <div className="ml-valley-number-pad__actions">

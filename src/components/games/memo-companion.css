@@ -30,24 +30,45 @@
   filter: blur(3px);
 }
 
-.ml-memo-companion--ready { animation: ml-memo-arrive 520ms var(--ml-ease-out) both; }
-.ml-memo-companion--listening { animation: ml-memo-listen-in 440ms var(--ml-ease-out) both; }
-.ml-memo-companion--thinking { animation: ml-memo-think-in 520ms var(--ml-ease-out) both; }
+.ml-memo-companion--idle { animation: ml-memo-idle-in 480ms var(--ml-ease-out) both; }
+.ml-memo-companion--attentive { animation: ml-memo-attend 420ms var(--ml-ease-out) both; }
+.ml-memo-companion--listening { animation: ml-memo-listen 440ms var(--ml-ease-out) both; }
+.ml-memo-companion--thinking { animation: ml-memo-think 620ms var(--ml-ease-out) both; }
 .ml-memo-companion--success { animation: ml-memo-two-hops 920ms var(--ml-ease-out) both; }
+.ml-memo-companion--success .ml-memo-companion__shadow { animation: ml-memo-shadow-hops 920ms var(--ml-ease-out) both; }
 
-@keyframes ml-memo-arrive {
+.ml-memo-companion--attentive img {
+  transform: translateX(2px);
+  filter: drop-shadow(0 8px 6px rgba(17, 19, 50, 0.3)) brightness(1.02);
+}
+
+.ml-memo-companion--listening img {
+  transform: translateX(3px);
+  filter: drop-shadow(0 8px 6px rgba(17, 19, 50, 0.34)) brightness(1.04);
+}
+
+@keyframes ml-memo-idle-in {
   from { opacity: 0; transform: translateY(8px) rotate(-2deg); }
   to { opacity: 1; transform: translateY(0) rotate(0); }
 }
 
-@keyframes ml-memo-listen-in {
-  from { transform: translateY(2px) rotate(2deg); }
-  to { transform: translateY(0) rotate(-2deg); }
+@keyframes ml-memo-attend {
+  0% { opacity: 0.86; transform: translateY(3px) rotate(-3deg) scale(0.985); }
+  58% { opacity: 1; transform: translateY(0) rotate(1.5deg) scale(1); }
+  100% { opacity: 1; transform: translateY(0) rotate(0.5deg) scale(1); }
 }
 
-@keyframes ml-memo-think-in {
-  from { transform: translateY(3px) rotate(-2deg); }
-  to { transform: translateY(0) rotate(1deg); }
+@keyframes ml-memo-listen {
+  0% { transform: translateY(2px) rotate(-2deg) scale(0.99); }
+  62% { transform: translateY(0) rotate(2.5deg) scale(1); }
+  100% { transform: translateY(0) rotate(1.5deg) scale(1); }
+}
+
+@keyframes ml-memo-think {
+  0% { transform: translateY(2px) rotate(-1.5deg); }
+  42% { transform: translateY(0) rotate(2deg); }
+  68% { transform: translateY(0) rotate(0.5deg); }
+  100% { transform: translateY(0) rotate(1deg); }
 }
 
 @keyframes ml-memo-two-hops {
@@ -56,6 +77,12 @@
   38% { transform: translateY(0) scale(0.98, 1.02); }
   58% { transform: translateY(-8px) scale(1.01); }
   76% { transform: translateY(0) scale(0.99, 1.01); }
+}
+
+@keyframes ml-memo-shadow-hops {
+  0%, 38%, 76%, 100% { opacity: 1; transform: scaleX(1); }
+  20% { opacity: 0.55; transform: scaleX(0.72); }
+  58% { opacity: 0.68; transform: scaleX(0.82); }
 }
 
 @media (prefers-reduced-motion: reduce) {
