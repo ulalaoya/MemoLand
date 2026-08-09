@@ -102,7 +102,7 @@ export function ChainMathGame({
 
   const challengePhase: NumbersChallengePhase =
     phase === 'showing'
-      ? 'encoding'
+      ? (step === -3 ? 'focus' : 'encoding')
       : phase === 'input'
         ? 'recall'
         : phase === 'done' && result
@@ -110,7 +110,7 @@ export function ChainMathGame({
           : phase;
 
   return (
-    <NumbersValleyChallenge phase={challengePhase}>
+    <NumbersValleyChallenge phase={challengePhase} memoBeat={step}>
       {phase === 'ready' && (
         <div className="ml-valley-ready">
           <span className="ml-valley-ready__eyebrow">אתגר הדרך</span>

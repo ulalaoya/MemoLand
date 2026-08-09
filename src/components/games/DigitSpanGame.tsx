@@ -99,7 +99,7 @@ export function DigitSpanGame({
 
   const challengePhase: NumbersChallengePhase =
     phase === 'showing'
-      ? 'encoding'
+      ? (shownIdx < 0 ? 'focus' : 'encoding')
       : phase === 'input'
         ? 'recall'
         : phase === 'done' && result
@@ -107,7 +107,7 @@ export function DigitSpanGame({
           : phase;
 
   return (
-    <NumbersValleyChallenge phase={challengePhase}>
+    <NumbersValleyChallenge phase={challengePhase} memoBeat={shownIdx}>
       {phase === 'ready' && (
         <div className="ml-valley-ready">
           <span className="ml-valley-ready__eyebrow">אתגר הזיכרון</span>
