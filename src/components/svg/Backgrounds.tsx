@@ -90,9 +90,13 @@ function Numbers() {
           <stop offset="1" stopColor="#b7d9df" />
         </linearGradient>
         <linearGradient id="n-path" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#f6dc8b" />
+          <stop offset="0" stopColor="#d7c77e" />
+          <stop offset="0.18" stopColor="#ead084" />
           <stop offset="1" stopColor="#d7a35d" />
         </linearGradient>
+        <clipPath id="n-land-horizon">
+          <path d="M0 430Q92 372 194 429T400 416V800H0Z" />
+        </clipPath>
         <linearGradient id="n-grass-front" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#58c548" />
           <stop offset="1" stopColor="#30963b" />
@@ -114,16 +118,18 @@ function Numbers() {
       <path d="M0 515Q104 458 209 520T400 493V800H0Z" fill="#7bd759" />
       <path d="M0 620Q93 556 207 615T400 586V800H0Z" fill="#58c548" />
 
-      <path
-        d="M130 800C151 742 264 700 245 632C228 570 139 555 172 493C194 451 237 416 220 354L244 352C267 421 224 463 207 506C188 553 278 575 286 641C296 720 215 754 205 800Z"
-        fill="#8d5b36"
-        opacity="0.48"
-      />
-      <path
-        d="M141 800C164 746 257 703 238 637C221 582 153 564 184 501C204 461 239 422 226 358L239 357C258 422 218 468 201 511C184 557 265 582 273 644C282 714 207 757 195 800Z"
-        fill="url(#n-path)"
-      />
-      <path d="M180 735Q222 711 249 682M180 575Q213 559 241 574M203 455Q226 437 238 412" fill="none" stroke="#fff2b6" strokeWidth="5" strokeLinecap="round" opacity="0.58" />
+      <g clipPath="url(#n-land-horizon)">
+        <path
+          d="M130 800C151 742 264 700 245 632C228 570 139 555 172 493C184 469 207 452 219 443Q224 440 231 447C228 462 215 480 207 506C188 553 278 575 286 641C296 720 215 754 205 800Z"
+          fill="#8d5b36"
+          opacity="0.48"
+        />
+        <path
+          d="M141 800C164 746 257 703 238 637C221 582 153 564 184 501C196 476 215 459 222 449Q226 445 229 450C226 464 212 482 201 511C184 557 265 582 273 644C282 714 207 757 195 800Z"
+          fill="url(#n-path)"
+        />
+        <path d="M180 735Q222 711 249 682M180 575Q213 559 241 574M205 477Q217 461 225 451" fill="none" stroke="#fff2b6" strokeWidth="5" strokeLinecap="round" opacity="0.58" />
+      </g>
 
       {[[36, 490, 0.8], [358, 470, 0.72], [66, 606, 0.62], [340, 592, 0.58]].map(([x, y, s], i) => (
         <g key={`nt${i}`} transform={`translate(${x} ${y}) scale(${s})`}>
