@@ -5,6 +5,7 @@
 
 let ctx: AudioContext | null = null;
 let enabled = true;
+let userActivationReceived = false;
 
 export function setSfxEnabled(on: boolean): void {
   enabled = on;
@@ -23,7 +24,20 @@ function ensureCtx(): AudioContext | null {
 
 /** נקרא מאירוע מגע ראשון. */
 export function unlockSfx(): void {
+  userActivationReceived = true;
   ensureCtx();
+}
+
+export function getSfxDiagnostics(): { supported: boolean; state: AudioContextState | 'not-created'; userActivationReceived: boolean } {
+  if (typeof window === 'undefined') {
+    return { supported: false, state: 'not-created', userActivationReceived };
+  }
+  const supported = Boolean(window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext);
+  return {
+    supported,
+    state: ctx?.state ?? 'not-created',
+    userActivationReceived,
+  };
 }
 
 function tone(freq: number, start: number, dur: number, type: OscillatorType = 'sine', gain = 0.2): void {

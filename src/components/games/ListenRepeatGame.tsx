@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Challenge } from '../../types';
 import type { ListenRepeatStimulus } from '../../engines/echoes';
-import { speak, stopSpeech } from '../../audio/speech';
+import {
+  recordSpeechDiagnostic,
+  resetSpeechForGesture,
+  SPEECH_START_WATCHDOG_MS,
+  speak,
+  stopSpeech,
+} from '../../audio/speech';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import { FeedbackBanner } from './common';
 import type { GameProps } from './common';
@@ -48,12 +54,30 @@ export function ListenRepeatGame({
     if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
     setPhase('playing');
 
+    const failPlayback = (reason: string, cancelSpeech = false) => {
+      if (playbackRef.current !== playbackId) return;
+      playbackRef.current += 1;
+      if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+      recordSpeechDiagnostic('echo-playback-failed', reason);
+      if (cancelSpeech) stopSpeech();
+      setPhase('audioError');
+    };
+
     const beginInput = () => {
       if (playbackRef.current !== playbackId) return;
+      if (!started) {
+        failPlayback('ended-before-start', true);
+        return;
+      }
       if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
       startRef.current = performance.now();
       setPhase('input');
     };
+
+    if (!resetSpeechForGesture()) {
+      failPlayback('gesture-reset-unavailable');
+      return;
+    }
 
     const startedPlayback = speak(stim.words.join(' '), speechRate, {
       onStart: () => {
@@ -63,21 +87,18 @@ export function ListenRepeatGame({
         playbackTimerRef.current = setTimeout(beginInput, stim.words.length * 1100 + 1200);
       },
       onEnd: beginInput,
-      onError: () => {
-        if (playbackRef.current !== playbackId) return;
-        playbackRef.current += 1;
-        if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
-        setPhase('audioError');
-      },
+      onError: (reason) => failPlayback(reason ?? 'utterance-error'),
     });
 
-    if (!startedPlayback) return;
+    if (!startedPlayback) {
+      failPlayback('speak-not-queued');
+      return;
+    }
     playbackTimerRef.current = setTimeout(() => {
       if (!started && playbackRef.current === playbackId) {
-        playbackRef.current += 1;
-        setPhase('audioError');
+        failPlayback('start-watchdog-timeout', true);
       }
-    }, 2400);
+    }, SPEECH_START_WATCHDOG_MS);
   }
 
   function submit() {

@@ -1,4 +1,5 @@
 import { EchoSpeakerGlyph } from './EchoCaveChallenge';
+import { EchoDiagnosticsPanel } from './EchoDiagnosticsPanel';
 import './echo-audio.css';
 
 export function EchoAudioState({ state, onRetry }: { state: 'playing' | 'error'; onRetry?: () => void }) {
@@ -25,6 +26,7 @@ export function EchoAudioState({ state, onRetry }: { state: 'playing' | 'error';
               נסו שוב
             </button>
           ) : null}
+          <EchoDiagnosticsPanel />
         </div>
       )}
     </div>

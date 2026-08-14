@@ -12,6 +12,17 @@ let preferredVoiceName: string | null = null;
 /** Keep utterances alive until the browser reports completion. Some Chromium builds can
  * garbage-collect an unreferenced utterance before its callbacks fire. */
 const activeUtterances = new Set<SpeechSynthesisUtterance>();
+const diagnosticEvents: { at: string; event: string; detail?: string }[] = [];
+export const SPEECH_START_WATCHDOG_MS = 8000;
+
+function recordDiagnostic(event: string, detail?: string): void {
+  diagnosticEvents.push({ at: new Date().toISOString(), event, detail });
+  if (diagnosticEvents.length > 24) diagnosticEvents.shift();
+}
+
+export function recordSpeechDiagnostic(event: string, detail?: string): void {
+  recordDiagnostic(event, detail);
+}
 
 export function isSpeechUnlocked(): boolean {
   return unlocked;
@@ -27,8 +38,31 @@ export function unlockSpeech(): void {
     window.speechSynthesis.resume();
     unlocked = true;
     refreshVoices();
+    recordDiagnostic('opening-gesture-unlock', `voices=${window.speechSynthesis.getVoices().length}`);
   } catch {
+    recordDiagnostic('opening-gesture-unlock-failed');
     /* מתעלמים — נמשיך גם בלי קול */
+  }
+}
+
+/** מאפס תור תקוע ומחדש את מנוע הדיבור מתוך מחוות המשתמש של כפתור ההאזנה/ניסיון חוזר. */
+export function resetSpeechForGesture(): boolean {
+  if (typeof window === 'undefined' || !window.speechSynthesis) {
+    recordDiagnostic('gesture-reset-unavailable');
+    return false;
+  }
+  try {
+    const synth = window.speechSynthesis;
+    synth.cancel();
+    activeUtterances.clear();
+    synth.resume();
+    unlocked = true;
+    refreshVoices();
+    recordDiagnostic('gesture-reset', `voices=${synth.getVoices().length};paused=${synth.paused}`);
+    return true;
+  } catch {
+    recordDiagnostic('gesture-reset-failed');
+    return false;
   }
 }
 
@@ -67,8 +101,35 @@ function activeVoice(): SpeechSynthesisVoice | null {
 }
 
 if (typeof window !== 'undefined' && window.speechSynthesis) {
-  window.speechSynthesis.onvoiceschanged = refreshVoices;
+  window.speechSynthesis.addEventListener('voiceschanged', () => {
+    refreshVoices();
+    recordDiagnostic('voices-changed', `voices=${window.speechSynthesis.getVoices().length};hebrew=${listHebrewVoices().length}`);
+  });
   refreshVoices();
+}
+
+export function getSpeechDiagnostics() {
+  if (typeof window === 'undefined' || !window.speechSynthesis) {
+    return {
+      available: false,
+      unlocked,
+      paused: false,
+      pending: false,
+      speaking: false,
+      activeUtterances: 0,
+      events: [...diagnosticEvents],
+    };
+  }
+  const synth = window.speechSynthesis;
+  return {
+    available: true,
+    unlocked,
+    paused: synth.paused,
+    pending: synth.pending,
+    speaking: synth.speaking,
+    activeUtterances: activeUtterances.size,
+    events: [...diagnosticEvents],
+  };
 }
 
 export interface SpeakOptions {
@@ -83,6 +144,7 @@ export interface SpeakOptions {
 /** מקריא טקסט עברי. כברירת מחדל עוצר הקראה קודמת; עם queue מוסיף לתור. */
 export function speak(text: string, rate = 0.9, opts: SpeakOptions = {}): boolean {
   if (typeof window === 'undefined' || !window.speechSynthesis) {
+    recordDiagnostic('speak-unavailable');
     opts.onError?.('not-supported');
     return false;
   }
@@ -99,27 +161,37 @@ export function speak(text: string, rate = 0.9, opts: SpeakOptions = {}): boolea
     if (voice) utterance.voice = voice;
 
     const release = () => activeUtterances.delete(utterance);
-    utterance.onstart = () => opts.onStart?.();
+    utterance.onstart = () => {
+      recordDiagnostic('utterance-start', `voice=${voice?.name ?? 'browser-default'};lang=${utterance.lang}`);
+      opts.onStart?.();
+    };
     utterance.onend = () => {
       release();
+      recordDiagnostic('utterance-end');
       opts.onEnd?.();
     };
     utterance.onerror = (event) => {
       release();
+      recordDiagnostic('utterance-error', event.error);
       opts.onError?.(event.error);
     };
 
     activeUtterances.add(utterance);
     synth.resume();
     synth.speak(utterance);
+    recordDiagnostic('utterance-queued', `characters=${text.length};voices=${synth.getVoices().length};hebrew=${listHebrewVoices().length}`);
     return true;
   } catch {
+    recordDiagnostic('speak-failed');
     opts.onError?.('speak-failed');
     return false;
   }
 }
 
 export function stopSpeech(): void {
-  if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+  if (typeof window !== 'undefined' && window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+    recordDiagnostic('speech-stopped');
+  }
   activeUtterances.clear();
 }

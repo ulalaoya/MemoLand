@@ -3,10 +3,17 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const buildId = process.env.COMMIT_REF?.slice(0, 12) ?? `local-${new Date().toISOString()}`;
+const buildTime = new Date().toISOString();
+
 // base: './' keeps asset paths relative so the built app runs from any static
 // host (Netlify drop, Vercel, GitHub Pages, or a local file server).
 export default defineConfig({
   base: './',
+  define: {
+    __MEMOLAND_BUILD_ID__: JSON.stringify(buildId),
+    __MEMOLAND_BUILD_TIME__: JSON.stringify(buildTime),
+  },
   plugins: [
     react(),
     VitePWA({
