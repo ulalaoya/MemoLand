@@ -3,6 +3,7 @@
    מקור: ה-Style Guide המצורף. ערכים מדויקים, בלי גוונים סמוכים מומצאים.
    ========================================================================= */
 :root {
+  --ml-app-height: 100vh;
   /* מותג ולוגו */
   --red: #f04a3a;
   --yellow: #f7c93b;
@@ -73,19 +74,27 @@ body {
   height: 100%;
 }
 
+@supports (height: 100dvh) {
+  :root {
+    --ml-app-height: 100dvh;
+  }
+}
+
 body {
   direction: rtl;
   font-family: var(--font-body);
   color: var(--ink);
   background: var(--sky);
-  overflow-x: hidden;
+  height: var(--ml-app-height);
+  overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
 }
 
 #root {
-  height: 100%;
+  height: var(--ml-app-height);
+  min-height: 0;
   max-width: 520px;
   margin-inline: auto;
   position: relative;

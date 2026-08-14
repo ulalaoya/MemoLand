@@ -229,7 +229,7 @@
 .ml-echo-challenge__memo {
   z-index: 5;
   left: 4%;
-  bottom: 3.5%;
+  bottom: calc(max(3.5%, 10px) + var(--ml-safe-bottom));
   --ml-memo-size: clamp(94px, 29vw, 124px);
 }
 
@@ -240,7 +240,7 @@
   height: 100%;
   min-height: 0;
   margin-inline: auto;
-  padding: clamp(20px, 5vh, 48px) 0 126px;
+  padding: clamp(20px, 5vh, 48px) 0 calc(126px + var(--ml-safe-bottom));
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -503,10 +503,10 @@
 }
 
 @media (max-width: 359px) {
-  .ml-echo-challenge__surface { width: calc(100% - 22px); padding-top: 14px; padding-bottom: 102px; }
+  .ml-echo-challenge__surface { width: calc(100% - 22px); padding-top: 14px; padding-bottom: calc(102px + var(--ml-safe-bottom)); }
   .ml-echo-ready { padding-top: 12px; gap: 13px; }
   .ml-echo-listen-button { min-width: 202px; min-height: 70px; }
-  .ml-echo-challenge__memo { left: 2%; bottom: 3%; --ml-memo-size: 82px; }
+  .ml-echo-challenge__memo { left: 2%; bottom: calc(8px + var(--ml-safe-bottom)); --ml-memo-size: 82px; }
   .ml-echo-challenge__crystal--left-two,
   .ml-echo-challenge__crystal--right-two { display: none; }
   .ml-echo-word-bank { padding: 10px; }
@@ -515,9 +515,9 @@
 }
 
 @media (max-height: 680px) {
-  .ml-echo-challenge__surface { padding-top: 10px; padding-bottom: 88px; }
+  .ml-echo-challenge__surface { padding-top: 10px; padding-bottom: calc(88px + var(--ml-safe-bottom)); }
   .ml-echo-ready { padding-top: 4px; gap: 11px; }
-  .ml-echo-challenge__memo { bottom: 1%; --ml-memo-size: 72px; }
+  .ml-echo-challenge__memo { bottom: calc(8px + var(--ml-safe-bottom)); --ml-memo-size: 72px; }
   .ml-echo-challenge__crystal { height: 70px; }
   .ml-echo-challenge__floor { height: 25%; }
   .ml-echo-challenge__water { height: 13%; }

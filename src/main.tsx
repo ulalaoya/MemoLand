@@ -24,6 +24,17 @@ import './design/typography.css';
 import './design/motion.css';
 import './index.css';
 
+function syncAppViewportHeight() {
+  const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+  document.documentElement.style.setProperty('--ml-app-height', `${Math.round(viewportHeight)}px`);
+}
+
+document.documentElement.dataset.memolandBuild = __MEMOLAND_BUILD_ID__;
+document.documentElement.dataset.memolandBuildTime = __MEMOLAND_BUILD_TIME__;
+syncAppViewportHeight();
+window.addEventListener('resize', syncAppViewportHeight);
+window.visualViewport?.addEventListener('resize', syncAppViewportHeight);
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
