@@ -8,6 +8,7 @@ import { enginesForLand, playableLands } from '../engines';
 import { accuracy } from '../scheduler/leveling';
 import { weeklyRecommendations } from '../scheduler/recommendations';
 import { Button } from '../components/Button';
+import { EchoDiagnosticsPanel } from '../components/games/EchoDiagnosticsPanel';
 import { hasHebrewVoice, listHebrewVoices, speak } from '../audio/speech';
 import type { LandId, Settings } from '../types';
 
@@ -331,6 +332,10 @@ function SettingsTab() {
 
       <Card title="קול ההקראה (עברית)">
         <VoicePicker current={settings.voiceName} rate={settings.speechRate} onPick={(name) => set('voiceName', name)} />
+      </Card>
+
+      <Card title="אבחון שמע זמני">
+        <EchoDiagnosticsPanel />
       </Card>
 
       <Card title="אפקטים קוליים">
