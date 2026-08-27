@@ -1,9 +1,40 @@
 /* בנק תוכן לעברית פשוטה (רמת כיתה ב') עבור מערת ההדים.
    נשמר בנפרד כדי שיהיה קל להרחיב ולהחליף בתוכן הורה. */
 
-/** מילים לבניית משפטים אקראיים תקינים: נושא + פועל + מושא/תיאור. */
-export const SUBJECTS = ['הילד', 'הכלב', 'החתול', 'סבתא', 'הדג', 'הציפור', 'ממו', 'הארנב'];
-export const VERBS = ['אכל', 'ראה', 'מצא', 'אהב', 'צייר', 'שמר', 'הביא', 'חיפש'];
+/** רכיבים לבניית משפטים אקראיים תקינים: נושא + פועל תואם מגדר + מושא/תיאור. */
+export type GrammaticalGender = 'masculine' | 'feminine';
+
+export interface EchoSubject {
+  text: string;
+  gender: GrammaticalGender;
+}
+
+export interface EchoVerb {
+  masculine: string;
+  feminine: string;
+}
+
+export const SUBJECTS: EchoSubject[] = [
+  { text: 'הילד', gender: 'masculine' },
+  { text: 'הכלב', gender: 'masculine' },
+  { text: 'החתול', gender: 'masculine' },
+  { text: 'סבתא', gender: 'feminine' },
+  { text: 'הדג', gender: 'masculine' },
+  { text: 'הציפור', gender: 'feminine' },
+  { text: 'ממו', gender: 'masculine' },
+  { text: 'הארנב', gender: 'masculine' },
+];
+
+export const VERBS: EchoVerb[] = [
+  { masculine: 'אכל', feminine: 'אכלה' },
+  { masculine: 'ראה', feminine: 'ראתה' },
+  { masculine: 'מצא', feminine: 'מצאה' },
+  { masculine: 'אהב', feminine: 'אהבה' },
+  { masculine: 'צייר', feminine: 'ציירה' },
+  { masculine: 'שמר', feminine: 'שמרה' },
+  { masculine: 'הביא', feminine: 'הביאה' },
+  { masculine: 'חיפש', feminine: 'חיפשה' },
+];
 export const OBJECTS = [
   'תפוח אדום',
   'כדור גדול',
@@ -15,6 +46,7 @@ export const OBJECTS = [
   'בית קטן',
 ];
 export const EXTRAS = ['בגינה', 'בבוקר', 'ליד הים', 'בשמחה', 'מתחת לעץ', 'בערב'];
+export const CONTRADICTORY_EXTRA_PAIRS: readonly (readonly [string, string])[] = [['בבוקר', 'בערב']];
 
 /** אייקונים למשחק ההוראות (מזהה + שם עברי + אימוג'י פנימי לצייר כ-SVG). */
 export interface TapIcon {

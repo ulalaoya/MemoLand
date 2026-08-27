@@ -1,5 +1,7 @@
 /**
- * Development-only generator for the compact built-in Hebrew Echo fallback corpus.
+ * Legacy development-only generator retained as an auditable corpus/filename definition.
+ * Production Echo fallback assets are human-recorded; do not use this script to create
+ * or replace production audio.
  *
  * Install @echogarden/espeak-ng-emscripten outside the application, then pass its
  * module directory as the first argument. The committed WAV files are runtime-only;
@@ -23,7 +25,8 @@ worker.rate = 155;
 worker.pitch = 52;
 
 const subjects = ['הילד', 'הכלב', 'החתול', 'סבתא', 'הדג', 'הציפור', 'ממו', 'הארנב'];
-const verbs = ['אכל', 'ראה', 'מצא', 'אהב', 'צייר', 'שמר', 'הביא', 'חיפש'];
+const masculineVerbs = ['אכל', 'ראה', 'מצא', 'אהב', 'צייר', 'שמר', 'הביא', 'חיפש'];
+const feminineVerbs = ['אכלה', 'ראתה', 'מצאה', 'אהבה', 'ציירה', 'שמרה', 'הביאה', 'חיפשה'];
 const objects = [
   'תפוח אדום',
   'כדור גדול',
@@ -66,7 +69,8 @@ function numbered(group, values) {
 function corpus() {
   const clips = [
     ...numbered('subject', subjects),
-    ...numbered('verb', verbs),
+    ...numbered('verb', masculineVerbs),
+    ...numbered('verb-feminine', feminineVerbs),
     ...numbered('object', objects),
     ...numbered('extra', extras),
     ...icons.map(([id, label]) => [`step-first-${id}.wav`, `גע ב${label}`]),
@@ -116,8 +120,8 @@ function encodeWave(samples, sampleRate) {
 }
 
 const clips = corpus();
-if (clips.length !== 56 || new Set(clips.map(([name]) => name)).size !== clips.length) {
-  throw new Error('Echo fallback corpus must contain 56 unique clips');
+if (clips.length !== 64 || new Set(clips.map(([name]) => name)).size !== clips.length) {
+  throw new Error('Echo fallback corpus must contain 64 unique clips');
 }
 
 await mkdir(outputDirectory, { recursive: true });

@@ -47,9 +47,9 @@ export function chainMathConfig(level: number): {
 
 /* ---------- ארץ 2: מערת ההדים ---------- */
 
-/** הקשב וחזור: כמה מילים במשפט (3→9). */
-export function sentenceWordCount(level: number): number {
-  return lerp(level, 3, 9);
+/** הקשב וחזור: כמה רכיבי זכירה במשפט (3→8). רכיב יכול להיות צירוף בן כמה מילים. */
+export function sentenceComponentCount(level: number): number {
+  return lerp(level, 3, 8);
 }
 
 /** הוראות מרובות שלבים: כמה הוראות (2→7). */

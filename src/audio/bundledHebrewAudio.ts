@@ -6,8 +6,12 @@ function numberedFile(group: string, index: number): string {
   return `${AUDIO_BASE}/${group}-${String(index + 1).padStart(2, '0')}.wav`;
 }
 
-const subjectEntries = SUBJECTS.map((text, index) => [text, numberedFile('subject', index)] as const);
-const verbEntries = VERBS.map((text, index) => [text, numberedFile('verb', index)] as const);
+const subjectEntries = SUBJECTS.map(({ text }, index) => [text, numberedFile('subject', index)] as const);
+const masculineVerbEntries = VERBS.map(({ masculine }, index) => [masculine, numberedFile('verb', index)] as const);
+const feminineVerbEntries = VERBS.map(
+  ({ feminine }, index) => [feminine, numberedFile('verb-feminine', index)] as const,
+);
+const verbEntries = [...masculineVerbEntries, ...feminineVerbEntries];
 const objectEntries = OBJECTS.map((text, index) => [text, numberedFile('object', index)] as const);
 const extraEntries = EXTRAS.map((text, index) => [text, numberedFile('extra', index)] as const);
 const firstStepEntries = TAP_ICONS.map(

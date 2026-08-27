@@ -4,16 +4,34 @@
    סיפור מוקרא (נשלף בשלב 6). אין זיהוי דיבור — הכל בבחירה/סידור על המסך.
    ========================================================================= */
 import type { Challenge, ExerciseEngine } from '../types';
-import { multiStepCount, sentenceWordCount } from '../config/curriculum';
-import { makeRng } from './rng';
-import { EXTRAS, OBJECTS, STORIES, SUBJECTS, TAP_ICONS, VERBS } from './echoesContent';
+import { multiStepCount, sentenceComponentCount } from '../config/curriculum';
+import { makeRng, type Rng } from './rng';
+import { CONTRADICTORY_EXTRA_PAIRS, EXTRAS, OBJECTS, STORIES, SUBJECTS, TAP_ICONS, VERBS } from './echoesContent';
 
 /* ---- הקשב וחזור ---- */
 export interface ListenRepeatStimulus {
-  words: string[]; // המשפט הנכון, מילה-מילה
+  words: string[]; // רכיבי הזכירה בסדר הנכון; רכיב עשוי להיות צירוף בן כמה מילים
   scrambled: string[]; // אריחים מעורבבים לבחירה
 }
 export type ListenRepeatAnswer = string[];
+
+function extrasConflict(left: string, right: string): boolean {
+  return CONTRADICTORY_EXTRA_PAIRS.some(
+    ([first, second]) => (left === first && right === second) || (left === second && right === first),
+  );
+}
+
+function pickUniqueCompatibleExtras(rng: Rng, count: number): string[] {
+  const selected: string[] = [];
+  while (selected.length < count) {
+    const candidates = EXTRAS.filter(
+      (extra) => !selected.includes(extra) && !selected.some((existing) => extrasConflict(existing, extra)),
+    );
+    if (candidates.length === 0) throw new Error(`Cannot select ${count} compatible Echo extras`);
+    selected.push(rng.pick(candidates));
+  }
+  return selected;
+}
 
 export const listenRepeat: ExerciseEngine<ListenRepeatStimulus, ListenRepeatAnswer> = {
   id: 'echoes.repeat',
@@ -22,10 +40,15 @@ export const listenRepeat: ExerciseEngine<ListenRepeatStimulus, ListenRepeatAnsw
   parentDescription: 'הקשבה וחזרה על משפט — זיכרון שמיעתי מילולי',
   generate(level, seed): Challenge<ListenRepeatStimulus, ListenRepeatAnswer> {
     const rng = makeRng(seed);
-    const target = sentenceWordCount(level);
-    const words: string[] = [rng.pick(SUBJECTS), rng.pick(VERBS), rng.pick(OBJECTS)];
-    // מרחיבים לפי הרמה בעזרת תיאורים; שומרים משפט קריא.
-    while (words.length < target) words.push(rng.pick(EXTRAS));
+    const targetComponentCount = sentenceComponentCount(level);
+    const subject = rng.pick(SUBJECTS);
+    const verb = rng.pick(VERBS);
+    const words: string[] = [
+      subject.text,
+      verb[subject.gender],
+      rng.pick(OBJECTS),
+      ...pickUniqueCompatibleExtras(rng, targetComponentCount - 3),
+    ];
     const scrambled = rng.shuffle(words);
     return {
       exerciseId: this.id,

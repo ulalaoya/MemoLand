@@ -4,22 +4,32 @@ import { BUNDLED_HEBREW_AUDIO_FILES, resolveBundledHebrewAudioFiles } from './bu
 
 describe('bundled Hebrew Echo corpus', () => {
   it('resolves the generated listen-and-repeat structure through maximum length', () => {
-    const text = [SUBJECTS[0], VERBS[0], OBJECTS[0], ...EXTRAS].join(' ');
-    expect(resolveBundledHebrewAudioFiles(text)).toHaveLength(9);
+    const text = [SUBJECTS[0].text, VERBS[0].masculine, OBJECTS[0], ...EXTRAS.slice(0, 5)].join(' ');
+    expect(resolveBundledHebrewAudioFiles(text)).toHaveLength(8);
   });
 
   it('covers every listen-and-repeat phrase', () => {
     for (const subject of SUBJECTS) {
-      expect(resolveBundledHebrewAudioFiles(`${subject} ${VERBS[0]} ${OBJECTS[0]}`)?.[0]).toContain('subject-');
+      const verb = VERBS[0][subject.gender];
+      expect(resolveBundledHebrewAudioFiles(`${subject.text} ${verb} ${OBJECTS[0]}`)?.[0]).toContain('subject-');
     }
-    for (const verb of VERBS) {
-      expect(resolveBundledHebrewAudioFiles(`${SUBJECTS[0]} ${verb} ${OBJECTS[0]}`)?.[1]).toContain('verb-');
+    for (const [index, verb] of VERBS.entries()) {
+      const masculineFiles = resolveBundledHebrewAudioFiles(`${SUBJECTS[0].text} ${verb.masculine} ${OBJECTS[0]}`);
+      const feminineFiles = resolveBundledHebrewAudioFiles(`${SUBJECTS[3].text} ${verb.feminine} ${OBJECTS[0]}`);
+      expect(masculineFiles?.[1]).toBe(`audio/echo-hebrew/verb-${String(index + 1).padStart(2, '0')}.wav`);
+      expect(feminineFiles?.[1]).toBe(
+        `audio/echo-hebrew/verb-feminine-${String(index + 1).padStart(2, '0')}.wav`,
+      );
     }
     for (const object of OBJECTS) {
-      expect(resolveBundledHebrewAudioFiles(`${SUBJECTS[0]} ${VERBS[0]} ${object}`)?.[2]).toContain('object-');
+      expect(resolveBundledHebrewAudioFiles(`${SUBJECTS[0].text} ${VERBS[0].masculine} ${object}`)?.[2]).toContain(
+        'object-',
+      );
     }
     for (const extra of EXTRAS) {
-      expect(resolveBundledHebrewAudioFiles(`${SUBJECTS[0]} ${VERBS[0]} ${OBJECTS[0]} ${extra}`)?.[3]).toContain('extra-');
+      expect(
+        resolveBundledHebrewAudioFiles(`${SUBJECTS[0].text} ${VERBS[0].masculine} ${OBJECTS[0]} ${extra}`)?.[3],
+      ).toContain('extra-');
     }
   });
 
@@ -44,9 +54,9 @@ describe('bundled Hebrew Echo corpus', () => {
     expect(resolveBundledHebrewAudioFiles('משפט חדש שלא נמצא בבנק')).toBeNull();
   });
 
-  it('declares all 56 unique WAV assets under the offline Echo asset path', () => {
-    expect(BUNDLED_HEBREW_AUDIO_FILES).toHaveLength(56);
-    expect(new Set(BUNDLED_HEBREW_AUDIO_FILES).size).toBe(56);
+  it('declares all 64 unique WAV assets under the offline Echo asset path', () => {
+    expect(BUNDLED_HEBREW_AUDIO_FILES).toHaveLength(64);
+    expect(new Set(BUNDLED_HEBREW_AUDIO_FILES).size).toBe(64);
     for (const file of BUNDLED_HEBREW_AUDIO_FILES) {
       expect(file).toMatch(/^audio\/echo-hebrew\/[a-z0-9-]+\.wav$/);
     }
