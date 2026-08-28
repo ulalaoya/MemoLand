@@ -29,7 +29,11 @@ function daysSincePracticed(state: SaveState, land: LandId): number {
 
 /** מגמת זמן תגובה: האם עולה (איטי יותר)? משווה חציון נוכחי לממוצע דגימות. */
 function rtRising(state: SaveState): boolean {
-  const medians = Object.values(state.stats).map((s) => s.medianRtMs).filter((m) => m > 0);
+  // זמני עיר הקשרים אינם מדד מהירות ואינם מזינים המלצה בפני עצמם.
+  const medians = Object.entries(state.stats)
+    .filter(([exerciseId]) => !exerciseId.startsWith('connections.'))
+    .map(([, stats]) => stats.medianRtMs)
+    .filter((m) => m > 0);
   return medians.length > 0 && medians.reduce((a, b) => a + b, 0) / medians.length > 5000;
 }
 

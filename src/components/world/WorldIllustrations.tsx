@@ -5,11 +5,43 @@ export function WorldIllustration({ land }: { land: LandId }) {
     <svg className="ml-world-illustration" viewBox="0 0 240 150" aria-hidden focusable="false">
       {land === 'numbers' ? <NumbersValley /> : null}
       {land === 'echoes' ? <EchoCave /> : null}
+      {land === 'connections' ? <ConnectionsCity /> : null}
       {land === 'forest' ? <ImageForest /> : null}
       {land === 'patterns' ? <PatternMountains /> : null}
       {land === 'speed' ? <SpeedTrack /> : null}
       {land === 'castle' ? <TreasureCastle /> : null}
     </svg>
+  );
+}
+
+function ConnectionsCity() {
+  return (
+    <>
+      <defs>
+        <linearGradient id="connections-card-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#82DBE7" />
+          <stop offset="1" stopColor="#FFF1BD" />
+        </linearGradient>
+      </defs>
+      <rect width="240" height="150" rx="22" fill="url(#connections-card-sky)" />
+      <circle cx="36" cy="28" r="17" fill="#FFC928" stroke={OUTLINE} strokeWidth="2.5" />
+      <Cloud x={184} y={28} scale={0.54} />
+      <path d="M0 120Q50 90 102 119T201 112T240 116V150H0Z" fill="#78C99B" stroke={OUTLINE} strokeWidth="2.5" />
+      {[[22, 66, 45, '#138F91'], [68, 46, 65, '#2E8DF6'], [119, 60, 51, '#F59D2A'], [164, 38, 73, '#138F91']].map(([x, y, height, color], index) => (
+        <g key={index}>
+          <rect x={x} y={y} width="39" height={height} rx="6" fill={color as string} stroke={OUTLINE} strokeWidth="2.4" />
+          <rect x={(x as number) + 8} y={(y as number) + 12} width="8" height="10" rx="2" fill="#FFF1A8" />
+          <rect x={(x as number) + 23} y={(y as number) + 12} width="8" height="10" rx="2" fill="#FFF1A8" />
+        </g>
+      ))}
+      <path d="M15 126Q70 93 123 121T225 113" fill="none" stroke="#40536C" strokeWidth="18" strokeLinecap="round" />
+      <path d="M15 126Q70 93 123 121T225 113" fill="none" stroke="#fff" strokeWidth="2.5" strokeDasharray="9 8" />
+      <g transform="translate(89 79)">
+        <rect width="62" height="38" rx="9" fill="#D97848" stroke={OUTLINE} strokeWidth="3" />
+        <text x="31" y="27" textAnchor="middle" fontFamily="Lilita One, sans-serif" fontSize="24" fill="#fff">6×7</text>
+      </g>
+      <path d="M76 105Q91 86 107 104M151 104Q169 84 186 102" fill="none" stroke="#FFC928" strokeWidth="4" strokeLinecap="round" />
+    </>
   );
 }
 

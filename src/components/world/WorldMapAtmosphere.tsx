@@ -3,6 +3,7 @@ import type { LandId } from '../../types';
 const ZONES: { land: LandId; className: string }[] = [
   { land: 'numbers', className: 'numbers' },
   { land: 'echoes', className: 'echoes' },
+  { land: 'connections', className: 'connections' },
   { land: 'forest', className: 'forest' },
   { land: 'patterns', className: 'patterns' },
   { land: 'speed', className: 'speed' },
@@ -19,14 +20,14 @@ export function WorldMapAtmosphere() {
           <span className="ml-world-atmosphere__island ml-world-atmosphere__island--two" />
           <span className="ml-world-atmosphere__motif ml-world-atmosphere__motif--one" />
           <span className="ml-world-atmosphere__motif ml-world-atmosphere__motif--two" />
-          {index === 0 || index === 4 ? <span className="ml-world-atmosphere__cloud" /> : null}
-          {index === 2 ? (
+          {index === 0 || index === 5 ? <span className="ml-world-atmosphere__cloud" /> : null}
+          {index === 3 ? (
             <>
               <span className="ml-world-leaf ml-world-leaf--one" />
               <span className="ml-world-leaf ml-world-leaf--two" />
             </>
           ) : null}
-          {index === 1 || index === 5 ? (
+          {index === 1 || index === 6 ? (
             <>
               <span className="ml-world-glint ml-world-glint--one">✦</span>
               <span className="ml-world-glint ml-world-glint--two">✦</span>

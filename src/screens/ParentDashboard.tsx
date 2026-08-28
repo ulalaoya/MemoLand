@@ -11,6 +11,7 @@ import { Button } from '../components/Button';
 import { EchoDiagnosticsPanel } from '../components/games/EchoDiagnosticsPanel';
 import { hasHebrewVoice, listHebrewVoices, speak } from '../audio/speech';
 import type { LandId, Settings } from '../types';
+import { MULTIPLICATION_FACTS, MULTIPLICATION_FACT_BY_ID } from '../learning/multiplicationFacts';
 
 type View = 'day' | 'week' | 'month';
 type Tab = 'stats' | 'content' | 'settings';
@@ -146,6 +147,8 @@ function StatsTab() {
         <MinutesChart history={recent} />
       </Card>
 
+      <MultiplicationSummary state={state} days={days} />
+
       {/* טבלת ארצות */}
       <Card title="לפי ארץ">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -173,6 +176,18 @@ function StatsTab() {
 function LandRow({ land, state }: { land: LandId; state: ReturnType<typeof getState> }) {
   const color = landColor(land);
   const engs = enginesForLand(land);
+  if (land === 'connections') {
+    const practiced = Object.keys(state.multiplication.facts).length;
+    return (
+      <div style={{ background: 'var(--panel)', borderRadius: 10, padding: 10, border: `2px solid ${color}` }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-head)', fontWeight: 700 }}>
+          <span style={{ color }}>{LANDS[land].name}</span>
+          <span>{practiced} עובדות נפגשו</span>
+        </div>
+        <div style={{ marginTop: 7, fontSize: 13, opacity: 0.75 }}>ההתקדמות מוצגת לפי עובדה, סוג שליפה ועזרה — בלי ציון כפל כולל.</div>
+      </div>
+    );
+  }
   const accs = engs.map((e) => state.stats[e.id]).filter(Boolean);
   const acc = accs.length ? Math.round((accs.map(accuracy).reduce((a, b) => a + b, 0) / accs.length) * 100) : 0;
   const level = Math.round(engs.map((e) => state.stats[e.id]?.level ?? 1).reduce((a, b) => a + b, 0) / engs.length);
@@ -190,6 +205,52 @@ function LandRow({ land, state }: { land: LandId; state: ReturnType<typeof getSt
         <span>דיוק <b className="ltr">{acc}%</b></span>
         <span>זמן תגובה <b className="ltr">{(rt / 1000).toFixed(1)}s</b></span>
       </div>
+    </div>
+  );
+}
+
+function MultiplicationSummary({ state, days }: { state: ReturnType<typeof getState>; days: number }) {
+  const counts = { DISCOVERING: 0, STRENGTHENING: 0, FLUENT: 0 };
+  for (const fact of MULTIPLICATION_FACTS) counts[state.multiplication.facts[fact.id]?.stage ?? 'DISCOVERING'] += 1;
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  const recentAttempts = state.multiplication.recentAttempts.filter((attempt) => attempt.at >= cutoff);
+  const directAttempts = recentAttempts.filter((attempt) => attempt.mode === 'direct').length;
+  const supportedAttempts = recentAttempts.length - directAttempts;
+  const examples = MULTIPLICATION_FACTS
+    .filter((fact) => state.multiplication.facts[fact.id]?.stage === 'STRENGTHENING')
+    .slice(0, 3);
+
+  return (
+    <Card title="עיר הקשרים — לפי עובדות">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 7, marginBottom: 10 }}>
+        <FactStage label="מגלים דרך" value={counts.DISCOVERING} color="#D97848" />
+        <FactStage label="מחזקים דרך" value={counts.STRENGTHENING} color="#138F91" />
+        <FactStage label="דרך מוכרת" value={counts.FLUENT} color="#2E8DF6" />
+      </div>
+      <div style={{ fontSize: 13, color: 'var(--ink)', opacity: 0.78 }}>בתקופה שנבחרה: {directAttempts} ניסיונות שליפה ישירה · {supportedAttempts} ניסיונות עם קשר או עזרה.</div>
+      {examples.length > 0 ? (
+        <div style={{ marginTop: 10, display: 'grid', gap: 6 }}>
+          {examples.map((fact) => {
+            const anchorId = state.multiplication.facts[fact.id]?.lastAnchorFactId;
+            const anchor = anchorId ? MULTIPLICATION_FACT_BY_ID.get(anchorId) : undefined;
+            return (
+              <div key={fact.id} dir="ltr" style={{ padding: '7px 9px', borderRadius: 9, background: '#E8F9F7', borderInlineStart: '4px solid #138F91', textAlign: 'left', fontWeight: 700 }}>
+                {fact.a}×{fact.b} — מתחזק{anchor ? ` בעזרת ${anchor.a}×${anchor.b}` : ''}
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+      <p style={{ margin: '10px 0 0', fontSize: 12, opacity: 0.65 }}>השלבים מתארים דפוסי תרגול בתוך MemoLand בלבד ואינם אבחון.</p>
+    </Card>
+  );
+}
+
+function FactStage({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div style={{ padding: '9px 4px', textAlign: 'center', borderRadius: 10, background: '#fff', border: `2px solid ${color}` }}>
+      <div className="ltr" style={{ color, fontFamily: 'var(--font-display)', fontSize: 27 }}>{value}</div>
+      <div style={{ fontSize: 11, fontWeight: 700 }}>{label}</div>
     </div>
   );
 }

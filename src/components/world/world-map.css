@@ -397,7 +397,7 @@
 
 .ml-world-atmosphere__zone {
   position: relative;
-  height: calc(100% / 6);
+  height: calc(100% / 7);
   min-height: 205px;
   overflow: hidden;
 }
@@ -408,6 +408,10 @@
 
 .ml-world-atmosphere__zone--echoes {
   background: linear-gradient(180deg, rgba(77, 86, 165, 0.74), rgba(44, 46, 112, 0.82));
+}
+
+.ml-world-atmosphere__zone--connections {
+  background: linear-gradient(180deg, rgba(188, 238, 240, 0.82), rgba(255, 225, 153, 0.72));
 }
 
 .ml-world-atmosphere__zone--forest {
@@ -448,6 +452,7 @@
 .ml-world-atmosphere__island--two { right: -76px; transform: rotate(-8deg) scale(1.12); }
 
 .ml-world-atmosphere__zone--echoes .ml-world-atmosphere__island,
+.ml-world-atmosphere__zone--connections .ml-world-atmosphere__island,
 .ml-world-atmosphere__zone--patterns .ml-world-atmosphere__island,
 .ml-world-atmosphere__zone--castle .ml-world-atmosphere__island {
   background: rgba(27, 25, 66, 0.3);
@@ -465,6 +470,7 @@
 .ml-world-atmosphere__motif--two { right: 5%; bottom: 17%; transform: rotate(-24deg) scale(0.72); }
 .ml-world-atmosphere__zone--numbers .ml-world-atmosphere__motif { border-radius: 9px; background: rgba(255, 201, 40, 0.2); }
 .ml-world-atmosphere__zone--echoes .ml-world-atmosphere__motif { border-radius: 50% 50% 42% 58%; background: rgba(103, 200, 255, 0.3); transform: rotate(45deg); }
+.ml-world-atmosphere__zone--connections .ml-world-atmosphere__motif { border-radius: 8px; background: rgba(255, 201, 40, .34); border-color: rgba(19, 143, 145, .36); }
 .ml-world-atmosphere__zone--forest .ml-world-atmosphere__motif { width: 22px; height: 43px; border-radius: 90% 10% 90% 10%; background: rgba(145, 227, 93, 0.28); }
 .ml-world-atmosphere__zone--patterns .ml-world-atmosphere__motif { border-radius: 7px; border-color: rgba(255, 233, 141, 0.34); }
 .ml-world-atmosphere__zone--speed .ml-world-atmosphere__motif { width: 58px; height: 8px; border: 0; border-radius: 8px; background: rgba(255, 255, 255, 0.42); }
@@ -576,6 +582,7 @@
 .ml-land-row:nth-child(4) { animation-delay: 210ms; }
 .ml-land-row:nth-child(5) { animation-delay: 280ms; }
 .ml-land-row:nth-child(6) { animation-delay: 350ms; }
+.ml-land-row:nth-child(7) { animation-delay: 420ms; }
 
 .ml-land-row--left {
   justify-content: flex-start;

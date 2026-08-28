@@ -9,6 +9,13 @@ import {
 import { buildDailySession } from './session';
 import { SPACED_INTERVALS_MS, floorFromPeak } from '../config/curriculum';
 import type { ExerciseStats, SpacedItem } from '../types';
+import { LAND_ORDER } from '../config/lands';
+
+describe('world registry order', () => {
+  it('inserts City as world 3 without renaming persisted land ids', () => {
+    expect(LAND_ORDER).toEqual(['numbers', 'echoes', 'connections', 'forest', 'patterns', 'speed', 'castle']);
+  });
+});
 
 describe('מדרגה — עלייה וירידה', () => {
   it('2 נכונות רצופות מעלות רמה', () => {
@@ -112,5 +119,12 @@ describe('בניית המסע היומי', () => {
     const long = buildDailySession({}, 25, false, Date.now());
     const rot = (s: typeof short) => s.steps.filter((x) => x.kind === 'rotation').length;
     expect(rot(long)).toBeGreaterThan(rot(short));
+  });
+
+  it('נותן לעיר הקשרים חשיפה קצרה אחת בלי להשתלט על מסע של פרופיל ריק', () => {
+    const session = buildDailySession({}, 20, false, Date.UTC(2026, 7, 28));
+    const cityGames = session.steps.filter((step) => step.exerciseId?.startsWith('connections.'));
+    expect(cityGames).toHaveLength(1);
+    expect(session.steps.find((step) => step.kind === 'speed')?.landId).toBe('speed');
   });
 });

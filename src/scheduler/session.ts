@@ -51,12 +51,14 @@ export function buildDailySession(
   const weak = landsByWeakness(stats);
   const strong = [...weak].reverse();
   const rounds = rotationRounds(minutes);
+  const regularWeak = weak.filter((land) => land !== 'connections');
+  const regularStrong = strong.filter((land) => land !== 'connections');
 
   // 3 ארצות לרוטציה: 2 החלשות + 1 חזקה (כדי לשמור מסוגלות).
   const rotationLands: LandId[] = [];
-  rotationLands.push(weak[0]);
-  if (weak[1]) rotationLands.push(weak[1]);
-  const strongPick = strong.find((l) => !rotationLands.includes(l));
+  rotationLands.push(regularWeak[0]);
+  if (regularWeak[1]) rotationLands.push(regularWeak[1]);
+  const strongPick = regularStrong.find((l) => !rotationLands.includes(l));
   if (strongPick) rotationLands.push(strongPick);
   while (rotationLands.length < 3 && weak.length > rotationLands.length) {
     const nxt = weak.find((l) => !rotationLands.includes(l));
@@ -64,8 +66,8 @@ export function buildDailySession(
     rotationLands.push(nxt);
   }
 
-  const warmupLand = strong[0]; // חימום בארץ חזקה — פתיחה בהצלחה
-  const speedLand = weak[0]; // אתגר מהירות בארץ החלשה
+  const warmupLand = regularStrong[0]; // חימום בארץ ותיקה וחזקה — פתיחה בהצלחה
+  const speedLand: LandId = 'speed'; // קטע הטיימר נשאר במסלול הזריזות בלבד
 
   const steps: SessionStep[] = [];
 
@@ -93,7 +95,10 @@ export function buildDailySession(
 
   // 4. רוטציה — 3 ארצות שונות
   for (let i = 0; i < rounds; i++) {
-    const land = rotationLands[i % rotationLands.length];
+    // חשיפה קצרה אחת לעיר בכל מסע; ארץ ריקה לעולם לא משתלטת על הרוטציה.
+    const land: LandId = i === Math.floor(rounds / 2)
+      ? 'connections'
+      : rotationLands[i % rotationLands.length];
     steps.push({
       kind: 'rotation',
       label: 'הרפתקה',
