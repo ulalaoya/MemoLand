@@ -15,8 +15,8 @@ import {
 const levels = Array.from({ length: MAX_LEVEL - MIN_LEVEL + 1 }, (_, index) => MIN_LEVEL + index);
 
 describe('curriculum progression', () => {
-  it('uses the approved 3-to-8 ListenRepeat component progression', () => {
-    expect(levels.map(sentenceComponentCount)).toEqual([3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8]);
+  it('uses the curated-beta 3/4/5/6 ListenRepeat component tiers', () => {
+    expect(levels.map(sentenceComponentCount)).toEqual([3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6]);
   });
 
   it('leaves every other curriculum progression unchanged', () => {

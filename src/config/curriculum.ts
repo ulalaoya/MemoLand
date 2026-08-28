@@ -47,9 +47,13 @@ export function chainMathConfig(level: number): {
 
 /* ---------- ארץ 2: מערת ההדים ---------- */
 
-/** הקשב וחזור: כמה רכיבי זכירה במשפט (3→8). רכיב יכול להיות צירוף בן כמה מילים. */
+/** הקשב וחזור בטא: ארבע מדרגות של רכיבי זכירה (3→6). רכיב עשוי להכיל כמה מילים. */
 export function sentenceComponentCount(level: number): number {
-  return lerp(level, 3, 8);
+  const clamped = clampLevel(level);
+  if (clamped <= 3) return 3;
+  if (clamped <= 7) return 4;
+  if (clamped <= 11) return 5;
+  return 6;
 }
 
 /** הוראות מרובות שלבים: כמה הוראות (2→7). */

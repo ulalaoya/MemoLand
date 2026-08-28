@@ -5,8 +5,8 @@
    ========================================================================= */
 import type { Challenge, ExerciseEngine } from '../types';
 import { multiStepCount, sentenceComponentCount } from '../config/curriculum';
-import { makeRng, type Rng } from './rng';
-import { CONTRADICTORY_EXTRA_PAIRS, EXTRAS, OBJECTS, STORIES, SUBJECTS, TAP_ICONS, VERBS } from './echoesContent';
+import { makeRng } from './rng';
+import { LISTEN_REPEAT_BETA_SENTENCES, STORIES, TAP_ICONS } from './echoesContent';
 
 /* ---- הקשב וחזור ---- */
 export interface ListenRepeatStimulus {
@@ -14,24 +14,6 @@ export interface ListenRepeatStimulus {
   scrambled: string[]; // אריחים מעורבבים לבחירה
 }
 export type ListenRepeatAnswer = string[];
-
-function extrasConflict(left: string, right: string): boolean {
-  return CONTRADICTORY_EXTRA_PAIRS.some(
-    ([first, second]) => (left === first && right === second) || (left === second && right === first),
-  );
-}
-
-function pickUniqueCompatibleExtras(rng: Rng, count: number): string[] {
-  const selected: string[] = [];
-  while (selected.length < count) {
-    const candidates = EXTRAS.filter(
-      (extra) => !selected.includes(extra) && !selected.some((existing) => extrasConflict(existing, extra)),
-    );
-    if (candidates.length === 0) throw new Error(`Cannot select ${count} compatible Echo extras`);
-    selected.push(rng.pick(candidates));
-  }
-  return selected;
-}
 
 export const listenRepeat: ExerciseEngine<ListenRepeatStimulus, ListenRepeatAnswer> = {
   id: 'echoes.repeat',
@@ -41,14 +23,9 @@ export const listenRepeat: ExerciseEngine<ListenRepeatStimulus, ListenRepeatAnsw
   generate(level, seed): Challenge<ListenRepeatStimulus, ListenRepeatAnswer> {
     const rng = makeRng(seed);
     const targetComponentCount = sentenceComponentCount(level);
-    const subject = rng.pick(SUBJECTS);
-    const verb = rng.pick(VERBS);
-    const words: string[] = [
-      subject.text,
-      verb[subject.gender],
-      rng.pick(OBJECTS),
-      ...pickUniqueCompatibleExtras(rng, targetComponentCount - 3),
-    ];
+    const tier = LISTEN_REPEAT_BETA_SENTENCES.filter(({ tiles }) => tiles.length === targetComponentCount);
+    const sentence = rng.pick(tier);
+    const words = [...sentence.tiles];
     const scrambled = rng.shuffle(words);
     return {
       exerciseId: this.id,
@@ -57,7 +34,7 @@ export const listenRepeat: ExerciseEngine<ListenRepeatStimulus, ListenRepeatAnsw
       stimulus: { words, scrambled },
       answer: [...words],
       params: { length: words.length },
-      prompt: words.join(' '),
+      prompt: sentence.text,
     };
   },
   check(challenge, given) {

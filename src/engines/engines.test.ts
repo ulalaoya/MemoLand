@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ENGINES, getEngine } from './index';
+import { ENGINES, enginesForLand, getEngine } from './index';
 import { chainMath } from './numbers';
 import { MAX_LEVEL, MIN_LEVEL } from '../config/curriculum';
 
@@ -51,5 +51,20 @@ describe('מרשם המנועים', () => {
     const wrong = [...(ch.answer as number[])];
     wrong[0] = ((wrong[0] % 9) + 1); // משנה ספרה אחת
     expect(eng.check(ch, wrong as never)).toBe(false);
+  });
+
+  it('temporarily excludes only MultiStep from active beta selection', () => {
+    expect(enginesForLand('echoes').map(({ id }) => id)).toEqual(['echoes.repeat']);
+    expect(getEngine('echoes.multistep')?.id).toBe('echoes.multistep');
+    expect(enginesForLand('numbers').map(({ id }) => id)).toEqual([
+      'numbers.forward',
+      'numbers.backward',
+      'numbers.sort',
+      'numbers.chain',
+    ]);
+    expect(enginesForLand('forest').map(({ id }) => id)).toEqual(['forest.grid']);
+    expect(enginesForLand('patterns').map(({ id }) => id)).toEqual(['patterns.complete']);
+    expect(enginesForLand('speed').map(({ id }) => id)).toEqual(['speed.match']);
+    expect(enginesForLand('castle').map(({ id }) => id)).toEqual(['castle.memorize']);
   });
 });

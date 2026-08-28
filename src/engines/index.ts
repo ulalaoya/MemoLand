@@ -30,17 +30,24 @@ export const ENGINES: ExerciseEngine[] = [
 
 const BY_ID = new Map<ExerciseId, ExerciseEngine>(ENGINES.map((e) => [e.id, e]));
 
+// TODO(beta): restore MultiStep after it has a natural full-utterance fallback for devices without Hebrew TTS.
+const BETA_DISABLED_ENGINE_IDS = new Set<ExerciseId>(['echoes.multistep']);
+
+function isActiveBetaEngine(engine: ExerciseEngine): boolean {
+  return !BETA_DISABLED_ENGINE_IDS.has(engine.id);
+}
+
 export function getEngine(id: ExerciseId): ExerciseEngine | undefined {
   return BY_ID.get(id);
 }
 
 export function enginesForLand(landId: LandId): ExerciseEngine[] {
-  return ENGINES.filter((e) => e.landId === landId);
+  return ENGINES.filter((e) => e.landId === landId && isActiveBetaEngine(e));
 }
 
 /** ארצות שכבר משוחקות (יש להן מנועים). שאר הארצות "בקרוב". */
 export function playableLands(): LandId[] {
-  return Array.from(new Set(ENGINES.map((e) => e.landId)));
+  return Array.from(new Set(ENGINES.filter(isActiveBetaEngine).map((e) => e.landId)));
 }
 
 export {

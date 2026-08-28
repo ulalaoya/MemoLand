@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resolveBundledHebrewAudioFiles } from './bundledHebrewAudio';
 
-const ECHO_TEXT = 'הילד אכל תפוח אדום';
+const ECHO_TEXT = 'הילד מצא תפוח אדום';
 
 function voice(name: string, lang: string): SpeechSynthesisVoice {
   return { name, lang, localService: true, default: false, voiceURI: name } as SpeechSynthesisVoice;
@@ -146,6 +146,7 @@ describe('Hebrew speech source selection and lifecycle', () => {
 
     expect(synth.spoken).toHaveLength(0);
     expect(FakeAudio.instances).toHaveLength(1);
+    expect(FakeAudio.instances[0].src).toBe('https://example.test/app/audio/echo-hebrew/listen-repeat-beta-01.wav');
     expect(speech.getSpeechDiagnostics()).toMatchObject({
       selectedSource: 'bundled-audio',
       fallbackReason: 'no-hebrew-voice',

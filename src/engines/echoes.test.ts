@@ -1,52 +1,58 @@
 import { describe, expect, it } from 'vitest';
 import { MAX_LEVEL, MIN_LEVEL, sentenceComponentCount } from '../config/curriculum';
 import { listenRepeat } from './echoes';
-import { EXTRAS, OBJECTS, SUBJECTS, VERBS } from './echoesContent';
+import { LISTEN_REPEAT_BETA_SENTENCES } from './echoesContent';
 
-const masculineVerbs = new Set(VERBS.map(({ masculine }) => masculine));
-const feminineVerbs = new Set(VERBS.map(({ feminine }) => feminine));
-const subjectGenders = new Map(SUBJECTS.map(({ text, gender }) => [text, gender] as const));
+const EXPECTED_SENTENCES = [
+  ['הילד מצא תפוח אדום', ['הילד', 'מצא', 'תפוח אדום']],
+  ['סבתא ראתה פרח צהוב', ['סבתא', 'ראתה', 'פרח צהוב']],
+  ['הציפור בנתה קן קטן', ['הציפור', 'בנתה', 'קן קטן']],
+  ['ממו הביא כדור גדול לגינה', ['ממו', 'הביא', 'כדור גדול', 'לגינה']],
+  ['הילדה קראה ספר מצחיק בערב', ['הילדה', 'קראה', 'ספר מצחיק', 'בערב']],
+  ['הארנב מצא גזר גדול ליד העץ', ['הארנב', 'מצא', 'גזר גדול', 'ליד העץ']],
+  ['הכלב מצא כדור אדום מתחת לספסל בגינה', ['הכלב', 'מצא', 'כדור אדום', 'מתחת לספסל', 'בגינה']],
+  [
+    'סבתא הכינה עוגת שוקולד לנכדים אחר הצהריים',
+    ['סבתא', 'הכינה', 'עוגת שוקולד', 'לנכדים', 'אחר הצהריים'],
+  ],
+  ['ממו שם בקבוק מים בתוך התיק לפני הטיול', ['ממו', 'שם', 'בקבוק מים', 'בתוך התיק', 'לפני הטיול']],
+  [
+    'הילדה אספה שלוש צדפות עם אחותה על החוף בבוקר',
+    ['הילדה', 'אספה', 'שלוש צדפות', 'עם אחותה', 'על החוף', 'בבוקר'],
+  ],
+  [
+    'סבתא שתלה פרחים צבעוניים ליד העץ בגינה ביום שישי',
+    ['סבתא', 'שתלה', 'פרחים צבעוניים', 'ליד העץ', 'בגינה', 'ביום שישי'],
+  ],
+  [
+    'הילד החזיר את הספר למדף העליון בספרייה אחרי השיעור',
+    ['הילד', 'החזיר', 'את הספר', 'למדף העליון', 'בספרייה', 'אחרי השיעור'],
+  ],
+] as const;
 
-function generatedChallenges() {
-  return Array.from({ length: MAX_LEVEL - MIN_LEVEL + 1 }, (_, levelIndex) => MIN_LEVEL + levelIndex).flatMap(
-    (level) => Array.from({ length: 100 }, (_, seedIndex) => listenRepeat.generate(level, seedIndex + 1)),
-  );
-}
-
-describe('Echo listen-and-repeat Hebrew content', () => {
-  const challenges = generatedChallenges();
-
-  it('always matches masculine subjects with masculine verb forms', () => {
-    const masculineChallenges = challenges.filter(({ stimulus }) => subjectGenders.get(stimulus.words[0]) === 'masculine');
-    expect(masculineChallenges.length).toBeGreaterThan(0);
-    for (const { stimulus } of masculineChallenges) {
-      expect(masculineVerbs.has(stimulus.words[1])).toBe(true);
-      expect(feminineVerbs.has(stimulus.words[1])).toBe(false);
-    }
+describe('Echo ListenRepeat curated beta content', () => {
+  it('contains only the exact 12 approved sentences and tile decompositions', () => {
+    expect(LISTEN_REPEAT_BETA_SENTENCES.map(({ text, tiles }) => [text, tiles])).toEqual(EXPECTED_SENTENCES);
+    expect(LISTEN_REPEAT_BETA_SENTENCES).toHaveLength(12);
   });
 
-  it('always matches feminine subjects with feminine verb forms', () => {
-    const feminineChallenges = challenges.filter(({ stimulus }) => subjectGenders.get(stimulus.words[0]) === 'feminine');
-    expect(feminineChallenges.length).toBeGreaterThan(0);
-    for (const { stimulus } of feminineChallenges) {
-      expect(feminineVerbs.has(stimulus.words[1])).toBe(true);
-      expect(masculineVerbs.has(stimulus.words[1])).toBe(false);
-    }
+  it('contains three sentences in each 3/4/5/6-component tier', () => {
+    expect(
+      [3, 4, 5, 6].map((count) => LISTEN_REPEAT_BETA_SENTENCES.filter(({ tiles }) => tiles.length === count).length),
+    ).toEqual([3, 3, 3, 3]);
+    for (const { text, tiles } of LISTEN_REPEAT_BETA_SENTENCES) expect(tiles.join(' ')).toBe(text);
   });
 
-  it('never repeats an extra or combines morning with evening', () => {
-    for (const { stimulus } of challenges) {
-      const extras = stimulus.words.slice(3);
-      expect(new Set(extras).size).toBe(extras.length);
-      expect(extras.includes('בבוקר') && extras.includes('בערב')).toBe(false);
-    }
-  });
-
-  it('keeps generated component counts on the approved 3-to-8 progression', () => {
-    expect(sentenceComponentCount(MIN_LEVEL)).toBe(3);
-    expect(sentenceComponentCount(MAX_LEVEL)).toBe(8);
-    for (const { level, stimulus } of challenges) {
-      expect(stimulus.words).toHaveLength(sentenceComponentCount(level));
+  it('generates only bank sentences at the component count assigned to the level', () => {
+    const bankTexts = new Set(LISTEN_REPEAT_BETA_SENTENCES.map(({ text }) => text));
+    for (let level = MIN_LEVEL; level <= MAX_LEVEL; level += 1) {
+      for (let seed = 1; seed <= 100; seed += 1) {
+        const challenge = listenRepeat.generate(level, seed);
+        expect(challenge.prompt).toBeDefined();
+        expect(bankTexts.has(challenge.prompt!)).toBe(true);
+        expect(challenge.stimulus.words).toHaveLength(sentenceComponentCount(level));
+        expect(challenge.stimulus.words.join(' ')).toBe(challenge.prompt);
+      }
     }
   });
 
@@ -54,16 +60,5 @@ describe('Echo listen-and-repeat Hebrew content', () => {
     for (let level = MIN_LEVEL; level <= MAX_LEVEL; level += 1) {
       expect(listenRepeat.generate(level, 8472)).toEqual(listenRepeat.generate(level, 8472));
     }
-  });
-
-  it('keeps every multiword object phrase as one recall component', () => {
-    for (const { stimulus } of challenges) {
-      expect(OBJECTS).toContain(stimulus.words[2]);
-      expect(stimulus.words[2].split(' ').length).toBeGreaterThan(1);
-    }
-  });
-
-  it('keeps the approved six-item extra bank unchanged', () => {
-    expect(EXTRAS).toEqual(['בגינה', 'בבוקר', 'ליד הים', 'בשמחה', 'מתחת לעץ', 'בערב']);
   });
 });

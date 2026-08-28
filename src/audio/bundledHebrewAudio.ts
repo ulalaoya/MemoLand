@@ -1,19 +1,10 @@
-import { EXTRAS, OBJECTS, STORIES, SUBJECTS, TAP_ICONS, VERBS } from '../engines/echoesContent';
+import { LISTEN_REPEAT_BETA_SENTENCES, STORIES, TAP_ICONS } from '../engines/echoesContent';
 
 const AUDIO_BASE = 'audio/echo-hebrew';
 
-function numberedFile(group: string, index: number): string {
-  return `${AUDIO_BASE}/${group}-${String(index + 1).padStart(2, '0')}.wav`;
-}
-
-const subjectEntries = SUBJECTS.map(({ text }, index) => [text, numberedFile('subject', index)] as const);
-const masculineVerbEntries = VERBS.map(({ masculine }, index) => [masculine, numberedFile('verb', index)] as const);
-const feminineVerbEntries = VERBS.map(
-  ({ feminine }, index) => [feminine, numberedFile('verb-feminine', index)] as const,
+const listenRepeatEntries = LISTEN_REPEAT_BETA_SENTENCES.map(
+  ({ id, text }) => [text, `${AUDIO_BASE}/${id}.wav`] as const,
 );
-const verbEntries = [...masculineVerbEntries, ...feminineVerbEntries];
-const objectEntries = OBJECTS.map((text, index) => [text, numberedFile('object', index)] as const);
-const extraEntries = EXTRAS.map((text, index) => [text, numberedFile('extra', index)] as const);
 const firstStepEntries = TAP_ICONS.map(
   ({ id, label }) => [`גע ב${label}`, `${AUDIO_BASE}/step-first-${id}.wav`] as const,
 );
@@ -29,8 +20,8 @@ const questionEntries = STORIES.flatMap((story) =>
   ),
 );
 
-const listenRepeatGroups = [subjectEntries, verbEntries, objectEntries] as const;
 const exactAudio = new Map<string, string>([
+  ...listenRepeatEntries,
   ...storyEntries,
   ...questionEntries,
 ]);
@@ -40,28 +31,12 @@ const instructionAudio = new Map<string, string>([
 ]);
 
 export const BUNDLED_HEBREW_AUDIO_FILES = [
-  ...subjectEntries,
-  ...verbEntries,
-  ...objectEntries,
-  ...extraEntries,
+  ...listenRepeatEntries,
   ...firstStepEntries,
   ...nextStepEntries,
   ...storyEntries,
   ...questionEntries,
 ].map(([, file]) => file);
-
-function consumePhrase(
-  remaining: string,
-  entries: readonly (readonly [string, string])[],
-): { remaining: string; file: string } | null {
-  const match = entries
-    .slice()
-    .sort(([left], [right]) => right.length - left.length)
-    .find(([phrase]) => remaining === phrase || remaining.startsWith(`${phrase} `));
-  if (!match) return null;
-  const [phrase, file] = match;
-  return { remaining: remaining.slice(phrase.length).trimStart(), file };
-}
 
 /** Resolve only the finite, built-in Echo corpus. Parent-authored or unrelated text is deliberately rejected. */
 export function resolveBundledHebrewAudioFiles(text: string): string[] | null {
@@ -77,21 +52,7 @@ export function resolveBundledHebrewAudioFiles(text: string): string[] | null {
     return files.every((file): file is string => Boolean(file)) ? files : null;
   }
 
-  const files: string[] = [];
-  let remaining = normalized;
-  for (const group of listenRepeatGroups) {
-    const consumed = consumePhrase(remaining, group);
-    if (!consumed) return null;
-    files.push(consumed.file);
-    remaining = consumed.remaining;
-  }
-  while (remaining) {
-    const consumed = consumePhrase(remaining, extraEntries);
-    if (!consumed) return null;
-    files.push(consumed.file);
-    remaining = consumed.remaining;
-  }
-  return files;
+  return null;
 }
 
 function assetUrl(file: string): string {
