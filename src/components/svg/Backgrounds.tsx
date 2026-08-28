@@ -12,11 +12,49 @@ export function LandBackground({ land }: { land: LandId }) {
     >
       {land === 'numbers' && <Numbers />}
       {land === 'echoes' && <Echoes />}
+      {land === 'connections' && <Connections />}
       {land === 'forest' && <Forest />}
       {land === 'patterns' && <Patterns />}
       {land === 'speed' && <Speed />}
       {land === 'castle' && <Castle />}
     </svg>
+  );
+}
+
+/* ---------------- עיר הקשרים ---------------- */
+function Connections() {
+  return (
+    <>
+      <defs>
+        <Grad id="connections-sky" stops={[["0", "#82dbe7"], ["0.58", "#d8f7f3"], ["1", "#fff1bd"]]} />
+        <linearGradient id="connections-road" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#53697c" />
+          <stop offset="1" stopColor="#2d4054" />
+        </linearGradient>
+      </defs>
+      <rect width="400" height="800" fill="url(#connections-sky)" />
+      <circle cx="66" cy="105" r="42" fill="#ffc928" opacity="0.86" />
+      <circle cx="52" cy="91" r="13" fill="#fff7cf" opacity="0.7" />
+      <Cloud x={305} y={106} s={0.72} o={0.82} />
+      <Cloud x={128} y={190} s={0.48} o={0.66} />
+      <path d="M0 490Q62 452 126 490T252 477T400 486V800H0Z" fill="#78c99b" opacity="0.62" />
+      <g opacity="0.78">
+        {[[20, 405, 74, '#138f91'], [78, 350, 124, '#2e8df6'], [151, 390, 84, '#f59d2a'], [211, 330, 144, '#168184'], [285, 374, 100, '#8c52d9'], [346, 344, 130, '#2e8df6']].map(([x, y, h, color], index) => (
+          <g key={index}>
+            <rect x={x} y={y} width="50" height={h} rx="7" fill={color as string} stroke="#176a70" strokeWidth="3" />
+            {[0, 1, 2].map((row) => [0, 1].map((column) => (
+              <rect key={`${row}-${column}`} x={(x as number) + 10 + column * 19} y={(y as number) + 16 + row * 24} width="10" height="13" rx="2" fill="#fff4aa" opacity="0.88" />
+            )))}
+          </g>
+        ))}
+      </g>
+      <path d="M0 575H400V800H0Z" fill="url(#connections-road)" />
+      <path d="M-30 690Q100 610 210 668T430 630" fill="none" stroke="#f6b65d" strokeWidth="52" opacity="0.95" />
+      <path d="M-30 690Q100 610 210 668T430 630" fill="none" stroke="#fff" strokeWidth="4" strokeDasharray="22 18" opacity="0.92" />
+      <path d="M34 600Q100 544 168 602" fill="none" stroke="#138f91" strokeWidth="15" strokeLinecap="round" />
+      <circle cx="34" cy="600" r="12" fill="#ffc928" stroke="#176a70" strokeWidth="4" />
+      <circle cx="168" cy="602" r="12" fill="#ffc928" stroke="#176a70" strokeWidth="4" />
+    </>
   );
 }
 

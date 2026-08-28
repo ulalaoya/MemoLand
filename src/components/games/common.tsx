@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { Button } from '../Button';
 import { StarIcon } from '../svg/Icons';
+import type { MultiplicationAttemptInput } from '../../types';
 
 /** תוצאה שכל משחק מדווח למעלה. */
 export interface GameResult {
   correct: boolean;
   rtMs: number;
   span?: number;
+  multiplicationAttempts?: MultiplicationAttemptInput[];
 }
 
 export interface GameProps {

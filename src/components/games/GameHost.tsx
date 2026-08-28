@@ -9,6 +9,7 @@ import { GridGame } from './GridGame';
 import { PatternGame } from './PatternGame';
 import { QuickMatchGame } from './QuickMatchGame';
 import { MemorizeGame } from './MemorizeGame';
+import { ConnectionsCityGame } from './ConnectionsCityGame';
 
 export function GameHost({
   challenge,
@@ -35,6 +36,10 @@ export function GameHost({
       return <ListenRepeatGame {...p} challenge={challenge as never} />;
     case 'echoes.multistep':
       return <MultiStepGame {...p} challenge={challenge as never} />;
+    case 'connections.direct':
+    case 'connections.derived':
+    case 'connections.link':
+      return <ConnectionsCityGame {...p} challenge={challenge as never} />;
     case 'forest.grid':
       return <GridGame {...p} challenge={challenge as never} />;
     case 'patterns.complete':

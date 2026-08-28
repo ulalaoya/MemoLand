@@ -22,6 +22,7 @@ import {
 } from '../state/store';
 import { advanceOnSuccess, regressOnFailure } from '../scheduler/spacedRepetition';
 import { GameHost } from '../components/games/GameHost';
+import type { GameResult } from '../components/games/common';
 import { QuizGame } from '../components/games/QuizGame';
 import { SpeedMatchGame } from '../components/games/SpeedMatchGame';
 import { Button } from '../components/Button';
@@ -62,6 +63,7 @@ export function SessionScreen({
   const stats = useRef({ correct: 0, total: 0, bestSpan: 0 });
   const coinsStart = useRef(getState().coins);
   const genSeed = useRef(Date.now());
+  const multiplicationSessionId = useRef(`session-${Date.now().toString(36)}`);
   // נקודות שנצברו במסע הנוכחי — קובעות את אורך המסע (יעד ~1000 ≈ 20 דק').
   const sessionPoints = useRef(0);
 
@@ -165,8 +167,19 @@ export function SessionScreen({
     });
   }
 
-  function handleGameResult(a: Extract<Activity, { kind: 'game' }>, r: { correct: boolean; rtMs: number; span?: number }) {
-    const res = recordAttempt({ exerciseId: a.exerciseId, landId: a.landId, correct: r.correct, rtMs: r.rtMs, span: r.span });
+  function handleGameResult(a: Extract<Activity, { kind: 'game' }>, r: GameResult) {
+    const res = recordAttempt({
+      exerciseId: a.exerciseId,
+      landId: a.landId,
+      correct: r.correct,
+      rtMs: r.rtMs,
+      span: r.span,
+      multiplicationAttempts: r.multiplicationAttempts?.map((attempt) => ({
+        ...attempt,
+        sessionId: multiplicationSessionId.current,
+        sessionContext: landFocus ? 'free-play' : 'daily',
+      })),
+    });
     stats.current.total += 1;
     if (r.correct) {
       stats.current.correct += 1;
@@ -249,10 +262,11 @@ export function SessionScreen({
   const meta = LANDS[activityLand];
   const isEchoChallenge = activity.kind === 'game' && activityLand === 'echoes';
   const isNumbersChallenge = activity.kind === 'game' && activityLand === 'numbers';
-  const isImmersiveChallenge = isEchoChallenge || isNumbersChallenge;
+  const isConnectionsChallenge = activity.kind === 'game' && activityLand === 'connections';
+  const isImmersiveChallenge = isEchoChallenge || isNumbersChallenge || isConnectionsChallenge;
 
   return (
-    <div className={`ml-session-screen${isEchoChallenge ? ' ml-session-screen--echo' : ''}${isNumbersChallenge ? ' ml-session-screen--numbers' : ''}`}>
+    <div className={`ml-session-screen${isEchoChallenge ? ' ml-session-screen--echo' : ''}${isNumbersChallenge ? ' ml-session-screen--numbers' : ''}${isConnectionsChallenge ? ' ml-session-screen--connections' : ''}`}>
       <LandBackground land={activityLand} />
 
       <header className="ml-session-hud">
@@ -291,7 +305,7 @@ export function SessionScreen({
       </header>
 
       <div
-        className={`ml-session-board${isEchoChallenge ? ' ml-session-board--echo' : ''}${isNumbersChallenge ? ' ml-session-board--numbers' : ''}`}
+        className={`ml-session-board${isEchoChallenge ? ' ml-session-board--echo' : ''}${isNumbersChallenge ? ' ml-session-board--numbers' : ''}${isConnectionsChallenge ? ' ml-session-board--connections' : ''}`}
         style={{ '--ml-session-color': color } as React.CSSProperties}
       >
         {/* key מאלץ remount בכל פעילות ובכל ניסיון חוזר — כדי לאפס state ולתת אתגר חדש */}
@@ -406,11 +420,16 @@ function GameHostForActivity({
   speechRate: number;
   softenBy: number;
   seed: number;
-  onResult: (r: { correct: boolean; rtMs: number; span?: number }) => void;
+  onResult: (r: GameResult) => void;
 }) {
   const engine = getEngine(a.exerciseId);
   const level = clampLevel((getState().stats[a.exerciseId]?.level ?? 1) + a.levelDelta - softenBy);
-  const challenge = useMemo(() => (engine ? engine.generate(level, seed) : null), [engine, level, seed]);
+  const generatedAt = useRef(Date.now()).current;
+  const multiplication = getState().multiplication;
+  const challenge = useMemo(
+    () => (engine ? engine.generate(level, seed, { now: generatedAt, multiplication }) : null),
+    [engine, generatedAt, level, multiplication, seed],
+  );
   if (!engine || !challenge) return <div style={{ textAlign: 'center' }}>האתגר בבנייה 🚧</div>;
   return <GameHost challenge={challenge} color={color} speechRate={speechRate} hintMode={softenBy > 0} onResult={onResult} />;
 }

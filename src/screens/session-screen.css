@@ -286,11 +286,41 @@
 
 .ml-session-board--numbers .ml-session-board__activity { height: 100%; }
 
+.ml-session-screen--connections {
+  display: flex;
+  flex-direction: column;
+  background: #bceef0;
+}
+
+.ml-session-screen--connections > svg { opacity: 1; filter: saturate(1.04) contrast(1.02); }
+.ml-session-screen--connections .ml-session-hud { flex: 0 0 auto; padding: calc(6px + var(--safe-top)) 10px 0; }
+.ml-session-screen--connections .ml-session-hud__top-row { gap: 7px; }
+.ml-session-screen--connections .ml-session-hud__back {
+  min-width: 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: #fff;
+  background: rgba(13, 104, 108, .88);
+  border-color: #fff;
+  box-shadow: 0 3px 0 rgba(9, 72, 75, .44);
+}
+.ml-session-screen--connections .ml-session-hud__back-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.ml-session-screen--connections .ml-session-hud__progress { height: 10px; background: rgba(13,104,108,.24); border-color: rgba(255,255,255,.94); }
+.ml-session-screen--connections .ml-session-hud__progress > span { min-width: 5px; background: linear-gradient(90deg, #138f91, #ffc928) !important; box-shadow: 0 0 8px rgba(255,201,40,.42); }
+.ml-session-screen--connections .ml-session-hud__guide > div { width: 32px !important; height: 32px !important; background: rgba(255,255,255,.95) !important; border-color: #fff !important; }
+.ml-session-screen--connections .ml-session-hud__meta-row { margin-top: 5px; flex-direction: row-reverse; gap: 8px; }
+.ml-session-screen--connections .ml-session-hud__world { padding: 3px 13px; background: rgba(19,143,145,.9) !important; border-color: #fff; font-size: .76rem; }
+.ml-session-screen--connections .ml-session-hud__hearts { gap: 1px; }
+.ml-session-board--connections { flex: 1 1 auto; min-height: 0; margin: 0; padding: 0; overflow: hidden; display: block; background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+.ml-session-board--connections .ml-session-board__activity { height: 100%; }
+
 @media (max-width: 359px) {
   .ml-session-hud { padding-inline: 8px; }
   .ml-session-hud__back { min-width: 68px; padding-inline: 9px; }
   .ml-session-screen--echo .ml-session-hud__world { font-size: 0.7rem; }
   .ml-session-screen--numbers .ml-session-hud__world { font-size: 0.7rem; }
+  .ml-session-screen--connections .ml-session-hud__world { font-size: 0.7rem; }
 }
 
 @media (max-height: 680px) {
@@ -298,4 +328,6 @@
   .ml-session-screen--echo .ml-session-hud__world { padding-block: 2px; }
   .ml-session-screen--numbers .ml-session-hud__meta-row { margin-top: 3px; }
   .ml-session-screen--numbers .ml-session-hud__world { padding-block: 2px; }
+  .ml-session-screen--connections .ml-session-hud__meta-row { margin-top: 3px; }
+  .ml-session-screen--connections .ml-session-hud__world { padding-block: 2px; }
 }
