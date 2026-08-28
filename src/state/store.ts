@@ -9,6 +9,7 @@ import type {
   ExerciseId,
   LandId,
   Medal,
+  MultiplicationAttemptInput,
   Profile,
   ProfileRegistry,
   SaveState,
@@ -28,6 +29,7 @@ import {
 import { applyAttempt, initialStats } from '../scheduler/leveling';
 import { coinsForCorrect, newlyEarnedMedals, rankForCoins } from './rewards';
 import { TRACKS_PER_LAND } from '../config/lands';
+import { applyMultiplicationAttempts } from './multiplicationProgress';
 
 let registry: ProfileRegistry = loadRegistry();
 let activeId: string | null = registry.activeId;
@@ -162,6 +164,7 @@ export interface RecordAttemptInput {
   correct: boolean;
   rtMs: number;
   span?: number;
+  multiplicationAttempts?: MultiplicationAttemptInput[];
 }
 
 export interface RecordAttemptResult {
@@ -173,8 +176,14 @@ export interface RecordAttemptResult {
 /** מתעד ניסיון: מעדכן מדדים, רמה, מטבעות, מדליות והיסטוריה. */
 export function recordAttempt(input: RecordAttemptInput): RecordAttemptResult {
   const prevStats = state.stats[input.exerciseId] ?? initialStats();
+  const independentMultiplicationSuccess = input.multiplicationAttempts?.some(
+    (attempt) => attempt.correct && attempt.mode === 'direct' && attempt.helpLevelUsed === 0,
+  );
+  const statsCorrect = input.landId === 'connections'
+    ? (independentMultiplicationSuccess ?? input.correct)
+    : input.correct;
   const nextStats = applyAttempt(prevStats, {
-    correct: input.correct,
+    correct: statsCorrect,
     rtMs: input.rtMs,
     span: input.span,
   });
@@ -182,7 +191,8 @@ export function recordAttempt(input: RecordAttemptInput): RecordAttemptResult {
 
   let coinsGained = 0;
   if (input.correct) {
-    coinsGained = coinsForCorrect(nextStats.bestStreak, input.rtMs);
+    // בעיר הקשרים זמן נשמר להקשר מחקרי בלבד ואינו מזכה בבונוס מהירות.
+    coinsGained = coinsForCorrect(nextStats.bestStreak, input.rtMs, input.landId !== 'connections');
   }
 
   // היסטוריה יומית
@@ -203,6 +213,9 @@ export function recordAttempt(input: RecordAttemptInput): RecordAttemptResult {
     stats: { ...state.stats, [input.exerciseId]: nextStats },
     coins: state.coins + coinsGained,
     history: history.slice(-90), // 90 ימים אחרונים
+    multiplication: input.multiplicationAttempts
+      ? applyMultiplicationAttempts(state.multiplication, input.multiplicationAttempts)
+      : state.multiplication,
     ...addTodayPoints(state, coinsGained),
   };
   next.rank = rankForCoins(next.coins);

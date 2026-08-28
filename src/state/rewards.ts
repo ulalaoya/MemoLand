@@ -9,10 +9,10 @@ import {
   SPEED_BONUS_MS,
 } from '../config/curriculum';
 
-/** מטבעות עבור תשובה נכונה, כולל בונוס רצף ומהירות. */
-export function coinsForCorrect(streak: number, rtMs: number): number {
+/** מטבעות עבור תשובה נכונה; בונוס מהירות ניתן רק בעולמות שאישרו אותו. */
+export function coinsForCorrect(streak: number, rtMs: number, allowSpeedBonus = true): number {
   const streakBonus = Math.min(streak, COINS_STREAK_CAP) * COINS_STREAK_BONUS;
-  const speedBonus = rtMs > 0 && rtMs <= SPEED_BONUS_MS ? COINS_SPEED_BONUS : 0;
+  const speedBonus = allowSpeedBonus && rtMs > 0 && rtMs <= SPEED_BONUS_MS ? COINS_SPEED_BONUS : 0;
   return COINS_CORRECT + streakBonus + speedBonus;
 }
 

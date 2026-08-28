@@ -11,7 +11,7 @@ export interface LandVisualTheme {
   checkpoint: string;
   route: string;
   glow: string;
-  motif: 'numbers' | 'echo' | 'image' | 'pattern' | 'speed' | 'treasure';
+  motif: 'numbers' | 'echo' | 'connections' | 'image' | 'pattern' | 'speed' | 'treasure';
 }
 
 export const LAND_THEMES: Record<LandId, LandVisualTheme> = {
@@ -24,6 +24,11 @@ export const LAND_THEMES: Record<LandId, LandVisualTheme> = {
     id: 'echoes', primary: '#5267D9', secondary: '#8C52D9', accent: '#67C8FF', background: '#252858',
     surface: '#F3F0FF', cardBorder: '#675BD8', checkpoint: '#67C8FF', route: '#7C63CF',
     glow: 'rgba(103, 200, 255, 0.34)', motif: 'echo',
+  },
+  connections: {
+    id: 'connections', primary: '#138F91', secondary: '#2E8DF6', accent: '#FFC928', background: '#BCEEF0',
+    surface: '#F1FEFD', cardBorder: '#138F91', checkpoint: '#FFC928', route: '#D97848',
+    glow: 'rgba(19, 143, 145, 0.3)', motif: 'connections',
   },
   forest: {
     id: 'forest', primary: '#3CAA4A', secondary: '#58C548', accent: '#FFC928', background: '#DDF6C8',

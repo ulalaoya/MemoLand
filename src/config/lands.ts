@@ -12,7 +12,7 @@ export interface LandMeta {
 }
 
 /**
- * ששת הארצות של ממו לנד. הסדר קובע את סדר המפה.
+ * ארצות ממו לנד הפעילות. הסדר קובע את סדר המפה; מזהי העבר נשארים קבועים.
  * הצבע הוא רמז ניווט קבוע (סעיף 9 בפרומפט).
  */
 export const LANDS: Record<LandId, LandMeta> = {
@@ -32,13 +32,21 @@ export const LANDS: Record<LandId, LandMeta> = {
     subtitle: 'זיכרון שמיעתי',
     order: 2,
   },
+  connections: {
+    id: 'connections',
+    name: 'עיר הקשרים',
+    guide: 'ממו',
+    colorVar: '--ml-city-teal',
+    subtitle: 'שטף כפל וקשרים בין עובדות',
+    order: 3,
+  },
   forest: {
     id: 'forest',
     name: 'יער התמונות',
     guide: 'הצב',
     colorVar: '--btn-green',
     subtitle: 'זיכרון חזותי-מרחבי',
-    order: 3,
+    order: 4,
   },
   patterns: {
     id: 'patterns',
@@ -46,7 +54,7 @@ export const LANDS: Record<LandId, LandMeta> = {
     guide: 'המפלצת הסגולה',
     colorVar: '--btn-purple',
     subtitle: 'לוגיקה ורצפים',
-    order: 4,
+    order: 5,
   },
   speed: {
     id: 'speed',
@@ -54,7 +62,7 @@ export const LANDS: Record<LandId, LandMeta> = {
     guide: 'הפטרייה',
     colorVar: '--btn-orange',
     subtitle: 'מהירות עיבוד',
-    order: 5,
+    order: 6,
   },
   castle: {
     id: 'castle',
@@ -62,7 +70,7 @@ export const LANDS: Record<LandId, LandMeta> = {
     guide: 'ממו',
     colorVar: '--gold',
     subtitle: 'שינון וקידוד',
-    order: 6,
+    order: 7,
   },
 };
 

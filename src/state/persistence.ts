@@ -5,11 +5,12 @@
    ========================================================================= */
 import type { AvatarKind, LandId, Profile, ProfileRegistry, SaveState, Settings } from '../types';
 import { LAND_ORDER } from '../config/lands';
+import { defaultMultiplicationProgress, normalizeMultiplicationProgress } from './multiplicationProgress';
 
 const LEGACY_KEY = 'memoland.save.v1';
 const REGISTRY_KEY = 'memoland.profiles.v1';
 const savePrefix = (id: string) => `memoland.save.v1.${id}`;
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export function defaultSettings(): Settings {
   return {
@@ -50,6 +51,7 @@ export function defaultSave(): SaveState {
     todayPointsDay: null,
     settings: defaultSettings(),
     parentContent: { wordLists: [], sentences: [], paragraphs: [] },
+    multiplication: defaultMultiplicationProgress(),
     history: [],
   };
 }
@@ -106,16 +108,39 @@ export function loadSaveFor(profileId: string): SaveState {
   try {
     const raw = localStorage.getItem(savePrefix(profileId));
     if (!raw) return defaultSave();
-    const parsed = JSON.parse(raw) as SaveState;
-    if (parsed.version !== SAVE_VERSION) return migrate(parsed);
-    return { ...defaultSave(), ...parsed, settings: { ...defaultSettings(), ...parsed.settings } };
+    return normalizeSave(JSON.parse(raw));
   } catch {
     return defaultSave();
   }
 }
 
-function migrate(old: Partial<SaveState>): SaveState {
-  return { ...defaultSave(), ...old, settings: { ...defaultSettings(), ...old.settings }, version: SAVE_VERSION } as SaveState;
+/**
+ * ממיר גם שמירות v1 וגם שמירות v2 חלקיות למבנה מלא. מפת הארצות נבנית
+ * מחדש לפי המרשם הנוכחי כדי להוסיף ארץ בלי למחוק התקדמות קיימת.
+ */
+export function normalizeSave(value: unknown): SaveState {
+  const defaults = defaultSave();
+  if (!value || typeof value !== 'object') return defaults;
+  const source = value as Partial<SaveState>;
+  const sourceLands = source.lands as Partial<SaveState['lands']> | undefined;
+  const lands = {} as SaveState['lands'];
+  for (const id of LAND_ORDER) {
+    lands[id] = {
+      ...defaults.lands[id],
+      ...(sourceLands?.[id] ?? {}),
+      landId: id as LandId,
+    };
+  }
+
+  return {
+    ...defaults,
+    ...source,
+    version: SAVE_VERSION,
+    lands,
+    settings: { ...defaultSettings(), ...(source.settings ?? {}) },
+    parentContent: { ...defaults.parentContent, ...(source.parentContent ?? {}) },
+    multiplication: normalizeMultiplicationProgress(source.multiplication),
+  };
 }
 
 const saveTimers: Record<string, ReturnType<typeof setTimeout>> = {};
@@ -149,7 +174,7 @@ export function exportSave(state: SaveState): string {
 }
 
 export function importSave(text: string): SaveState {
-  const parsed = JSON.parse(text) as SaveState;
+  const parsed = JSON.parse(text) as unknown;
   if (typeof parsed !== 'object' || parsed === null) throw new Error('קובץ לא תקין');
-  return { ...defaultSave(), ...parsed, settings: { ...defaultSettings(), ...parsed.settings }, version: SAVE_VERSION };
+  return normalizeSave(parsed);
 }

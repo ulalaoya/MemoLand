@@ -1,6 +1,4 @@
-/* מרשם מנועי התרגילים. הוספת ארץ = הוספת המנועים שלה כאן.
-   השלד תומך בכל 6 הארצות; ארצות 1–2 ממומשות במלואן.
-   ארצות 3–6 יתווספו כמנועים נוספים (ה-UI כבר יודע לרנדר לפי landId). */
+/* מרשם מנועי התרגילים. הוספת ארץ = הוספת המנועים שלה כאן. */
 import type { ExerciseEngine, ExerciseId, LandId } from '../types';
 import { chainMath, digitBackward, digitForward, digitSort } from './numbers';
 import { listenRepeat, multiStep } from './echoes';
@@ -8,6 +6,7 @@ import { forestGrid } from './forest';
 import { patternComplete } from './patterns';
 import { speedMatch } from './speed';
 import { castleMemorize } from './castle';
+import { connectionsDirect, connectionsDerived, connectionsLink } from './connections';
 
 export const ENGINES: ExerciseEngine[] = [
   // ארץ 1 — עמק המספרים
@@ -18,7 +17,11 @@ export const ENGINES: ExerciseEngine[] = [
   // ארץ 2 — מערת ההדים
   listenRepeat,
   multiStep,
-  // ארץ 3 — יער התמונות
+  // ארץ 3 — עיר הקשרים
+  connectionsDirect,
+  connectionsDerived,
+  connectionsLink,
+  // ארץ 4 — יער התמונות
   forestGrid,
   // ארץ 4 — הרי התבניות
   patternComplete,
@@ -57,6 +60,9 @@ export {
   digitSort,
   listenRepeat,
   multiStep,
+  connectionsDirect,
+  connectionsDerived,
+  connectionsLink,
   forestGrid,
   patternComplete,
   speedMatch,

@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { ENGINES, enginesForLand, getEngine } from './index';
 import { chainMath } from './numbers';
 import { MAX_LEVEL, MIN_LEVEL } from '../config/curriculum';
+import { connectionsLink } from './connections';
+import { factsAvailableAtLevel } from '../learning/multiplicationFacts';
 
 /** בדיקת יסוד: כל generator מייצר אתגר פתיר שהתשובה נגזרת מהגירוי,
     ובודק check() נכון לתשובה הנכונה בכל רמה וזרע. */
@@ -45,6 +47,16 @@ describe('מרשם המנועים', () => {
     expect(getEngine('לא-קיים')).toBeUndefined();
   });
 
+  it('connection-link distractors stay within the introduced curriculum', () => {
+    const available = new Set(factsAvailableAtLevel(1).map((fact) => fact.id));
+    for (let seed = 1; seed <= 30; seed++) {
+      const challenge = connectionsLink.generate(1, seed);
+      expect(challenge.stimulus.options).toHaveLength(3);
+      expect(new Set(challenge.stimulus.options.map((option) => option.factId)).size).toBe(3);
+      expect(challenge.stimulus.options.every((option) => available.has(option.factId))).toBe(true);
+    }
+  });
+
   it('תשובה שגויה נכשלת ב-check (רצף קדימה)', () => {
     const eng = getEngine('numbers.forward')!;
     const ch = eng.generate(5, 9);
@@ -61,6 +73,11 @@ describe('מרשם המנועים', () => {
       'numbers.backward',
       'numbers.sort',
       'numbers.chain',
+    ]);
+    expect(enginesForLand('connections').map(({ id }) => id)).toEqual([
+      'connections.direct',
+      'connections.derived',
+      'connections.link',
     ]);
     expect(enginesForLand('forest').map(({ id }) => id)).toEqual(['forest.grid']);
     expect(enginesForLand('patterns').map(({ id }) => id)).toEqual(['patterns.complete']);

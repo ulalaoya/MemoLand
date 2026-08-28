@@ -3,10 +3,11 @@
    השפה של ה-Land: ארץ / מסלול / אתגר / דגל / טירה.
    ========================================================================= */
 
-/** מזהי הארצות (6 ארצות של ממו לנד). */
+/** מזהי הארצות. מזהים נשמרים ב-localStorage ולכן לעולם אינם ממוחזרים. */
 export type LandId =
   | 'numbers' // עמק המספרים — זיכרון עבודה
   | 'echoes' // מערת ההדים — זיכרון שמיעתי
+  | 'connections' // עיר הקשרים — שטף כפל וקשרים בין עובדות
   | 'forest' // יער התמונות — חזותי-מרחבי
   | 'patterns' // הרי התבניות — לוגיקה
   | 'speed' // מסלול הזריזות — מהירות עיבוד
@@ -14,6 +15,54 @@ export type LandId =
 
 /** מזהה אתגר (engine). ייחודי בכל האפליקציה. */
 export type ExerciseId = string;
+
+export type MultiplicationStage = 'DISCOVERING' | 'STRENGTHENING' | 'FLUENT';
+export type MultiplicationChallengeType = 'direct' | 'derived' | 'link';
+export type MultiplicationRetrievalMode = 'direct' | 'derived';
+export type MultiplicationFactId = string;
+
+export interface MultiplicationFactProgress {
+  factId: MultiplicationFactId;
+  stage: MultiplicationStage;
+  directAttempts: number;
+  directCorrect: number;
+  supportedAttempts: number;
+  supportedCorrect: number;
+  consecutiveDirectCorrect: number;
+  successfulDays: string[];
+  lastPracticedAt: number | null;
+  dueAt: number;
+  intervalIndex: number;
+  recentRtMs: number[];
+  helpUses: number;
+  lastAnchorFactId: MultiplicationFactId | null;
+}
+
+export interface MultiplicationAttemptRecord {
+  factId: MultiplicationFactId;
+  challengeType: MultiplicationChallengeType;
+  correct: boolean;
+  responseTimeMs: number;
+  helpLevelUsed: number;
+  mode: MultiplicationRetrievalMode;
+  anchorFactId?: MultiplicationFactId;
+  sessionId?: string;
+  sessionContext?: 'daily' | 'free-play';
+  at: number;
+}
+
+export type MultiplicationAttemptInput = Omit<MultiplicationAttemptRecord, 'at'> & { at?: number };
+
+export interface MultiplicationProgress {
+  facts: Record<MultiplicationFactId, MultiplicationFactProgress>;
+  recentAttempts: MultiplicationAttemptRecord[];
+}
+
+/** מידע שמותר למנוע להשתמש בו בלי לקשור אותו ישירות ל-store. */
+export interface GenerationContext {
+  now?: number;
+  multiplication?: MultiplicationProgress;
+}
 
 /** תוצר של generator: הגירוי, התשובה הנכונה, ופרמטרים לתצוגה. */
 export interface Challenge<TStimulus = unknown, TAnswer = unknown> {
@@ -30,7 +79,7 @@ export interface Challenge<TStimulus = unknown, TAnswer = unknown> {
   prompt?: string;
 }
 
-/** מנוע תרגיל טהור: (level, seed) => Challenge. ללא תלות ב-UI. */
+/** מנוע תרגיל טהור: קלט זהה (כולל context) מחזיר אתגר זהה. */
 export interface ExerciseEngine<TStimulus = unknown, TAnswer = unknown> {
   id: ExerciseId;
   landId: LandId;
@@ -39,7 +88,7 @@ export interface ExerciseEngine<TStimulus = unknown, TAnswer = unknown> {
   /** תיאור קצר להורה בדשבורד. */
   parentDescription: string;
   /** יוצר אתגר דטרמיניסטי מ-(level, seed). */
-  generate(level: number, seed: number): Challenge<TStimulus, TAnswer>;
+  generate(level: number, seed: number, context?: GenerationContext): Challenge<TStimulus, TAnswer>;
   /** בדיקת תשובה. מוגדר במנוע כדי שאפשר לבדוק אותו ללא UI. */
   check(challenge: Challenge<TStimulus, TAnswer>, given: TAnswer): boolean;
 }
@@ -112,6 +161,7 @@ export interface SaveState {
   todayPointsDay: string | null; // היום שאליו שייך todayPoints
   settings: Settings;
   parentContent: ParentContent;
+  multiplication: MultiplicationProgress;
   history: DayRecord[]; // רשומות יומיות לדשבורד
 }
 
