@@ -33,8 +33,12 @@ export const ENGINES: ExerciseEngine[] = [
 
 const BY_ID = new Map<ExerciseId, ExerciseEngine>(ENGINES.map((e) => [e.id, e]));
 
-// TODO(beta): restore MultiStep after it has a natural full-utterance fallback for devices without Hebrew TTS.
-const BETA_DISABLED_ENGINE_IDS = new Set<ExerciseId>(['echoes.multistep']);
+// מנועים שנשמרים בארכיטקטורה אך אינם מוצגים כרגע כאתגר עצמאי לילד.
+const BETA_DISABLED_ENGINE_IDS = new Set<ExerciseId>([
+  'echoes.multistep',
+  'connections.derived',
+  'connections.link',
+]);
 
 function isActiveBetaEngine(engine: ExerciseEngine): boolean {
   return !BETA_DISABLED_ENGINE_IDS.has(engine.id);

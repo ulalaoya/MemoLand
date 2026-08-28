@@ -54,7 +54,7 @@ function contextNow(context?: GenerationContext): number {
 export const connectionsDirect: ExerciseEngine<MultiplicationBaseStimulus, number> = {
   id: 'connections.direct',
   landId: 'connections',
-  title: 'לבנת תשובה',
+  title: 'כמה זה?',
   parentDescription: 'שליפה ישירה של עובדות כפל, בלי לחץ זמן גלוי',
   generate(level, seed, context): Challenge<MultiplicationBaseStimulus, number> {
     const rng = makeRng(seed);
@@ -70,7 +70,7 @@ export const connectionsDirect: ExerciseEngine<MultiplicationBaseStimulus, numbe
       stimulus,
       answer: fact.answer,
       params: { factId: fact.id, challengeType: 'direct' },
-      prompt: 'בנה את לבנת התשובה',
+      prompt: 'כמה זה?',
     };
   },
   check(challenge, given) {

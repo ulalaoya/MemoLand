@@ -18,7 +18,7 @@ describe('multiplication fact progress', () => {
   it('separates direct retrieval from supported success', () => {
     const next = applyMultiplicationAttempts(defaultMultiplicationProgress(), [{
       ...direct(Date.UTC(2026, 7, 20)),
-      challengeType: 'derived',
+      challengeType: 'direct',
       helpLevelUsed: 2,
       mode: 'derived',
     }]);

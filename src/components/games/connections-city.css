@@ -27,6 +27,26 @@
   background: radial-gradient(circle, #fff8d6 0 22%, #ffc928 23% 45%, rgba(255, 201, 40, 0) 70%);
 }
 
+.ml-city-game__city-progress {
+  position: absolute;
+  z-index: 5;
+  top: 8px;
+  right: 10px;
+  min-width: 118px;
+  padding: 5px 9px 6px;
+  color: #0d686c;
+  background: rgba(255, 255, 255, .9);
+  border: 2px solid #fff;
+  border-radius: 13px;
+  box-shadow: 0 3px 0 rgba(13, 104, 108, .2);
+  font-family: var(--ml-font-heading);
+  font-size: .72rem;
+  text-align: center;
+}
+.ml-city-game__city-progress > span { margin-top: 4px; display: flex; gap: 3px; direction: ltr; }
+.ml-city-game__city-progress i { width: 11px; height: 7px; background: #c6dadd; border-radius: 2px 2px 1px 1px; transition: background 320ms ease, transform 320ms ease; }
+.ml-city-game__city-progress i[data-grown='true'] { background: #ffc928; transform: translateY(-2px); box-shadow: 0 2px 0 #d38a1b; }
+
 .ml-city-game__skyline { position: absolute; inset: auto 0 23px; height: 90px; display: flex; align-items: end; justify-content: center; gap: 4px; }
 .ml-city-game__building {
   position: relative;
@@ -41,6 +61,7 @@
   transition: opacity 420ms ease, transform 420ms ease;
 }
 .ml-city-game__building[data-built='true'] { opacity: 1; transform: translateY(0); }
+.ml-city-game__building[data-just-built='true'] { animation: ml-city-building-grown 760ms var(--ml-ease-spring) both; }
 .ml-city-game__building:nth-child(2n) { height: 58px; background: linear-gradient(135deg, #67c8ff, #2e8df6); }
 .ml-city-game__building:nth-child(3n) { height: 72px; background: linear-gradient(135deg, #ffd75a, #f59d2a); }
 .ml-city-game__building i { position: relative; display: inline-block; width: 7px; height: 9px; margin: 10px 1px 0; border-radius: 2px; background: #fff5b8; box-shadow: 0 0 5px rgba(255,242,154,.7); }
@@ -69,12 +90,19 @@
 .ml-city-game__unknown { color: #d97848; }
 .ml-city-game__equation.is-cued > span:nth-of-type(2) { padding: 2px 7px; background: #fff3b5; border-radius: 11px; box-shadow: 0 0 0 3px rgba(255,201,40,.34); }
 
-.ml-city-game__connection { width: min(100%, 350px); min-height: 42px; padding: 8px 12px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #176a70; background: #e4fbf8; border: 2px solid #62c9c0; border-radius: 14px; font-family: var(--ml-font-heading); font-size: .88rem; }
-.ml-city-game--success .ml-city-game__connection { animation: pop .3s ease; }
-.ml-city-game__connection.is-open { background: #fff8dc; border-color: #ffc928; }
+.ml-city-game__hint-panel { width: min(100%, 350px); padding: 7px; display: grid; gap: 5px; color: #176a70; background: #f4fffd; border: 2px solid #a5ddd8; border-radius: 14px; }
+.ml-city-game__connection { min-height: 34px; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--ml-font-heading); font-size: .88rem; }
 .ml-city-game__bridge-dot { width: 11px; height: 11px; flex: 0 0 auto; background: #ffc928; border: 2px solid #d38a1b; border-radius: 50%; }
-.ml-city-game__bridge-result { color: #d25f34; font-weight: 900; }
-.ml-city-game__help-copy { margin: 0; min-height: 42px; display: grid; place-items: center; text-align: center; color: #40536c; font-weight: 700; }
+.ml-city-game__bridge { padding: 5px 9px; color: #7a5310; background: #fff8dc; border-radius: 9px; font-family: var(--ml-font-heading); text-align: center; }
+.ml-city-game__visual-hint { min-height: 34px; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.ml-city-game__visual-hint span { min-width: 38px; padding: 4px 7px; color: #fff; background: #138f91; border: 2px solid #fff; border-radius: 8px; box-shadow: 0 2px 0 #0d686c; font-family: var(--ml-font-display); text-align: center; }
+.ml-city-game__visual-hint b { color: #40536c; font-family: var(--ml-font-heading); }
+.ml-city-game__groups { display: flex; justify-content: center; gap: 5px; }
+.ml-city-game__groups > span { min-width: 29px; min-height: 29px; padding: 4px; display: flex; flex-wrap: wrap; place-content: center; gap: 2px; background: #e4fbf8; border: 2px solid #62c9c0; border-radius: 8px; }
+.ml-city-game__groups i { width: 5px; height: 5px; background: #138f91; border-radius: 50%; }
+.ml-city-game__final-help { padding: 6px 10px; display: grid; gap: 2px; color: #67430a; background: #fff2a9; border: 2px solid #ffc928; border-radius: 10px; text-align: center; }
+.ml-city-game__final-help strong { font-family: var(--ml-font-display); font-size: 1.18rem; }
+.ml-city-game__final-help span { font-size: .74rem; font-weight: 700; }
 
 .ml-city-game__answer { min-height: 58px; display: flex; align-items: center; justify-content: center; gap: 7px; }
 .ml-city-game__answer-brick {
@@ -91,6 +119,7 @@
   font-size: 2rem;
 }
 .ml-city-game__answer.is-built { animation: ml-city-block-built 760ms var(--ml-ease-spring) both; }
+.ml-city-game__feedback { margin-top: -5px; color: #8a4a2e; font-family: var(--ml-font-heading); font-weight: 800; font-size: .88rem; }
 
 .ml-city-game__digit-yard { width: min(100%, 358px); display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
 .ml-city-game__digit-yard button {
@@ -111,7 +140,8 @@
 .ml-city-game__erase { color: #40536c; background: #fff; border: 2px solid #b8c7d6; }
 .ml-city-game__build { color: #fff; background: #138f91; border: 2px solid #fff; box-shadow: 0 4px 0 #0d686c; }
 .ml-city-game__actions button:disabled { opacity: .45; cursor: default; }
-.ml-city-game__help { padding-inline: 16px; color: #7a5310; background: #fff5c8; border: 2px solid #ffc928; }
+.ml-city-game__help { min-height: 40px; padding-inline: 12px; color: #40536c; background: transparent; border: 1px solid rgba(64, 83, 108, .32); box-shadow: none; font-size: .82rem; }
+.ml-city-game__help.is-noticed { color: #7a5310; background: #fff9df; border-color: #e4b83a; }
 
 .ml-city-game__link-options { width: min(100%, 360px); display: grid; gap: 9px; }
 .ml-city-game__link-options button { min-height: 58px; padding: 7px 16px; display: flex; align-items: center; justify-content: space-between; color: #243247; background: #fff; border: 3px solid #62bdb8; border-radius: 15px; box-shadow: 0 4px 0 #368f8c; font-family: var(--ml-font-heading); font-size: 1.05rem; cursor: pointer; }
@@ -126,6 +156,12 @@
   100% { transform: scale(1) translateY(0); }
 }
 
+@keyframes ml-city-building-grown {
+  0% { opacity: .35; transform: translateY(8px) scale(.92); }
+  58% { opacity: 1; transform: translateY(-4px) scale(1.05); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 @media (max-width: 359px) {
   .ml-city-game { grid-template-rows: 108px minmax(400px, 1fr); }
   .ml-city-game__worksite { padding-inline: 9px; gap: 6px; }
@@ -133,6 +169,8 @@
   .ml-city-game__digit-yard { gap: 5px; }
   .ml-city-game__digit-yard button { min-height: 45px; }
   .ml-city-game__building { width: 30px; }
+  .ml-city-game__city-progress { min-width: 108px; right: 7px; }
+  .ml-city-game__city-progress i { width: 9px; }
 }
 
 @media (max-height: 700px) {
@@ -147,5 +185,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ml-city-game__answer.is-built { animation: none; }
-  .ml-city-game__building { transition: none; }
+  .ml-city-game__building { transition: none; animation: none; }
+  .ml-city-game__city-progress i { transition: none; }
 }

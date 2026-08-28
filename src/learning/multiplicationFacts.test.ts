@@ -3,11 +3,13 @@ import { makeRng } from '../engines/rng';
 import { defaultMultiplicationFactProgress, defaultMultiplicationProgress } from '../state/multiplicationProgress';
 import {
   MULTIPLICATION_FACTS,
+  MULTIPLICATION_FACT_BY_ID,
   MULTIPLICATION_CURRICULUM,
   MULTIPLICATION_LEVEL_FACTS,
   canonicalFactId,
   connectionResult,
   factsAvailableAtLevel,
+  preferredConnection,
   selectMultiplicationFact,
 } from './multiplicationFacts';
 
@@ -41,6 +43,22 @@ describe('multiplication fact registry', () => {
       for (const link of fact.connections) {
         expect(connectionResult(link)).toBe(fact.answer);
       }
+    }
+  });
+
+  it('chooses child-friendly default hint paths when no anchor is established', () => {
+    const cases = [
+      ['2x4', '2x2', 'double'],
+      ['6x8', '5x8', 'fives'],
+      ['7x8', '7x7', 'neighbor'],
+      ['6x9', '6x10', 'tens'],
+    ] as const;
+    for (const [factId, sourceFactId, kind] of cases) {
+      const fact = MULTIPLICATION_FACT_BY_ID.get(factId)!;
+      const selected = preferredConnection(fact);
+      expect(selected.sourceFactId).toBe(sourceFactId);
+      expect(selected.kind).toBe(kind);
+      expect(connectionResult(selected)).toBe(fact.answer);
     }
   });
 

@@ -207,9 +207,25 @@ export function preferredConnection(
     return stage === 'STRENGTHENING' || stage === 'FLUENT';
   });
   return withEstablishedAnchor
-    ?? fact.connections.find((item) => item.sourceFactId !== fact.id)
+    ?? [...fact.connections]
+      .filter((item) => item.sourceFactId !== fact.id && item.operation !== 'same')
+      .sort((left, right) => connectionTeachingPriority(fact, left) - connectionTeachingPriority(fact, right))[0]
     ?? fact.connections[0]
     ?? connection('commutativity', fact.b, fact.a, 'same', 0);
+}
+
+/**
+ * כשאין עדיין עוגן מבוסס, בוחרים קשר פשוט ושימושי לילד.
+ * עובדות 9 נשענות על 10, עובדות 6 על 5, וזוגות סמוכים מעדיפים ריבוע מוכר.
+ */
+function connectionTeachingPriority(fact: MultiplicationFact, item: MultiplicationConnection): number {
+  if ((fact.a === 9 || fact.b === 9) && item.kind === 'tens') return 0;
+  if ((fact.a === 6 || fact.b === 6) && item.kind === 'fives') return 1;
+  if (item.kind === 'neighbor' && item.sourceA === item.sourceB) return 2;
+  if (item.kind === 'double') return 3;
+  if (item.kind === 'neighbor') return 4;
+  if (item.kind === 'fives' || item.kind === 'tens') return 5;
+  return 6;
 }
 
 export function connectionResult(item: MultiplicationConnection): number {

@@ -65,7 +65,7 @@ describe('מרשם המנועים', () => {
     expect(eng.check(ch, wrong as never)).toBe(false);
   });
 
-  it('temporarily excludes only MultiStep from active beta selection', () => {
+  it('keeps inactive engines registered while City child rotation stays direct-only', () => {
     expect(enginesForLand('echoes').map(({ id }) => id)).toEqual(['echoes.repeat']);
     expect(getEngine('echoes.multistep')?.id).toBe('echoes.multistep');
     expect(enginesForLand('numbers').map(({ id }) => id)).toEqual([
@@ -74,11 +74,9 @@ describe('מרשם המנועים', () => {
       'numbers.sort',
       'numbers.chain',
     ]);
-    expect(enginesForLand('connections').map(({ id }) => id)).toEqual([
-      'connections.direct',
-      'connections.derived',
-      'connections.link',
-    ]);
+    expect(enginesForLand('connections').map(({ id }) => id)).toEqual(['connections.direct']);
+    expect(getEngine('connections.derived')?.id).toBe('connections.derived');
+    expect(getEngine('connections.link')?.id).toBe('connections.link');
     expect(enginesForLand('forest').map(({ id }) => id)).toEqual(['forest.grid']);
     expect(enginesForLand('patterns').map(({ id }) => id)).toEqual(['patterns.complete']);
     expect(enginesForLand('speed').map(({ id }) => id)).toEqual(['speed.match']);
