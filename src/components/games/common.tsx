@@ -11,6 +11,8 @@ export interface GameResult {
   rtMs: number;
   span?: number;
   multiplicationAttempts?: MultiplicationAttemptInput[];
+  /** מסיים את הניסיון השגוי ועובר לאתגר חדש מאותו מנוע, בלי להיתקע על אותה שאלה. */
+  newChallengeAfterIncorrect?: boolean;
 }
 
 export interface GameProps {

@@ -170,7 +170,54 @@ export interface SelectMultiplicationFactOptions {
   requireConnection?: boolean;
 }
 
-/** סדר בחירה: הגיע מועדו → מתחזק → חדש שמחובר לעוגן → חדש → שימור שוטף. */
+const RECENT_FACT_EXCLUSION = 3;
+
+function recentDistinctFactIds(progress: MultiplicationProgress | undefined, limit: number): Set<string> {
+  const ids = new Set<string>();
+  const attempts = progress?.recentAttempts ?? [];
+  for (let index = attempts.length - 1; index >= 0 && ids.size < limit; index -= 1) {
+    ids.add(attempts[index].factId);
+  }
+  return ids;
+}
+
+function latestAttemptFailed(progress: MultiplicationProgress | undefined, factId: string): boolean {
+  const attempts = progress?.recentAttempts ?? [];
+  for (let index = attempts.length - 1; index >= 0; index -= 1) {
+    if (attempts[index].factId === factId) return !attempts[index].correct;
+  }
+  return false;
+}
+
+function currentLevelFactIds(level: number): Set<string> {
+  const curriculum = MULTIPLICATION_CURRICULUM[Math.max(1, Math.min(15, Math.round(level))) - 1];
+  return new Set(curriculum?.newFacts ?? []);
+}
+
+/**
+ * רמת הכפל נקבעת מכיסוי עובדתי, לא משתי הצלחות כלליות בתרגיל.
+ * ברמות 1–12 כל עובדה חדשה דורשת שתי שליפות ישירות ללא עזרה. רמות
+ * 13–15 נשמרות כסבבי ביסוס רחבים, גם הן לפי כיסוי ישיר ולא לפי FLUENT.
+ */
+export function multiplicationCurriculumLevel(progress: MultiplicationProgress | undefined): number {
+  for (const level of MULTIPLICATION_CURRICULUM.slice(0, 12)) {
+    const ready = level.newFacts.every((factId) => (progress?.facts[factId]?.directCorrect ?? 0) >= 2);
+    if (!ready) return level.level;
+  }
+
+  const allFactsAtLeast = (minimum: number) => MULTIPLICATION_FACTS.every(
+    (fact) => (progress?.facts[fact.id]?.directCorrect ?? 0) >= minimum,
+  );
+  if (allFactsAtLeast(4)) return 15;
+  if (allFactsAtLeast(3)) return 14;
+  return 13;
+}
+
+/**
+ * סדר בחירה: ניסיון שנכשל וחזר מתור ההשהיה → הגיע מועדו → עובדות הרמה
+ * שעדיין לא קיבלו שתי הצלחות ישירות → חדש מקושר → חדש → חיזוק/שימור.
+ * שלוש העובדות הייחודיות האחרונות מושהות כשיש חלופה, כדי למנוע לולאות.
+ */
 export function selectMultiplicationFact(
   level: number,
   rng: Rng,
@@ -184,15 +231,23 @@ export function selectMultiplicationFact(
   }
   if (candidates.length === 0) candidates = factsAvailableAtLevel(level);
 
+  const recent = recentDistinctFactIds(progress, RECENT_FACT_EXCLUSION);
+  const withoutRecent = candidates.filter((fact) => !recent.has(fact.id));
+  if (withoutRecent.length > 0) candidates = withoutRecent;
+  const levelFacts = currentLevelFactIds(level);
+
   // ערבוב לפני מיון שומר הכרעה דטרמיניסטית בין עובדות באותה עדיפות.
   const shuffled = rng.shuffle(candidates);
   const priority = (fact: MultiplicationFact): number => {
     const saved = progress?.facts[fact.id];
-    if (saved && saved.lastPracticedAt !== null && saved.dueAt <= now) return 0;
-    if (saved?.stage === 'STRENGTHENING') return 1;
-    if (!saved && hasEstablishedAnchor(fact, progress)) return 2;
-    if (!saved || saved.stage === 'DISCOVERING') return 3;
-    return 4;
+    if (latestAttemptFailed(progress, fact.id)) return 0;
+    if (saved && saved.lastPracticedAt !== null && saved.dueAt <= now) return 1;
+    if (levelFacts.has(fact.id) && (saved?.directCorrect ?? 0) < 2 && hasEstablishedAnchor(fact, progress)) return 2;
+    if (levelFacts.has(fact.id) && (saved?.directCorrect ?? 0) < 2) return 3;
+    if (!saved && hasEstablishedAnchor(fact, progress)) return 4;
+    if (!saved || saved.stage === 'DISCOVERING') return 5;
+    if (saved.stage === 'STRENGTHENING') return 6;
+    return 7;
   };
   return shuffled.sort((left, right) => priority(left) - priority(right))[0];
 }

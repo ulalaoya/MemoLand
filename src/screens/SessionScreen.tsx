@@ -32,6 +32,7 @@ import { Guide, guideKindFor } from '../components/svg/Memo';
 import { speak } from '../audio/speech';
 import { sfxLevelUp } from '../audio/sfx';
 import type { LandId } from '../types';
+import { multiplicationCurriculumLevel } from '../learning/multiplicationFacts';
 import './session-screen.css';
 
 interface JourneyResult {
@@ -193,6 +194,11 @@ export function SessionScreen({
       }
       next();
     } else {
+      if (r.newChallengeAfterIncorrect) {
+        sessionWrong.current += 1;
+        setRetry((n) => n + 1);
+        return;
+      }
       // טעות: לא מתקדמים — נותנים עוד אתגר מאותו הסוג עד שמצליחים.
       sessionWrong.current += 1;
       if (loseHeartAndMaybePause()) return; // נגמרו לבבות — ממתינים לבחירה
@@ -423,9 +429,12 @@ function GameHostForActivity({
   onResult: (r: GameResult) => void;
 }) {
   const engine = getEngine(a.exerciseId);
-  const level = clampLevel((getState().stats[a.exerciseId]?.level ?? 1) + a.levelDelta - softenBy);
+  const currentState = getState();
+  const multiplication = currentState.multiplication;
+  const level = a.landId === 'connections'
+    ? multiplicationCurriculumLevel(multiplication)
+    : clampLevel((currentState.stats[a.exerciseId]?.level ?? 1) + a.levelDelta - softenBy);
   const generatedAt = useRef(Date.now()).current;
-  const multiplication = getState().multiplication;
   const challenge = useMemo(
     () => (engine ? engine.generate(level, seed, { now: generatedAt, multiplication }) : null),
     [engine, generatedAt, level, multiplication, seed],

@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { connectionsDirect } from '../../engines/connections';
 import { MULTIPLICATION_FACT_BY_ID, preferredConnection } from '../../learning/multiplicationFacts';
+import { defaultMultiplicationFactProgress, defaultMultiplicationProgress } from '../../state/multiplicationProgress';
 
 let cityModule: typeof import('./ConnectionsCityGame');
 
@@ -33,6 +34,8 @@ describe('City child interaction', () => {
     expect(html).toContain('>בדיקה<');
     expect(html).not.toContain('ml-city-game__hint-panel');
     expect(html).not.toContain(`= ${challenge.answer}`);
+    expect(html).not.toContain('עוד רמז');
+    expect(html.indexOf('ml-city-game__help-zone')).toBeGreaterThan(html.indexOf('ml-city-game__actions'));
     for (let digit = 0; digit <= 9; digit++) {
       expect(html).toContain(`aria-label="ספרה ${digit}"`);
     }
@@ -44,23 +47,80 @@ describe('City child interaction', () => {
     expect(cityModule.CITY_RETRY_COPY).toBe('כמעט, נסה שוב');
   });
 
-  it('opens help only through explicit requests and keeps the first hint answer-free', () => {
+  it('opens exactly one answer-free hint containing the anchor and arithmetic bridge', () => {
     expect(cityModule.nextCityHelpLevel(0)).toBe(1);
-    expect(cityModule.nextCityHelpLevel(1)).toBe(2);
-    expect(cityModule.nextCityHelpLevel(3)).toBe(4);
-    expect(cityModule.nextCityHelpLevel(4)).toBe(4);
+    expect(cityModule.nextCityHelpLevel(1)).toBe(1);
+    expect(cityModule.nextCityHelpLevel(4)).toBe(1);
 
-    const target = MULTIPLICATION_FACT_BY_ID.get('7x8')!;
-    const hint = preferredConnection(target);
-    expect(cityModule.connectionAnchorText(hint)).toBe('7 × 7 = 49');
-    expect(cityModule.connectionAnchorText(hint)).not.toContain(String(target.answer));
-    expect(cityModule.connectionBridgeText(hint)).toBe('49 + 7 = ?');
-    expect(cityModule.connectionBridgeText(hint)).not.toContain(String(target.answer));
+    const cases = [
+      ['2x4', '2 × 2 = 4', '4 + 4 = ?'],
+      ['6x8', '5 × 8 = 40', '40 + 8 = ?'],
+      ['7x8', '7 × 7 = 49', '49 + 7 = ?'],
+      ['6x9', '10 × 6 = 60', '60 − 6 = ?'],
+    ] as const;
+    for (const [factId, anchor, bridge] of cases) {
+      const target = MULTIPLICATION_FACT_BY_ID.get(factId)!;
+      const hint = preferredConnection(target);
+      expect(cityModule.connectionAnchorText(hint)).toBe(anchor);
+      expect(cityModule.connectionBridgeText(hint)).toBe(bridge);
+      expect(cityModule.connectionBridgeText(hint)).not.toContain(String(target.answer));
+    }
   });
 
-  it('adds a visible City growth step on a correct answer without removing prior growth', () => {
-    expect(cityModule.visibleCityTier(2, 'answering')).toBe(2);
-    expect(cityModule.visibleCityTier(2, 'success')).toBe(3);
-    expect(cityModule.visibleCityTier(6, 'success')).toBe(6);
+  it('keeps an unsupported wrong answer on the question and advances after a supported miss', () => {
+    expect(cityModule.outcomeAfterWrong(0)).toBe('retry-same-question');
+    expect(cityModule.outcomeAfterWrong(1)).toBe('reveal-and-new-question');
+    expect(cityModule.CITY_CORRECT_REVEAL_MS).toBeGreaterThanOrEqual(1_200);
+    expect(cityModule.CITY_CORRECT_REVEAL_MS).toBeLessThanOrEqual(1_800);
+  });
+
+  it('starts as an empty construction site with no completed or faded buildings', () => {
+    const challenge = connectionsDirect.generate(1, 17, { now: 0 });
+    const html = renderToStaticMarkup(createElement(cityModule.ConnectionsCityGame, {
+      challenge,
+      color: '#138f91',
+      speechRate: 0.9,
+      hintMode: false,
+      onResult: () => undefined,
+    }));
+
+    expect(html).toContain('data-city-milestones="0"');
+    expect(html).toContain('ml-city-game__foundation');
+    expect(html).not.toContain('class="ml-city-game__building"');
+  });
+
+  it('uses 30 persistent construction milestones and builds a new structure for each of the first 10', () => {
+    expect(cityModule.CITY_PERSISTENT_MILESTONES).toBe(30);
+    expect(cityModule.CITY_BUILDING_CONSTRUCTION).toBe('rise');
+    for (let completed = 0; completed <= 10; completed += 1) {
+      const model = cityModule.cityMilestoneModel(completed);
+      expect(model.buildings.filter(Boolean)).toHaveLength(completed);
+      expect(model.structures.filter(Boolean)).toHaveLength(0);
+      expect(model.decorations.filter(Boolean)).toHaveLength(0);
+      expect(model.roadUpgrades.filter(Boolean)).toHaveLength(0);
+      expect(model.details.filter(Boolean)).toHaveLength(0);
+    }
+
+    const complete = cityModule.cityMilestoneModel(30);
+    expect(complete.buildings.filter(Boolean)).toHaveLength(10);
+    expect(complete.structures.filter(Boolean)).toHaveLength(5);
+    expect(complete.decorations.filter(Boolean)).toHaveLength(5);
+    expect(complete.roadUpgrades.filter(Boolean)).toHaveLength(5);
+    expect(complete.details.filter(Boolean)).toHaveLength(5);
+  });
+
+  it('reconstructs City growth from existing persistent correct-attempt data', () => {
+    const progress = defaultMultiplicationProgress();
+    progress.facts['2x2'] = {
+      ...defaultMultiplicationFactProgress('2x2'),
+      directCorrect: 4,
+      supportedCorrect: 3,
+    };
+    progress.facts['2x3'] = {
+      ...defaultMultiplicationFactProgress('2x3'),
+      directCorrect: 2,
+      supportedCorrect: 1,
+    };
+    expect(cityModule.cityMilestoneCount(progress)).toBe(10);
   });
 });

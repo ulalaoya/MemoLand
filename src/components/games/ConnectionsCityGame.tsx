@@ -1,5 +1,10 @@
-import { useRef, useState } from 'react';
-import type { Challenge, MultiplicationAttemptInput, MultiplicationChallengeType } from '../../types';
+import { useEffect, useRef, useState } from 'react';
+import type {
+  Challenge,
+  MultiplicationAttemptInput,
+  MultiplicationChallengeType,
+  MultiplicationProgress,
+} from '../../types';
 import type {
   DerivedFactStimulus,
   FactLinkStimulus,
@@ -13,21 +18,58 @@ import type { GameProps } from './common';
 import './connections-city.css';
 
 type CityChallenge = Challenge<MultiplicationBaseStimulus | DerivedFactStimulus | FactLinkStimulus, number | string>;
-type CityPhase = 'answering' | 'success';
+type CityPhase = 'answering' | 'reveal' | 'success';
 
 export const CITY_HINT_ENTRY_COPY = 'רוצה רמז? ממו כאן לעזור';
 export const CITY_RETRY_COPY = 'כמעט, נסה שוב';
+export const CITY_SUCCESS_COPY = 'מעולה! העיר גדלה';
+export const CITY_CORRECT_REVEAL_MS = 1_500;
+export const CITY_PERSISTENT_MILESTONES = 30;
+export const CITY_BUILDING_CONSTRUCTION = 'rise';
 
-export function nextCityHelpLevel(current: number): number {
-  return Math.min(4, current + 1);
+export function nextCityHelpLevel(_current: number): number {
+  return 1;
 }
 
 export function cityHelpLevelAfterWrong(current: number): number {
   return current;
 }
 
-export function visibleCityTier(baseTier: number, phase: CityPhase): number {
-  return Math.min(6, baseTier + (phase === 'success' ? 1 : 0));
+export function cityMilestoneCount(progress: MultiplicationProgress): number {
+  const correct = Object.values(progress.facts).reduce(
+    (sum, fact) => sum + fact.directCorrect + fact.supportedCorrect,
+    0,
+  );
+  return Math.min(CITY_PERSISTENT_MILESTONES, correct);
+}
+
+export interface CityMilestoneModel {
+  completed: number;
+  buildings: readonly boolean[];
+  structures: readonly boolean[];
+  decorations: readonly boolean[];
+  roadUpgrades: readonly boolean[];
+  details: readonly boolean[];
+}
+
+export function cityMilestoneModel(completed: number): CityMilestoneModel {
+  const safe = Math.max(0, Math.min(CITY_PERSISTENT_MILESTONES, Math.floor(completed)));
+  const phase = (length: number, firstMilestone: number) => Array.from(
+    { length },
+    (_, index) => safe >= firstMilestone + index,
+  );
+  return {
+    completed: safe,
+    buildings: phase(10, 1),
+    structures: phase(5, 11),
+    decorations: phase(5, 16),
+    roadUpgrades: phase(5, 21),
+    details: phase(5, 26),
+  };
+}
+
+export function outcomeAfterWrong(helpLevel: number): 'retry-same-question' | 'reveal-and-new-question' {
+  return helpLevel > 0 ? 'reveal-and-new-question' : 'retry-same-question';
 }
 
 function challengeType(id: string): MultiplicationChallengeType {
@@ -57,57 +99,35 @@ function repeatedAdditionText(stimulus: MultiplicationBaseStimulus): string {
   return `${Array.from({ length: stimulus.displayA }, () => stimulus.displayB).join(' + ')} = ?`;
 }
 
-function VisualHint({
-  connection,
-  stimulus,
-}: {
-  connection: MultiplicationConnection | undefined;
-  stimulus: MultiplicationBaseStimulus;
-}) {
-  if (connection) {
-    const pieces = connection.operation === 'double'
-      ? [connection.sourceAnswer, connection.sourceAnswer]
-      : [connection.sourceAnswer, connection.adjustment];
-    const sign = connection.operation === 'subtract' ? '−' : '+';
-    return (
-      <div className="ml-city-game__visual-hint" dir="ltr" aria-label={connectionBridgeText(connection)}>
-        <span>{pieces[0]}</span><b>{sign}</b><span>{pieces[1]}</span><b>= ?</b>
-      </div>
-    );
-  }
-  return (
-    <div className="ml-city-game__groups" dir="ltr" aria-label={`${stimulus.displayA} קבוצות של ${stimulus.displayB}`}>
-      {Array.from({ length: stimulus.displayA }).map((_, group) => (
-        <span key={group}>
-          {Array.from({ length: stimulus.displayB }).map((__, dot) => <i key={dot} />)}
-        </span>
-      ))}
-    </div>
-  );
-}
-
 export function ConnectionsCityGame({ challenge, onResult }: GameProps & { challenge: CityChallenge }) {
   const stimulus = challenge.stimulus;
   const type = challengeType(challenge.exerciseId);
   const [digits, setDigits] = useState<number[]>([]);
   const [helpLevel, setHelpLevel] = useState(0);
-  const [answerRevealed, setAnswerRevealed] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [mistakes, setMistakes] = useState(0);
   const [phase, setPhase] = useState<CityPhase>('answering');
   const [selectedLink, setSelectedLink] = useState<string | null>(null);
   const [attempts, setAttempts] = useState<MultiplicationAttemptInput[]>([]);
   const startedAt = useRef(Date.now());
+  const resultTimer = useRef<number | null>(null);
   const multiplication = useStore((state) => state.multiplication);
-  const establishedCount = Object.values(multiplication.facts).filter((fact) => fact.stage !== 'DISCOVERING').length;
-  const fluentCount = Object.values(multiplication.facts).filter((fact) => fact.stage === 'FLUENT').length;
-  const cityTier = Math.min(7, Math.floor((establishedCount + fluentCount) / 6));
-  const displayedCityTier = visibleCityTier(cityTier, phase);
+  const persistedMilestones = cityMilestoneCount(multiplication);
+  const displayedMilestones = Math.min(
+    CITY_PERSISTENT_MILESTONES,
+    persistedMilestones + (phase === 'success' ? 1 : 0),
+  );
+  const city = cityMilestoneModel(displayedMilestones);
+  const justAddedMilestone = phase === 'success' ? displayedMilestones : 0;
   const expectedNumber = stimulus.answer;
   const maxDigits = String(expectedNumber).length;
   const effectiveConnection = isUsefulHintConnection(stimulus.factId, stimulus.connection)
     ? stimulus.connection
     : undefined;
+
+  useEffect(() => () => {
+    if (resultTimer.current !== null) window.clearTimeout(resultTimer.current);
+  }, []);
 
   const behavior: MemoBehavior = phase === 'success'
     ? 'success'
@@ -129,136 +149,148 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
     };
   }
 
+  function finishAfter(delayMs: number, callback: () => void) {
+    resultTimer.current = window.setTimeout(callback, delayMs);
+  }
+
   function miss() {
+    if (phase !== 'answering') return;
     const event = record(false, helpLevel);
-    setAttempts((current) => [...current, event]);
-    setHelpLevel((current) => cityHelpLevelAfterWrong(current));
+    const completed = [...attempts, event];
+    setAttempts(completed);
     setDigits([]);
     setSelectedLink(null);
+    sfxSoft();
+
+    if (outcomeAfterWrong(helpLevel) === 'reveal-and-new-question') {
+      setFeedback(null);
+      setPhase('reveal');
+      finishAfter(CITY_CORRECT_REVEAL_MS, () => {
+        onResult({
+          correct: false,
+          rtMs: Date.now() - startedAt.current,
+          multiplicationAttempts: completed,
+          newChallengeAfterIncorrect: true,
+        });
+      });
+      return;
+    }
+
+    setHelpLevel((current) => cityHelpLevelAfterWrong(current));
     setFeedback(CITY_RETRY_COPY);
     setMistakes((current) => current + 1);
-    sfxSoft();
   }
 
   function succeed() {
-    if (phase === 'success') return;
+    if (phase !== 'answering') return;
     const event = record(true, helpLevel);
     const completed = [...attempts, event];
     setAttempts(completed);
     setPhase('success');
     setFeedback(null);
     sfxCorrect();
-    window.setTimeout(() => {
+    finishAfter(920, () => {
       onResult({
         correct: true,
         rtMs: Date.now() - startedAt.current,
         multiplicationAttempts: completed,
       });
-    }, 920);
+    });
   }
 
   function submitDigits() {
-    if (digits.length === 0 || phase === 'success') return;
+    if (digits.length === 0 || phase !== 'answering') return;
     const given = Number(digits.join(''));
     if (given === expectedNumber) succeed();
     else miss();
   }
 
   function enterDigit(digit: number) {
-    if (phase === 'success') return;
+    if (phase !== 'answering') return;
     setFeedback(null);
-    setAnswerRevealed(false);
-    setDigits((current) => {
-      const base = answerRevealed ? [] : current;
-      return base.length < maxDigits ? [...base, digit] : base;
-    });
+    setDigits((current) => current.length < maxDigits ? [...current, digit] : current);
   }
 
   function eraseDigit() {
+    if (phase !== 'answering') return;
     setFeedback(null);
-    setAnswerRevealed(false);
-    setDigits((current) => answerRevealed ? [] : current.slice(0, -1));
+    setDigits((current) => current.slice(0, -1));
   }
 
   function requestHint() {
+    if (phase !== 'answering' || helpLevel > 0) return;
     setFeedback(null);
-    setHelpLevel((current) => {
-      const next = nextCityHelpLevel(current);
-      if (next === 4) {
-        setDigits([]);
-        setAnswerRevealed(true);
-      }
-      return next;
-    });
+    setHelpLevel((current) => nextCityHelpLevel(current));
   }
 
   function chooseLink(factId: string) {
-    if (phase === 'success') return;
+    if (phase !== 'answering') return;
     setSelectedLink(factId);
     if (factId === challenge.answer) succeed();
     else miss();
   }
 
-  const showAnchor = helpLevel >= 1;
-  const showTransformation = helpLevel >= 2;
-  const showVisualHint = helpLevel >= 3;
-
   return (
-    <section className={`ml-city-game ml-city-game--${phase}`} data-city-tier={cityTier}>
+    <section className={`ml-city-game ml-city-game--${phase}`} data-city-milestones={persistedMilestones}>
       <div className="ml-city-game__scene" aria-hidden>
         <div className="ml-city-game__sun" />
-        <div className="ml-city-game__city-progress">
-          <strong>העיר שלי</strong>
-          <span>
-            {Array.from({ length: 7 }).map((_, index) => <i key={index} data-grown={index <= displayedCityTier} />)}
-          </span>
-        </div>
         <div className="ml-city-game__skyline">
-          {Array.from({ length: 7 }).map((_, index) => (
-            <span
-              key={index}
-              className={`ml-city-game__building ml-city-game__building--${index + 1}`}
-              data-built={index <= displayedCityTier}
-              data-just-built={phase === 'success' && index === displayedCityTier}
-            >
-              <i /><i /><i />
+          {city.buildings.map((built, index) => (
+            <span key={index} className={`ml-city-game__lot ml-city-game__lot--${index + 1}`}>
+              <i className="ml-city-game__foundation" />
+              {built ? (
+                <span
+                  className="ml-city-game__building"
+                  data-construction={CITY_BUILDING_CONSTRUCTION}
+                  data-just-built={justAddedMilestone === index + 1}
+                >
+                  <i className="ml-city-game__window" />
+                  <i className="ml-city-game__window" />
+                  {city.structures[index] ? (
+                    <i
+                      className="ml-city-game__rooftop"
+                      data-just-built={justAddedMilestone === 11 + index}
+                    />
+                  ) : null}
+                  {city.details[index] ? (
+                    <i
+                      className="ml-city-game__detail"
+                      data-just-built={justAddedMilestone === 26 + index}
+                    />
+                  ) : null}
+                </span>
+              ) : null}
             </span>
           ))}
         </div>
-        <div className="ml-city-game__road"><span /></div>
+        <div className="ml-city-game__decorations">
+          {city.decorations.map((visible, index) => visible ? (
+            <i
+              key={index}
+              className={index % 2 === 0 ? 'is-tree' : 'is-lamp'}
+              data-just-built={justAddedMilestone === 16 + index}
+            />
+          ) : null)}
+        </div>
+        <div className="ml-city-game__road">
+          {city.roadUpgrades.map((visible, index) => visible ? (
+            <i key={index} data-just-built={justAddedMilestone === 21 + index} />
+          ) : null)}
+        </div>
         <MemoCompanion behavior={behavior} className="ml-city-game__memo" />
       </div>
 
       <div className="ml-city-game__worksite">
         <div className="ml-city-game__eyebrow">כמה זה?</div>
-        <div className={`ml-city-game__equation${helpLevel >= 1 && phase === 'answering' ? ' is-cued' : ''}`} dir="ltr" aria-label={`${stimulus.displayA} כפול ${stimulus.displayB}`}>
-          <span>{stimulus.displayA}</span><b>×</b><span>{stimulus.displayB}</span><b>=</b><span className="ml-city-game__unknown">?</span>
+        <div
+          className={`ml-city-game__equation${helpLevel > 0 && phase === 'answering' ? ' is-cued' : ''}${phase === 'reveal' ? ' is-revealed' : ''}`}
+          dir="ltr"
+          aria-label={`${stimulus.displayA} כפול ${stimulus.displayB}`}
+          aria-live={phase === 'reveal' ? 'polite' : undefined}
+        >
+          <span>{stimulus.displayA}</span><b>×</b><span>{stimulus.displayB}</span><b>=</b>
+          <span className="ml-city-game__unknown">{phase === 'reveal' ? expectedNumber : '?'}</span>
         </div>
-
-        {phase === 'answering' && helpLevel > 0 ? (
-          <div className="ml-city-game__hint-panel" aria-live="polite">
-            {showAnchor && effectiveConnection ? (
-              <div className="ml-city-game__connection" dir="ltr">
-                <span className="ml-city-game__bridge-dot" />
-                <strong>{connectionAnchorText(effectiveConnection)}</strong>
-              </div>
-            ) : showAnchor ? (
-              <VisualHint connection={undefined} stimulus={stimulus} />
-            ) : null}
-            {showTransformation ? (
-              <strong className="ml-city-game__bridge" dir="ltr">
-                {effectiveConnection ? connectionBridgeText(effectiveConnection) : repeatedAdditionText(stimulus)}
-              </strong>
-            ) : null}
-            {showVisualHint && effectiveConnection ? <VisualHint connection={effectiveConnection} stimulus={stimulus} /> : null}
-            {answerRevealed ? (
-              <div className="ml-city-game__final-help">
-                <strong dir="ltr">{stimulus.displayA} × {stimulus.displayB} = {expectedNumber}</strong>
-                <span>כשתתחיל להקליד, התשובה תיסגר</span>
-              </div>
-            ) : null}
-          </div>
-        ) : null}
 
         {type === 'link' && phase === 'answering' ? (
           <div className="ml-city-game__link-options" aria-label="עובדות שיכולות לעזור">
@@ -266,7 +298,7 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
               <button
                 key={option.factId}
                 type="button"
-                className={`${selectedLink === option.factId ? 'is-selected' : ''}${helpLevel >= 4 && option.factId === challenge.answer ? ' is-assisted' : ''}`.trim()}
+                className={selectedLink === option.factId ? 'is-selected' : ''}
                 onClick={() => chooseLink(option.factId)}
                 dir="ltr"
               >
@@ -280,45 +312,70 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
             <div className={`ml-city-game__answer${phase === 'success' ? ' is-built' : ''}`} dir="ltr" aria-live="polite">
               {Array.from({ length: maxDigits }).map((_, index) => (
                 <span key={index} className="ml-city-game__answer-brick">
-                  {digits[index] ?? ''}
+                  {phase === 'reveal' ? String(expectedNumber)[index] : digits[index] ?? ''}
                 </span>
               ))}
             </div>
             {feedback ? <div className="ml-city-game__feedback" role="status">{feedback}</div> : null}
-            <div className="ml-city-game__digit-yard" dir="ltr">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((digit) => (
-                <button
-                  key={digit}
-                  type="button"
-                  onClick={() => enterDigit(digit)}
-                  disabled={phase === 'success'}
-                  aria-label={`ספרה ${digit}`}
-                >
-                  {digit}
-                </button>
-              ))}
-            </div>
-            <div className="ml-city-game__actions">
-              <button type="button" className="ml-city-game__erase" onClick={eraseDigit} disabled={digits.length === 0 || phase === 'success'}>
-                מחק
-              </button>
-              <button type="button" className="ml-city-game__build" onClick={submitDigits} disabled={digits.length === 0 || phase === 'success'}>
-                בדיקה
-              </button>
-            </div>
+            {phase === 'answering' ? (
+              <>
+                <div className="ml-city-game__digit-yard" dir="ltr">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((digit) => (
+                    <button
+                      key={digit}
+                      type="button"
+                      onClick={() => enterDigit(digit)}
+                      aria-label={`ספרה ${digit}`}
+                    >
+                      {digit}
+                    </button>
+                  ))}
+                </div>
+                <div className="ml-city-game__actions">
+                  <button type="button" className="ml-city-game__erase" onClick={eraseDigit} disabled={digits.length === 0}>
+                    מחק
+                  </button>
+                  <button type="button" className="ml-city-game__build" onClick={submitDigits} disabled={digits.length === 0}>
+                    בדיקה
+                  </button>
+                </div>
+              </>
+            ) : null}
           </>
         )}
 
-        {phase === 'answering' && helpLevel < 4 ? (
-          <button
-            type="button"
-            className={`ml-city-game__help${mistakes >= 2 ? ' is-noticed' : ''}`}
-            onClick={requestHint}
-          >
-            <span aria-hidden>💡</span> {helpLevel === 0 ? CITY_HINT_ENTRY_COPY : 'עוד רמז'}
-          </button>
+        {phase === 'answering' ? (
+          <div className="ml-city-game__help-zone">
+            {helpLevel === 0 ? (
+              <button
+                type="button"
+                className={`ml-city-game__help${mistakes >= 2 ? ' is-noticed' : ''}`}
+                onClick={requestHint}
+              >
+                <span aria-hidden>💡</span> {CITY_HINT_ENTRY_COPY}
+              </button>
+            ) : (
+              <div className="ml-city-game__hint-panel" aria-live="polite">
+                <div className="ml-city-game__connection" dir="ltr">
+                  <span className="ml-city-game__bridge-dot" />
+                  <strong>
+                    {effectiveConnection
+                      ? connectionAnchorText(effectiveConnection)
+                      : `${stimulus.displayA} קבוצות של ${stimulus.displayB}`}
+                  </strong>
+                </div>
+                <strong className="ml-city-game__bridge" dir="ltr">
+                  {effectiveConnection ? connectionBridgeText(effectiveConnection) : repeatedAdditionText(stimulus)}
+                </strong>
+              </div>
+            )}
+          </div>
         ) : null}
-        {phase === 'success' ? <div className="ml-city-game__success" role="status">מעולה! העיר גדלה</div> : null}
+
+        {phase === 'reveal' ? (
+          <div className="ml-city-game__reveal" role="status">נזכור ונפגוש אותה שוב בקרוב</div>
+        ) : null}
+        {phase === 'success' ? <div className="ml-city-game__success" role="status">{CITY_SUCCESS_COPY}</div> : null}
       </div>
     </section>
   );

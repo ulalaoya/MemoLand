@@ -30,6 +30,7 @@ import { applyAttempt, initialStats } from '../scheduler/leveling';
 import { coinsForCorrect, newlyEarnedMedals, rankForCoins } from './rewards';
 import { TRACKS_PER_LAND } from '../config/lands';
 import { applyMultiplicationAttempts } from './multiplicationProgress';
+import { multiplicationCurriculumLevel } from '../learning/multiplicationFacts';
 
 let registry: ProfileRegistry = loadRegistry();
 let activeId: string | null = registry.activeId;
@@ -182,11 +183,22 @@ export function recordAttempt(input: RecordAttemptInput): RecordAttemptResult {
   const statsCorrect = input.landId === 'connections'
     ? (independentMultiplicationSuccess ?? input.correct)
     : input.correct;
-  const nextStats = applyAttempt(prevStats, {
+  const adaptiveStats = applyAttempt(prevStats, {
     correct: statsCorrect,
     rtMs: input.rtMs,
     span: input.span,
   });
+  const nextMultiplication = input.multiplicationAttempts
+    ? applyMultiplicationAttempts(state.multiplication, input.multiplicationAttempts)
+    : state.multiplication;
+  const curriculumLevel = multiplicationCurriculumLevel(nextMultiplication);
+  const nextStats = input.landId === 'connections'
+    ? {
+        ...adaptiveStats,
+        level: curriculumLevel,
+        peakLevel: Math.max(adaptiveStats.peakLevel, curriculumLevel),
+      }
+    : adaptiveStats;
   const leveledUp = nextStats.level > prevStats.level;
 
   let coinsGained = 0;
@@ -213,9 +225,7 @@ export function recordAttempt(input: RecordAttemptInput): RecordAttemptResult {
     stats: { ...state.stats, [input.exerciseId]: nextStats },
     coins: state.coins + coinsGained,
     history: history.slice(-90), // 90 ימים אחרונים
-    multiplication: input.multiplicationAttempts
-      ? applyMultiplicationAttempts(state.multiplication, input.multiplicationAttempts)
-      : state.multiplication,
+    multiplication: nextMultiplication,
     ...addTodayPoints(state, coinsGained),
   };
   next.rank = rankForCoins(next.coins);
