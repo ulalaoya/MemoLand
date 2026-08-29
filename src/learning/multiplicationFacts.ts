@@ -256,6 +256,13 @@ export function preferredConnection(
   fact: MultiplicationFact,
   progress?: MultiplicationProgress,
 ): MultiplicationConnection {
+  // לילדים בתחילת משפחת 2, המעבר מהשכן 2×3 ל־2×4 ברור יותר מכפל כפול.
+  if (fact.id === '2x4') {
+    const neighboringTwo = fact.connections.find(
+      (item) => item.kind === 'neighbor' && item.sourceFactId === '2x3' && item.operation === 'add',
+    );
+    if (neighboringTwo) return neighboringTwo;
+  }
   const withEstablishedAnchor = fact.connections.find((item) => {
     if (item.sourceFactId === fact.id) return false;
     const stage = stageFor(progress, item.sourceFactId);

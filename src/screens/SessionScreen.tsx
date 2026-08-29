@@ -26,7 +26,12 @@ import type { GameResult } from '../components/games/common';
 import { QuizGame } from '../components/games/QuizGame';
 import { SpeedMatchGame } from '../components/games/SpeedMatchGame';
 import { Button } from '../components/Button';
-import { Coin, HeartIcon } from '../components/svg/Icons';
+import { HeartIcon } from '../components/svg/Icons';
+import {
+  CoinRewardExperience,
+  createCoinRewardEvent,
+  type CoinRewardEvent,
+} from '../components/CoinRewardExperience';
 import { LandBackground } from '../components/svg/Backgrounds';
 import { Guide, guideKindFor } from '../components/svg/Memo';
 import { speak } from '../audio/speech';
@@ -58,13 +63,18 @@ export function SessionScreen({
   onQuit: () => void;
 }) {
   const settings = useStore((s) => s.settings);
+  const persistedCoins = useStore((s) => s.coins);
   const [idx, setIdx] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
+  const [coinReward, setCoinReward] = useState<CoinRewardEvent | null>(null);
   const sessionWrong = useRef(0);
   const stats = useRef({ correct: 0, total: 0, bestSpan: 0 });
   const coinsStart = useRef(getState().coins);
   const genSeed = useRef(Date.now());
   const multiplicationSessionId = useRef(`session-${Date.now().toString(36)}`);
+  const rewardSequence = useRef(0);
+  const rewardClearTimer = useRef<number | null>(null);
+  const sessionBoardRef = useRef<HTMLDivElement>(null);
   // נקודות שנצברו במסע הנוכחי — קובעות את אורך המסע (יעד ~1000 ≈ 20 דק').
   const sessionPoints = useRef(0);
 
@@ -127,6 +137,19 @@ export function SessionScreen({
     setTimeout(() => setToast(null), 1100);
   }
 
+  function showCoinReward(from: number, to: number) {
+    rewardSequence.current += 1;
+    const event = createCoinRewardEvent(rewardSequence.current, from, to);
+    if (!event) return;
+    setCoinReward(event);
+    if (rewardClearTimer.current !== null) window.clearTimeout(rewardClearTimer.current);
+    rewardClearTimer.current = window.setTimeout(() => setCoinReward(null), 920);
+  }
+
+  useEffect(() => () => {
+    if (rewardClearTimer.current !== null) window.clearTimeout(rewardClearTimer.current);
+  }, []);
+
   /** יוצר אתגר-משחק נוסף (סבב הרפתקה) כשעדיין לא הגענו ליעד היומי. */
   function makeExtraRotation(atIndex: number): Activity {
     const lands = getPlayableLands();
@@ -169,6 +192,7 @@ export function SessionScreen({
   }
 
   function handleGameResult(a: Extract<Activity, { kind: 'game' }>, r: GameResult) {
+    const coinsBefore = getState().coins;
     const res = recordAttempt({
       exerciseId: a.exerciseId,
       landId: a.landId,
@@ -181,6 +205,7 @@ export function SessionScreen({
         sessionContext: landFocus ? 'free-play' : 'daily',
       })),
     });
+    const coinsAfter = getState().coins;
     stats.current.total += 1;
     if (r.correct) {
       stats.current.correct += 1;
@@ -190,7 +215,7 @@ export function SessionScreen({
       if (res.leveledUp) showToast('המסלול נעשה תלול יותר! 🔥');
       if (res.coinsGained > 0) {
         sessionPoints.current += res.coinsGained;
-        showToast(`+${res.coinsGained} מטבעות`);
+        showCoinReward(coinsBefore, coinsAfter);
       }
       next();
     } else {
@@ -211,8 +236,9 @@ export function SessionScreen({
     if (correct) {
       stats.current.correct += 1;
       sessionPoints.current += 8;
+      const coinsBefore = getState().coins;
       addCoins(8);
-      showToast('+8 מטבעות');
+      showCoinReward(coinsBefore, getState().coins);
     }
     // עדכון חזרות במרווחים לפריט מאתמול
     if (a.spacedId) {
@@ -307,10 +333,17 @@ export function SessionScreen({
           <div className="ml-session-hud__world" style={{ background: color }}>
             {activity.label}
           </div>
+
+          <CoinRewardExperience
+            total={persistedCoins}
+            reward={coinReward}
+            sourceRef={sessionBoardRef}
+          />
         </div>
       </header>
 
       <div
+        ref={sessionBoardRef}
         className={`ml-session-board${isEchoChallenge ? ' ml-session-board--echo' : ''}${isNumbersChallenge ? ' ml-session-board--numbers' : ''}${isConnectionsChallenge ? ' ml-session-board--connections' : ''}`}
         style={{ '--ml-session-color': color } as React.CSSProperties}
       >
@@ -328,9 +361,14 @@ export function SessionScreen({
               seconds={activity.seconds}
               color={color}
               onDone={(score) => {
-                sessionPoints.current += score * 2;
-                addCoins(score * 2);
-                showToast(`אספת ${score}! +${score * 2} מטבעות`);
+                const reward = score * 2;
+                sessionPoints.current += reward;
+                const coinsBefore = getState().coins;
+                if (reward > 0) {
+                  addCoins(reward);
+                  showCoinReward(coinsBefore, getState().coins);
+                }
+                showToast(`אספת ${score}!`);
                 next();
               }}
             />
@@ -350,10 +388,7 @@ export function SessionScreen({
             pointerEvents: 'none',
           }}
         >
-          <div style={{ background: 'var(--ink)', color: '#fff', padding: '10px 18px', borderRadius: 999, display: 'flex', gap: 8, alignItems: 'center', fontFamily: 'var(--font-head)', fontWeight: 700, animation: 'pop .3s ease' }}>
-            <Coin size={22} spin />
-            {toast}
-          </div>
+          <div style={{ background: 'var(--ink)', color: '#fff', padding: '9px 16px', borderRadius: 999, fontFamily: 'var(--font-head)', fontWeight: 700, animation: 'pop .3s ease' }}>{toast}</div>
         </div>
       )}
 

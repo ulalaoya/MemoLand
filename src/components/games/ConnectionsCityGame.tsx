@@ -3,16 +3,23 @@ import type {
   Challenge,
   MultiplicationAttemptInput,
   MultiplicationChallengeType,
-  MultiplicationProgress,
 } from '../../types';
 import type {
   DerivedFactStimulus,
   FactLinkStimulus,
   MultiplicationBaseStimulus,
 } from '../../engines/connections';
-import type { MultiplicationConnection } from '../../learning/multiplicationFacts';
+import {
+  MULTIPLICATION_FACT_BY_ID,
+  type MultiplicationConnection,
+  type MultiplicationFact,
+} from '../../learning/multiplicationFacts';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import { useStore } from '../../state/store';
+import {
+  CITY_GROWTH_MILESTONE_LIMIT,
+  normalizeCityGrowthMilestones,
+} from '../../state/cityGrowth';
 import { MemoCompanion, type MemoBehavior } from './MemoCompanion';
 import type { GameProps } from './common';
 import './connections-city.css';
@@ -24,7 +31,7 @@ export const CITY_HINT_ENTRY_COPY = 'רוצה רמז? ממו כאן לעזור';
 export const CITY_RETRY_COPY = 'כמעט, נסה שוב';
 export const CITY_SUCCESS_COPY = 'מעולה! העיר גדלה';
 export const CITY_CORRECT_REVEAL_MS = 1_500;
-export const CITY_PERSISTENT_MILESTONES = 30;
+export const CITY_PERSISTENT_MILESTONES = CITY_GROWTH_MILESTONE_LIMIT;
 export const CITY_BUILDING_CONSTRUCTION = 'rise';
 
 export function nextCityHelpLevel(_current: number): number {
@@ -33,14 +40,6 @@ export function nextCityHelpLevel(_current: number): number {
 
 export function cityHelpLevelAfterWrong(current: number): number {
   return current;
-}
-
-export function cityMilestoneCount(progress: MultiplicationProgress): number {
-  const correct = Object.values(progress.facts).reduce(
-    (sum, fact) => sum + fact.directCorrect + fact.supportedCorrect,
-    0,
-  );
-  return Math.min(CITY_PERSISTENT_MILESTONES, correct);
 }
 
 export interface CityMilestoneModel {
@@ -68,8 +67,13 @@ export function cityMilestoneModel(completed: number): CityMilestoneModel {
   };
 }
 
-export function outcomeAfterWrong(helpLevel: number): 'retry-same-question' | 'reveal-and-new-question' {
-  return helpLevel > 0 ? 'reveal-and-new-question' : 'retry-same-question';
+export function outcomeAfterWrong(
+  helpLevel: number,
+  previousDirectMistakes = 0,
+): 'retry-same-question' | 'reveal-and-new-question' {
+  return helpLevel > 0 || previousDirectMistakes >= 1
+    ? 'reveal-and-new-question'
+    : 'retry-same-question';
 }
 
 function challengeType(id: string): MultiplicationChallengeType {
@@ -78,14 +82,62 @@ function challengeType(id: string): MultiplicationChallengeType {
   return 'direct';
 }
 
-export function connectionAnchorText(connection: MultiplicationConnection): string {
-  return `${connection.sourceA} × ${connection.sourceB} = ${connection.sourceAnswer}`;
+export interface CityHintExplanation {
+  knownFact: string;
+  targetRelationship: string;
+  arithmeticQuestion: string;
 }
 
-export function connectionBridgeText(connection: MultiplicationConnection): string {
-  if (connection.operation === 'double') return `${connection.sourceAnswer} + ${connection.sourceAnswer} = ?`;
-  const sign = connection.operation === 'add' ? '+' : '−';
-  return `${connection.sourceAnswer} ${sign} ${connection.adjustment} = ?`;
+function targetFactorsForConnection(
+  fact: MultiplicationFact,
+  connection: MultiplicationConnection,
+): readonly [number, number] {
+  const candidates: readonly (readonly [number, number])[] = [[fact.a, fact.b], [fact.b, fact.a]];
+  const score = ([a, b]: readonly [number, number]) => {
+    let value = Number(a === connection.sourceA) + Number(b === connection.sourceB);
+    if (connection.operation === 'double') {
+      if (b === connection.sourceB && a === connection.sourceA * 2) value += 4;
+      if (a === connection.sourceA && b === connection.sourceB * 2) value += 4;
+    } else if (connection.operation === 'add' || connection.operation === 'subtract') {
+      if (b === connection.sourceB && Math.abs(a - connection.sourceA) * b === connection.adjustment) value += 4;
+      if (a === connection.sourceA && Math.abs(b - connection.sourceB) * a === connection.adjustment) value += 4;
+    }
+    return value;
+  };
+  return score(candidates[1]) > score(candidates[0]) ? candidates[1] : candidates[0];
+}
+
+export function buildCityHintExplanation(
+  fact: MultiplicationFact,
+  connection?: MultiplicationConnection,
+): CityHintExplanation {
+  if (!connection || connection.sourceFactId === fact.id || connection.operation === 'same') {
+    const targetA = fact.a;
+    const targetB = fact.b;
+    const knownA = Math.max(1, targetA - 1);
+    const knownAnswer = knownA * targetB;
+    return {
+      knownFact: `${knownA} × ${targetB} = ${knownAnswer}`,
+      targetRelationship: `${targetA} × ${targetB} = ${knownA} × ${targetB} + ${targetB}`,
+      arithmeticQuestion: `${knownAnswer} + ${targetB} = ?`,
+    };
+  }
+
+  const [targetA, targetB] = targetFactorsForConnection(fact, connection);
+  const source = `${connection.sourceA} × ${connection.sourceB}`;
+  if (connection.operation === 'double') {
+    return {
+      knownFact: `${source} = ${connection.sourceAnswer}`,
+      targetRelationship: `${targetA} × ${targetB} = ${source} + ${source}`,
+      arithmeticQuestion: `${connection.sourceAnswer} + ${connection.sourceAnswer} = ?`,
+    };
+  }
+  const sign = connection.operation === 'add' ? '+' : '-';
+  return {
+    knownFact: `${source} = ${connection.sourceAnswer}`,
+    targetRelationship: `${targetA} × ${targetB} = ${source} ${sign} ${connection.adjustment}`,
+    arithmeticQuestion: `${connection.sourceAnswer} ${sign} ${connection.adjustment} = ?`,
+  };
 }
 
 function isUsefulHintConnection(
@@ -93,10 +145,6 @@ function isUsefulHintConnection(
   connection: MultiplicationConnection | undefined,
 ): connection is MultiplicationConnection {
   return Boolean(connection && connection.sourceFactId !== factId && connection.operation !== 'same');
-}
-
-function repeatedAdditionText(stimulus: MultiplicationBaseStimulus): string {
-  return `${Array.from({ length: stimulus.displayA }, () => stimulus.displayB).join(' + ')} = ?`;
 }
 
 export function ConnectionsCityGame({ challenge, onResult }: GameProps & { challenge: CityChallenge }) {
@@ -111,8 +159,9 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
   const [attempts, setAttempts] = useState<MultiplicationAttemptInput[]>([]);
   const startedAt = useRef(Date.now());
   const resultTimer = useRef<number | null>(null);
-  const multiplication = useStore((state) => state.multiplication);
-  const persistedMilestones = cityMilestoneCount(multiplication);
+  const persistedMilestones = normalizeCityGrowthMilestones(
+    useStore((state) => state.cityGrowthMilestones),
+  );
   const displayedMilestones = Math.min(
     CITY_PERSISTENT_MILESTONES,
     persistedMilestones + (phase === 'success' ? 1 : 0),
@@ -123,6 +172,10 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
   const maxDigits = String(expectedNumber).length;
   const effectiveConnection = isUsefulHintConnection(stimulus.factId, stimulus.connection)
     ? stimulus.connection
+    : undefined;
+  const targetFact = MULTIPLICATION_FACT_BY_ID.get(stimulus.factId);
+  const hintExplanation = targetFact
+    ? buildCityHintExplanation(targetFact, effectiveConnection)
     : undefined;
 
   useEffect(() => () => {
@@ -162,7 +215,7 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
     setSelectedLink(null);
     sfxSoft();
 
-    if (outcomeAfterWrong(helpLevel) === 'reveal-and-new-question') {
+    if (outcomeAfterWrong(helpLevel, mistakes) === 'reveal-and-new-question') {
       setFeedback(null);
       setPhase('reveal');
       finishAfter(CITY_CORRECT_REVEAL_MS, () => {
@@ -349,24 +402,25 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
             {helpLevel === 0 ? (
               <button
                 type="button"
-                className={`ml-city-game__help${mistakes >= 2 ? ' is-noticed' : ''}`}
+                className={`ml-city-game__help${mistakes >= 1 ? ' is-noticed' : ''}`}
                 onClick={requestHint}
               >
                 <span aria-hidden>💡</span> {CITY_HINT_ENTRY_COPY}
               </button>
             ) : (
               <div className="ml-city-game__hint-panel" aria-live="polite">
-                <div className="ml-city-game__connection" dir="ltr">
-                  <span className="ml-city-game__bridge-dot" />
-                  <strong>
-                    {effectiveConnection
-                      ? connectionAnchorText(effectiveConnection)
-                      : `${stimulus.displayA} קבוצות של ${stimulus.displayB}`}
-                  </strong>
+                <div className="ml-city-game__hint-step">
+                  <span>כבר ידוע</span>
+                  <strong dir="ltr">{hintExplanation?.knownFact}</strong>
                 </div>
-                <strong className="ml-city-game__bridge" dir="ltr">
-                  {effectiveConnection ? connectionBridgeText(effectiveConnection) : repeatedAdditionText(stimulus)}
-                </strong>
+                <div className="ml-city-game__hint-step">
+                  <span>לכן</span>
+                  <strong dir="ltr">{hintExplanation?.targetRelationship}</strong>
+                </div>
+                <div className="ml-city-game__hint-step is-question">
+                  <span>כלומר</span>
+                  <strong dir="ltr">{hintExplanation?.arithmeticQuestion}</strong>
+                </div>
               </div>
             )}
           </div>

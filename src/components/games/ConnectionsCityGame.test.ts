@@ -3,7 +3,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { connectionsDirect } from '../../engines/connections';
 import { MULTIPLICATION_FACT_BY_ID, preferredConnection } from '../../learning/multiplicationFacts';
-import { defaultMultiplicationFactProgress, defaultMultiplicationProgress } from '../../state/multiplicationProgress';
 
 let cityModule: typeof import('./ConnectionsCityGame');
 
@@ -47,29 +46,30 @@ describe('City child interaction', () => {
     expect(cityModule.CITY_RETRY_COPY).toBe('כמעט, נסה שוב');
   });
 
-  it('opens exactly one answer-free hint containing the anchor and arithmetic bridge', () => {
+  it('opens exactly one three-step answer-free explanation', () => {
     expect(cityModule.nextCityHelpLevel(0)).toBe(1);
     expect(cityModule.nextCityHelpLevel(1)).toBe(1);
     expect(cityModule.nextCityHelpLevel(4)).toBe(1);
 
     const cases = [
-      ['2x4', '2 × 2 = 4', '4 + 4 = ?'],
-      ['6x8', '5 × 8 = 40', '40 + 8 = ?'],
-      ['7x8', '7 × 7 = 49', '49 + 7 = ?'],
-      ['6x9', '10 × 6 = 60', '60 − 6 = ?'],
+      ['2x4', '2 × 3 = 6', '2 × 4 = 2 × 3 + 2', '6 + 2 = ?'],
+      ['6x8', '5 × 8 = 40', '6 × 8 = 5 × 8 + 8', '40 + 8 = ?'],
+      ['7x8', '7 × 7 = 49', '7 × 8 = 7 × 7 + 7', '49 + 7 = ?'],
+      ['6x9', '10 × 6 = 60', '9 × 6 = 10 × 6 - 6', '60 - 6 = ?'],
     ] as const;
-    for (const [factId, anchor, bridge] of cases) {
+    for (const [factId, knownFact, targetRelationship, arithmeticQuestion] of cases) {
       const target = MULTIPLICATION_FACT_BY_ID.get(factId)!;
-      const hint = preferredConnection(target);
-      expect(cityModule.connectionAnchorText(hint)).toBe(anchor);
-      expect(cityModule.connectionBridgeText(hint)).toBe(bridge);
-      expect(cityModule.connectionBridgeText(hint)).not.toContain(String(target.answer));
+      const explanation = cityModule.buildCityHintExplanation(target, preferredConnection(target));
+      expect(explanation).toEqual({ knownFact, targetRelationship, arithmeticQuestion });
+      expect(`${explanation.targetRelationship} ${explanation.arithmeticQuestion}`)
+        .not.toContain(`${target.a} × ${target.b} = ${target.answer}`);
     }
   });
 
-  it('keeps an unsupported wrong answer on the question and advances after a supported miss', () => {
-    expect(cityModule.outcomeAfterWrong(0)).toBe('retry-same-question');
-    expect(cityModule.outcomeAfterWrong(1)).toBe('reveal-and-new-question');
+  it('allows one direct retry, then reveals; a supported miss reveals immediately', () => {
+    expect(cityModule.outcomeAfterWrong(0, 0)).toBe('retry-same-question');
+    expect(cityModule.outcomeAfterWrong(0, 1)).toBe('reveal-and-new-question');
+    expect(cityModule.outcomeAfterWrong(1, 0)).toBe('reveal-and-new-question');
     expect(cityModule.CITY_CORRECT_REVEAL_MS).toBeGreaterThanOrEqual(1_200);
     expect(cityModule.CITY_CORRECT_REVEAL_MS).toBeLessThanOrEqual(1_800);
   });
@@ -109,18 +109,9 @@ describe('City child interaction', () => {
     expect(complete.details.filter(Boolean)).toHaveLength(5);
   });
 
-  it('reconstructs City growth from existing persistent correct-attempt data', () => {
-    const progress = defaultMultiplicationProgress();
-    progress.facts['2x2'] = {
-      ...defaultMultiplicationFactProgress('2x2'),
-      directCorrect: 4,
-      supportedCorrect: 3,
-    };
-    progress.facts['2x3'] = {
-      ...defaultMultiplicationFactProgress('2x3'),
-      directCorrect: 2,
-      supportedCorrect: 1,
-    };
-    expect(cityModule.cityMilestoneCount(progress)).toBe(10);
+  it('constructs cumulative buildings from the dedicated first and second milestones', () => {
+    expect(cityModule.cityMilestoneModel(0).buildings.filter(Boolean)).toHaveLength(0);
+    expect(cityModule.cityMilestoneModel(1).buildings.filter(Boolean)).toHaveLength(1);
+    expect(cityModule.cityMilestoneModel(2).buildings.filter(Boolean)).toHaveLength(2);
   });
 });

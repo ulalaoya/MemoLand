@@ -6,11 +6,12 @@
 import type { AvatarKind, LandId, Profile, ProfileRegistry, SaveState, Settings } from '../types';
 import { LAND_ORDER } from '../config/lands';
 import { defaultMultiplicationProgress, normalizeMultiplicationProgress } from './multiplicationProgress';
+import { normalizeCityGrowthMilestones } from './cityGrowth';
 
 const LEGACY_KEY = 'memoland.save.v1';
 const REGISTRY_KEY = 'memoland.profiles.v1';
 const savePrefix = (id: string) => `memoland.save.v1.${id}`;
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export function defaultSettings(): Settings {
   return {
@@ -37,6 +38,7 @@ export function defaultSave(): SaveState {
   return {
     version: SAVE_VERSION,
     coins: 0,
+    cityGrowthMilestones: 0,
     rank: 'beginner',
     stats: {},
     lands,
@@ -115,7 +117,7 @@ export function loadSaveFor(profileId: string): SaveState {
 }
 
 /**
- * ממיר גם שמירות v1 וגם שמירות v2 חלקיות למבנה מלא. מפת הארצות נבנית
+ * ממיר שמירות מגרסאות קודמות ושמירות חלקיות למבנה המלא הנוכחי. מפת הארצות נבנית
  * מחדש לפי המרשם הנוכחי כדי להוסיף ארץ בלי למחוק התקדמות קיימת.
  */
 export function normalizeSave(value: unknown): SaveState {
@@ -140,6 +142,7 @@ export function normalizeSave(value: unknown): SaveState {
     settings: { ...defaultSettings(), ...(source.settings ?? {}) },
     parentContent: { ...defaults.parentContent, ...(source.parentContent ?? {}) },
     multiplication: normalizeMultiplicationProgress(source.multiplication),
+    cityGrowthMilestones: normalizeCityGrowthMilestones(source.cityGrowthMilestones),
   };
 }
 

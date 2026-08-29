@@ -313,23 +313,28 @@
   width: 100%;
   padding: 7px 9px;
   display: grid;
-  gap: 5px;
+  gap: 4px;
   color: #176a70;
   background: #f4fffd;
   border: 2px solid #a5ddd8;
   border-radius: 14px;
 }
-.ml-city-game__connection {
-  min-height: 30px;
-  display: flex;
+.ml-city-game__hint-step {
+  min-height: 27px;
+  padding: 3px 7px;
+  display: grid;
+  grid-template-columns: 62px 1fr;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  gap: 6px;
+  background: rgba(255, 255, 255, .76);
+  border-radius: 9px;
   font-family: var(--ml-font-heading);
-  font-size: .88rem;
+  font-size: .82rem;
 }
-.ml-city-game__bridge-dot { width: 10px; height: 10px; flex: 0 0 auto; background: #ffc928; border: 2px solid #d38a1b; border-radius: 50%; }
-.ml-city-game__bridge { padding: 5px 9px; color: #7a5310; background: #fff8dc; border-radius: 9px; font-family: var(--ml-font-heading); text-align: center; }
+.ml-city-game__hint-step > span { color: #176a70; font-weight: 800; }
+.ml-city-game__hint-step > strong { color: #40536c; text-align: center; white-space: nowrap; }
+.ml-city-game__hint-step.is-question { background: #fff8dc; }
+.ml-city-game__hint-step.is-question > strong { color: #7a5310; }
 
 .ml-city-game__link-options { width: min(100%, 360px); display: grid; gap: 9px; }
 .ml-city-game__link-options button { min-height: 58px; padding: 7px 16px; display: flex; align-items: center; justify-content: space-between; color: #243247; background: #fff; border: 3px solid #62bdb8; border-radius: 15px; box-shadow: 0 4px 0 #368f8c; font-family: var(--ml-font-heading); font-size: 1.05rem; cursor: pointer; }
@@ -368,6 +373,7 @@
   .ml-city-game__digit-yard { gap: 5px; }
   .ml-city-game__digit-yard button { min-height: 44px; }
   .ml-city-game__help-zone { margin-top: 8px; padding-top: 8px; }
+  .ml-city-game__hint-step { grid-template-columns: 55px 1fr; gap: 3px; padding-inline: 4px; font-size: .76rem; }
 }
 
 @media (max-height: 700px) {

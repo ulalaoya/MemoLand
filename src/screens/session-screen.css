@@ -63,6 +63,7 @@
 
 .ml-session-hud__meta-row {
   margin-top: 7px;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,8 +80,11 @@
 .ml-session-hud__hearts > span { display: grid; }
 
 .ml-session-hud__world {
+  min-width: 0;
   width: fit-content;
+  max-width: min(48vw, 230px);
   padding: 5px 15px;
+  overflow: hidden;
   color: #fff;
   border: 2px solid #fff;
   border-radius: var(--ml-radius-pill);
@@ -88,6 +92,8 @@
   font-family: var(--ml-font-heading);
   font-size: 0.85rem;
   font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ml-session-board {
@@ -318,6 +324,9 @@
 @media (max-width: 359px) {
   .ml-session-hud { padding-inline: 8px; }
   .ml-session-hud__back { min-width: 68px; padding-inline: 9px; }
+  .ml-session-hud__meta-row { gap: 5px; }
+  .ml-session-hud__world { max-width: 42vw; padding-inline: 9px; }
+  .ml-session-hud__hearts { gap: 1px; }
   .ml-session-screen--echo .ml-session-hud__world { font-size: 0.7rem; }
   .ml-session-screen--numbers .ml-session-hud__world { font-size: 0.7rem; }
   .ml-session-screen--connections .ml-session-hud__world { font-size: 0.7rem; }

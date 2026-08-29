@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { LAND_ORDER } from '../config/lands';
 import { SAVE_VERSION, defaultSave, normalizeSave } from './persistence';
+import { defaultMultiplicationFactProgress } from './multiplicationProgress';
 
-describe('SaveState v1 → v2 migration', () => {
-  it('preserves every existing profile field and land while adding City state', () => {
+describe('SaveState migration', () => {
+  it('preserves learning/profile data while initializing missing visual City growth to zero', () => {
     const current = defaultSave();
     const oldLands = Object.fromEntries(
       LAND_ORDER.filter((id) => id !== 'connections').map((id, index) => [id, {
@@ -31,8 +32,20 @@ describe('SaveState v1 → v2 migration', () => {
       todayPointsDay: '2026-08-28',
       settings: { ...current.settings, sessionMinutes: 25, parentPin: '9876' },
       parentContent: { wordLists: [{ title: 'x', items: ['y'] }], sentences: ['z'], paragraphs: [{ title: 'p', text: 't' }] },
+      multiplication: {
+        facts: {
+          '2x2': {
+            ...defaultMultiplicationFactProgress('2x2'),
+            directCorrect: 7,
+            supportedCorrect: 4,
+            stage: 'FLUENT' as const,
+          },
+        },
+        recentAttempts: [],
+      },
       history: [{ day: '2026-08-27', minutes: 12, perLand: { numbers: { attempts: 3, correct: 2 } } }],
     };
+    delete (old as Partial<typeof old>).cityGrowthMilestones;
 
     const migrated = normalizeSave(old);
     expect(migrated.version).toBe(SAVE_VERSION);
@@ -40,7 +53,10 @@ describe('SaveState v1 → v2 migration', () => {
       expect(migrated.lands[id]).toEqual(oldLands[id]);
     }
     expect(migrated.lands.connections).toEqual({ landId: 'connections', unlockedTracks: 1, completedTracks: 0, castleOpen: false });
-    expect(migrated.multiplication).toEqual({ facts: {}, recentAttempts: [] });
+    expect(migrated.multiplication.facts['2x2'].directCorrect).toBe(7);
+    expect(migrated.multiplication.facts['2x2'].supportedCorrect).toBe(4);
+    expect(migrated.multiplication.facts['2x2'].stage).toBe('FLUENT');
+    expect(migrated.cityGrowthMilestones).toBe(0);
     for (const key of ['coins', 'rank', 'stats', 'spaced', 'medals', 'cosmetics', 'equipped', 'streakDays', 'lastPlayedDay', 'streakShieldAvailable', 'todayPoints', 'todayPointsDay', 'settings', 'parentContent', 'history'] as const) {
       expect(migrated[key]).toEqual(old[key]);
     }
@@ -52,5 +68,13 @@ describe('SaveState v1 → v2 migration', () => {
     const migrated = normalizeSave(partial);
     expect(migrated.lands.connections.landId).toBe('connections');
     expect(migrated.multiplication.recentAttempts).toEqual([]);
+    expect(migrated.cityGrowthMilestones).toBe(0);
+  });
+
+  it('normalizes persisted City growth without affecting other fields', () => {
+    const current = defaultSave();
+    const migrated = normalizeSave({ ...current, coins: 55, cityGrowthMilestones: 14.8 });
+    expect(migrated.cityGrowthMilestones).toBe(14);
+    expect(migrated.coins).toBe(55);
   });
 });

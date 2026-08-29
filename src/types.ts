@@ -147,6 +147,8 @@ export interface LandProgress {
 export interface SaveState {
   version: number;
   coins: number;
+  /** התקדמות בניית העיר; נפרדת במכוון מנתוני שליטת הכפל. */
+  cityGrowthMilestones: number;
   rank: MemoRank;
   stats: Record<ExerciseId, ExerciseStats>;
   lands: Record<LandId, LandProgress>;

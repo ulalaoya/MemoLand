@@ -31,6 +31,7 @@ import { coinsForCorrect, newlyEarnedMedals, rankForCoins } from './rewards';
 import { TRACKS_PER_LAND } from '../config/lands';
 import { applyMultiplicationAttempts } from './multiplicationProgress';
 import { multiplicationCurriculumLevel } from '../learning/multiplicationFacts';
+import { cityGrowthAfterCompletedQuestion } from './cityGrowth';
 
 let registry: ProfileRegistry = loadRegistry();
 let activeId: string | null = registry.activeId;
@@ -224,6 +225,11 @@ export function recordAttempt(input: RecordAttemptInput): RecordAttemptResult {
     ...state,
     stats: { ...state.stats, [input.exerciseId]: nextStats },
     coins: state.coins + coinsGained,
+    cityGrowthMilestones: cityGrowthAfterCompletedQuestion(
+      state.cityGrowthMilestones,
+      input.landId,
+      input.correct,
+    ),
     history: history.slice(-90), // 90 ימים אחרונים
     multiplication: nextMultiplication,
     ...addTodayPoints(state, coinsGained),

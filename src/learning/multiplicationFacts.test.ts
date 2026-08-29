@@ -70,7 +70,7 @@ describe('multiplication fact registry', () => {
 
   it('chooses child-friendly default hint paths when no anchor is established', () => {
     const cases = [
-      ['2x4', '2x2', 'double'],
+      ['2x4', '2x3', 'neighbor'],
       ['6x8', '5x8', 'fives'],
       ['7x8', '7x7', 'neighbor'],
       ['6x9', '6x10', 'tens'],
