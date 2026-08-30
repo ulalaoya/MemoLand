@@ -85,33 +85,37 @@ describe('City child interaction', () => {
     }));
 
     expect(html).toContain('data-city-milestones="0"');
-    expect(html).toContain('ml-city-game__foundation');
+    expect(html.match(/class="ml-city-game__foundation"/g)).toHaveLength(20);
     expect(html).not.toContain('class="ml-city-game__building"');
+    expect(html).toContain('data-city-district="0"');
+    expect(html).toContain('data-city-district-built="0"');
   });
 
-  it('uses 30 persistent construction milestones and builds a new structure for each of the first 10', () => {
-    expect(cityModule.CITY_PERSISTENT_MILESTONES).toBe(30);
+  it('builds two rows of ten and rolls into an unbounded next district', () => {
+    expect(cityModule.CITY_DISTRICT_CAPACITY).toBe(20);
     expect(cityModule.CITY_BUILDING_CONSTRUCTION).toBe('rise');
-    for (let completed = 0; completed <= 10; completed += 1) {
-      const model = cityModule.cityMilestoneModel(completed);
-      expect(model.buildings.filter(Boolean)).toHaveLength(completed);
-      expect(model.structures.filter(Boolean)).toHaveLength(0);
-      expect(model.decorations.filter(Boolean)).toHaveLength(0);
-      expect(model.roadUpgrades.filter(Boolean)).toHaveLength(0);
-      expect(model.details.filter(Boolean)).toHaveLength(0);
-    }
+    const cases = [
+      { total: 0, district: 0, back: 0, front: 0, complete: false },
+      { total: 1, district: 0, back: 1, front: 0, complete: false },
+      { total: 10, district: 0, back: 10, front: 0, complete: false },
+      { total: 11, district: 0, back: 10, front: 1, complete: false },
+      { total: 20, district: 0, back: 10, front: 10, complete: true },
+      { total: 21, district: 1, back: 1, front: 0, complete: false },
+      { total: 40, district: 1, back: 10, front: 10, complete: true },
+      { total: 41, district: 2, back: 1, front: 0, complete: false },
+    ] as const;
 
-    const complete = cityModule.cityMilestoneModel(30);
-    expect(complete.buildings.filter(Boolean)).toHaveLength(10);
-    expect(complete.structures.filter(Boolean)).toHaveLength(5);
-    expect(complete.decorations.filter(Boolean)).toHaveLength(5);
-    expect(complete.roadUpgrades.filter(Boolean)).toHaveLength(5);
-    expect(complete.details.filter(Boolean)).toHaveLength(5);
+    for (const expected of cases) {
+      const model = cityModule.cityDistrictModel(expected.total);
+      expect(model.districtIndex).toBe(expected.district);
+      expect(model.backRow.filter(Boolean)).toHaveLength(expected.back);
+      expect(model.frontRow.filter(Boolean)).toHaveLength(expected.front);
+      expect(model.districtComplete).toBe(expected.complete);
+    }
   });
 
-  it('constructs cumulative buildings from the dedicated first and second milestones', () => {
-    expect(cityModule.cityMilestoneModel(0).buildings.filter(Boolean)).toHaveLength(0);
-    expect(cityModule.cityMilestoneModel(1).buildings.filter(Boolean)).toHaveLength(1);
-    expect(cityModule.cityMilestoneModel(2).buildings.filter(Boolean)).toHaveLength(2);
+  it('uses the explicit completion moment without replacing normal success feedback', () => {
+    expect(cityModule.CITY_SUCCESS_COPY).toBe('מעולה! העיר גדלה');
+    expect(cityModule.CITY_DISTRICT_COMPLETE_COPY).toBe('הרובע הושלם!');
   });
 });

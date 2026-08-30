@@ -1,6 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defaultSave } from './persistence';
-import { CITY_GROWTH_MILESTONE_LIMIT } from './cityGrowth';
+import { cityDistrictProgress } from './cityGrowth';
 
 let store: typeof import('./store');
 
@@ -52,12 +52,17 @@ describe('persistent City visual growth', () => {
     expect(store.getState().cityGrowthMilestones).toBe(1);
   });
 
-  it('never grows from other lands and caps at the 30-step model', () => {
-    store.replaceState({ ...defaultSave(), cityGrowthMilestones: CITY_GROWTH_MILESTONE_LIMIT });
+  it('never grows from other lands and continues across district boundaries', () => {
+    store.replaceState({ ...defaultSave(), cityGrowthMilestones: 40 });
     recordCity(true);
-    expect(store.getState().cityGrowthMilestones).toBe(CITY_GROWTH_MILESTONE_LIMIT);
+    expect(store.getState().cityGrowthMilestones).toBe(41);
+    expect(cityDistrictProgress(store.getState().cityGrowthMilestones)).toMatchObject({
+      completedDistricts: 2,
+      districtIndex: 2,
+      builtCount: 1,
+    });
     store.recordAttempt({ exerciseId: 'numbers.forward', landId: 'numbers', correct: true, rtMs: 900 });
-    expect(store.getState().cityGrowthMilestones).toBe(CITY_GROWTH_MILESTONE_LIMIT);
+    expect(store.getState().cityGrowthMilestones).toBe(41);
   });
 
   it('awards the calculated coins exactly once per correct result', () => {

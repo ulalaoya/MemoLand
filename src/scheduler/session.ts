@@ -1,7 +1,7 @@
 /* =========================================================================
    בניית המסע של היום (הסשן היומי).
-   מבנה 7 השלבים (סעיף 5). הסשן מסתובב בין הארצות המשוחקות ובוחר
-   את החלשות ביותר, אך תמיד כולל לפחות ארץ אחת "חזקה".
+   המסע משלב שני מקטעי שליפה ישירה בעיר לצד רוטציה בין שאר הארצות.
+   הרוטציה בוחרת את החלשות ביותר, אך תמיד כוללת לפחות ארץ אחת "חזקה".
    ========================================================================= */
 import type { DailySession, ExerciseId, ExerciseStats, LandId, SessionStep } from '../types';
 import { enginesForLand, playableLands } from '../engines';
@@ -60,8 +60,8 @@ export function buildDailySession(
   if (regularWeak[1]) rotationLands.push(regularWeak[1]);
   const strongPick = regularStrong.find((l) => !rotationLands.includes(l));
   if (strongPick) rotationLands.push(strongPick);
-  while (rotationLands.length < 3 && weak.length > rotationLands.length) {
-    const nxt = weak.find((l) => !rotationLands.includes(l));
+  while (rotationLands.length < 3 && regularWeak.length > rotationLands.length) {
+    const nxt = regularWeak.find((l) => !rotationLands.includes(l));
     if (!nxt) break;
     rotationLands.push(nxt);
   }
@@ -80,7 +80,16 @@ export function buildDailySession(
     rounds: 2,
   });
 
-  // 2. המשימה המושהית נחשפת (סיפור/רשימה) — לא נשאל עכשיו
+  // 2. עשר שליפות ישירות בעיר — מקטע ראשון וקבוע בכל משך מסע.
+  steps.push({
+    kind: 'connections-practice',
+    label: 'בונים את עיר הקשרים',
+    landId: 'connections',
+    exerciseId: 'connections.direct',
+    rounds: 10,
+  });
+
+  // 3. המשימה המושהית נחשפת (סיפור/רשימה) — לא נשאל עכשיו
   steps.push({
     kind: 'delayed-reveal',
     label: 'סוד לזכור — שמור אותו בלב',
@@ -88,17 +97,14 @@ export function buildDailySession(
     rounds: 1,
   });
 
-  // 3. "מה שזכרת אתמול" — חזרה במרווחים
+  // 4. "מה שזכרת אתמול" — חזרה במרווחים
   if (hasYesterday) {
     steps.push({ kind: 'yesterday', label: 'מה שזכרת אתמול', rounds: 1 });
   }
 
-  // 4. רוטציה — 3 ארצות שונות
+  // 5. רוטציה — 3 ארצות שונות, בלי להוסיף עוד שאלות עיר.
   for (let i = 0; i < rounds; i++) {
-    // חשיפה קצרה אחת לעיר בכל מסע; ארץ ריקה לעולם לא משתלטת על הרוטציה.
-    const land: LandId = i === Math.floor(rounds / 2)
-      ? 'connections'
-      : rotationLands[i % rotationLands.length];
+    const land: LandId = rotationLands[i % rotationLands.length];
     steps.push({
       kind: 'rotation',
       label: 'הרפתקה',
@@ -108,7 +114,7 @@ export function buildDailySession(
     });
   }
 
-  // 5. אתגר מהירות — עם טיימר, מסגור חיובי בלבד
+  // 6. אתגר מהירות — עם טיימר, מסגור חיובי בלבד
   steps.push({
     kind: 'speed',
     label: 'כמה תספיק ב-60 שניות?',
@@ -119,10 +125,19 @@ export function buildDailySession(
     timerSeconds: 60,
   });
 
-  // 6. שליפה מושהית — שאלות על הפריט מ-2
+  // 7. שליפה מושהית — שאלות על הפריט שנחשף קודם
   steps.push({ kind: 'delayed-recall', label: 'זוכר את הסוד?', rounds: 1 });
 
-  // 7. סיום מובטח — קל בוודאות, ואז תיבת האוצר
+  // 8. עשר שליפות ישירות נוספות — אחרי פעילויות מארצות אחרות.
+  steps.push({
+    kind: 'connections-practice',
+    label: 'ממשיכים לבנות את העיר',
+    landId: 'connections',
+    exerciseId: 'connections.direct',
+    rounds: 10,
+  });
+
+  // 9. סיום מובטח — קל בוודאות, ואז תיבת האוצר
   steps.push({
     kind: 'guaranteed-finish',
     label: 'ישר לטירה — סיבוב ניצחון',

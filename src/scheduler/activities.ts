@@ -1,5 +1,7 @@
-/* ממיר את מבנה הסשן (7 שלבים) לרשימת פעילויות קונקרטיות שהמסך מריץ. */
+/* ממיר את מבנה הסשן לרשימת פעילויות קונקרטיות שהמסך מריץ. */
 import type { DailySession, LandId, SpacedItem } from '../types';
+import { LANDS } from '../config/lands';
+import { enginesForLand, playableLands } from '../engines';
 import { STORIES } from '../engines/echoesContent';
 import { makeRng } from '../engines/rng';
 
@@ -13,6 +15,41 @@ export interface BuiltActivities {
   activities: Activity[];
   /** הסיפור שנחשף (למעקב שליפה מושהית). */
   revealStoryId: string;
+}
+
+export const FREE_PLAY_ACTIVITY_COUNT = 5;
+
+export function shouldAdvanceAfterCompletedIncorrect(
+  activity: Extract<Activity, { kind: 'game' }>,
+  completedIncorrect: boolean,
+): boolean {
+  return completedIncorrect && activity.landId === 'connections';
+}
+
+/** Free Play remains a short, land-focused sequence and does not inherit Daily Journey quotas. */
+export function buildFreePlayActivities(landId: LandId): Activity[] {
+  const exerciseIds = enginesForLand(landId).map((engine) => engine.id);
+  return Array.from({ length: FREE_PLAY_ACTIVITY_COUNT }, (_, index) => ({
+    kind: 'game' as const,
+    exerciseId: exerciseIds[index % exerciseIds.length],
+    landId,
+    levelDelta: 0,
+    label: LANDS[landId].name,
+  }));
+}
+
+/** Goal-extension rounds deliberately exclude City; its 20-question quota is explicit above. */
+export function buildDailySupplementalActivity(atIndex: number): Activity {
+  const lands = playableLands().filter((land) => land !== 'connections');
+  const land = lands[atIndex % lands.length];
+  const exerciseIds = enginesForLand(land).map((engine) => engine.id);
+  return {
+    kind: 'game',
+    exerciseId: exerciseIds[atIndex % exerciseIds.length],
+    landId: land,
+    levelDelta: 0,
+    label: 'הרפתקה',
+  };
 }
 
 export function buildActivities(
@@ -30,6 +67,18 @@ export function buildActivities(
       case 'warmup':
         for (let i = 0; i < step.rounds; i++)
           activities.push({ kind: 'game', exerciseId: step.exerciseId!, landId: step.landId!, levelDelta: -2, label: step.label });
+        break;
+
+      case 'connections-practice':
+        for (let i = 0; i < step.rounds; i++) {
+          activities.push({
+            kind: 'game',
+            exerciseId: 'connections.direct',
+            landId: 'connections',
+            levelDelta: 0,
+            label: step.label,
+          });
+        }
         break;
 
       case 'delayed-reveal':

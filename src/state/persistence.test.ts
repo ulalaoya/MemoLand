@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { LAND_ORDER } from '../config/lands';
 import { SAVE_VERSION, defaultSave, normalizeSave } from './persistence';
+import { cityDistrictProgress } from './cityGrowth';
 import { defaultMultiplicationFactProgress } from './multiplicationProgress';
 
 describe('SaveState migration', () => {
@@ -76,5 +77,26 @@ describe('SaveState migration', () => {
     const migrated = normalizeSave({ ...current, coins: 55, cityGrowthMilestones: 14.8 });
     expect(migrated.cityGrowthMilestones).toBe(14);
     expect(migrated.coins).toBe(55);
+  });
+
+  it('preserves cumulative City growth above the former cap and maps rollover without data loss', () => {
+    const current = defaultSave();
+    const atBoundary = normalizeSave({ ...current, cityGrowthMilestones: 40 });
+    const afterBoundary = normalizeSave({ ...current, cityGrowthMilestones: 41 });
+
+    expect(atBoundary.cityGrowthMilestones).toBe(40);
+    expect(cityDistrictProgress(atBoundary.cityGrowthMilestones)).toMatchObject({
+      completedDistricts: 2,
+      districtIndex: 1,
+      builtCount: 20,
+      districtComplete: true,
+    });
+    expect(afterBoundary.cityGrowthMilestones).toBe(41);
+    expect(cityDistrictProgress(afterBoundary.cityGrowthMilestones)).toMatchObject({
+      completedDistricts: 2,
+      districtIndex: 2,
+      builtCount: 1,
+      districtComplete: false,
+    });
   });
 });

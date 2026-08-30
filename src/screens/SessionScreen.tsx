@@ -2,7 +2,12 @@
    חזרות במרווחים, והתקדמות. מסתיים תמיד בהצלחה → תיבת האוצר. */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Activity } from '../scheduler/activities';
-import { buildActivities } from '../scheduler/activities';
+import {
+  buildActivities,
+  buildDailySupplementalActivity,
+  buildFreePlayActivities,
+  shouldAdvanceAfterCompletedIncorrect,
+} from '../scheduler/activities';
 import { buildDailySession } from '../scheduler/session';
 import { dueItems, makeSpacedItem } from '../scheduler/spacedRepetition';
 import { clampLevel } from '../config/curriculum';
@@ -109,12 +114,7 @@ export function SessionScreen({
   const [activities, setActivities] = useState<Activity[]>(() => {
     const now = Date.now();
     if (landFocus) {
-      const list: Activity[] = [];
-      const ids = getEnginesForLand(landFocus);
-      for (let i = 0; i < 5; i++) {
-        list.push({ kind: 'game', exerciseId: ids[i % ids.length], landId: landFocus, levelDelta: 0, label: LANDS[landFocus].name });
-      }
-      return list;
+      return buildFreePlayActivities(landFocus);
     }
     const st = getState();
     const due = dueItems(st.spaced, now);
@@ -152,11 +152,7 @@ export function SessionScreen({
 
   /** יוצר אתגר-משחק נוסף (סבב הרפתקה) כשעדיין לא הגענו ליעד היומי. */
   function makeExtraRotation(atIndex: number): Activity {
-    const lands = getPlayableLands();
-    const land = lands[atIndex % lands.length];
-    const ids = getEnginesForLand(land);
-    const id = ids[atIndex % ids.length];
-    return { kind: 'game', exerciseId: id, landId: land, levelDelta: 0, label: 'הרפתקה' };
+    return buildDailySupplementalActivity(atIndex);
   }
 
   function next() {
@@ -221,6 +217,12 @@ export function SessionScreen({
     } else {
       if (r.newChallengeAfterIncorrect) {
         sessionWrong.current += 1;
+        // בעיר זו שאלה שהושלמה (אחרי ניסיון ישיר + חשיפה, או אחרי רמז).
+        // מתקדמים לשאלת העיר הבאה בלי לבנות בניין; כך 20 שאלות אינן 20 הצלחות.
+        if (shouldAdvanceAfterCompletedIncorrect(a, r.newChallengeAfterIncorrect)) {
+          next();
+          return;
+        }
         setRetry((n) => n + 1);
         return;
       }
@@ -503,19 +505,10 @@ function CenterScreen({ children, land }: { children: React.ReactNode; land: Lan
 
 /* עזרי תוכן */
 import { STORIES } from '../engines/echoesContent';
-import { enginesForLand as _enginesForLand, playableLands as _playableLands } from '../engines';
 
 function getStoryQuestion(storyId: string) {
   const s = STORIES.find((x) => x.id === storyId);
   if (!s) return null;
   const q = s.questions[0];
   return { question: q.q, answer: q.answer, options: q.options };
-}
-
-function getEnginesForLand(land: LandId): string[] {
-  return _enginesForLand(land).map((e) => e.id);
-}
-
-function getPlayableLands(): LandId[] {
-  return _playableLands();
 }

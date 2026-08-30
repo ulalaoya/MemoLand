@@ -147,7 +147,7 @@ export interface LandProgress {
 export interface SaveState {
   version: number;
   coins: number;
-  /** התקדמות בניית העיר; נפרדת במכוון מנתוני שליטת הכפל. */
+  /** סך הצלחות הבנייה המצטבר בכל רובעי העיר; נפרד מנתוני שליטת הכפל. */
   cityGrowthMilestones: number;
   rank: MemoRank;
   stats: Record<ExerciseId, ExerciseStats>;
@@ -211,6 +211,7 @@ export interface DayRecord {
 /** שלב בסשן היומי. */
 export type SessionStepKind =
   | 'warmup'
+  | 'connections-practice'
   | 'delayed-reveal'
   | 'yesterday'
   | 'rotation'

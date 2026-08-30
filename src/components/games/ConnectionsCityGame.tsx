@@ -17,7 +17,9 @@ import {
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import { useStore } from '../../state/store';
 import {
-  CITY_GROWTH_MILESTONE_LIMIT,
+  CITY_DISTRICT_BUILDING_COUNT,
+  CITY_DISTRICT_ROW_SIZE,
+  cityDistrictProgress,
   normalizeCityGrowthMilestones,
 } from '../../state/cityGrowth';
 import { MemoCompanion, type MemoBehavior } from './MemoCompanion';
@@ -30,8 +32,9 @@ type CityPhase = 'answering' | 'reveal' | 'success';
 export const CITY_HINT_ENTRY_COPY = 'רוצה רמז? ממו כאן לעזור';
 export const CITY_RETRY_COPY = 'כמעט, נסה שוב';
 export const CITY_SUCCESS_COPY = 'מעולה! העיר גדלה';
+export const CITY_DISTRICT_COMPLETE_COPY = 'הרובע הושלם!';
 export const CITY_CORRECT_REVEAL_MS = 1_500;
-export const CITY_PERSISTENT_MILESTONES = CITY_GROWTH_MILESTONE_LIMIT;
+export const CITY_DISTRICT_CAPACITY = CITY_DISTRICT_BUILDING_COUNT;
 export const CITY_BUILDING_CONSTRUCTION = 'rise';
 
 export function nextCityHelpLevel(_current: number): number {
@@ -42,28 +45,29 @@ export function cityHelpLevelAfterWrong(current: number): number {
   return current;
 }
 
-export interface CityMilestoneModel {
-  completed: number;
-  buildings: readonly boolean[];
-  structures: readonly boolean[];
-  decorations: readonly boolean[];
-  roadUpgrades: readonly boolean[];
-  details: readonly boolean[];
+export interface CityDistrictModel {
+  totalBuilt: number;
+  completedDistricts: number;
+  districtIndex: number;
+  districtNumber: number;
+  builtCount: number;
+  districtComplete: boolean;
+  backRow: readonly boolean[];
+  frontRow: readonly boolean[];
 }
 
-export function cityMilestoneModel(completed: number): CityMilestoneModel {
-  const safe = Math.max(0, Math.min(CITY_PERSISTENT_MILESTONES, Math.floor(completed)));
-  const phase = (length: number, firstMilestone: number) => Array.from(
-    { length },
-    (_, index) => safe >= firstMilestone + index,
-  );
+export function cityDistrictModel(completed: number): CityDistrictModel {
+  const progress = cityDistrictProgress(completed);
   return {
-    completed: safe,
-    buildings: phase(10, 1),
-    structures: phase(5, 11),
-    decorations: phase(5, 16),
-    roadUpgrades: phase(5, 21),
-    details: phase(5, 26),
+    ...progress,
+    backRow: Array.from(
+      { length: CITY_DISTRICT_ROW_SIZE },
+      (_, index) => progress.builtCount >= index + 1,
+    ),
+    frontRow: Array.from(
+      { length: CITY_DISTRICT_ROW_SIZE },
+      (_, index) => progress.builtCount >= CITY_DISTRICT_ROW_SIZE + index + 1,
+    ),
   };
 }
 
@@ -162,12 +166,11 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
   const persistedMilestones = normalizeCityGrowthMilestones(
     useStore((state) => state.cityGrowthMilestones),
   );
-  const displayedMilestones = Math.min(
-    CITY_PERSISTENT_MILESTONES,
+  const displayedMilestones = normalizeCityGrowthMilestones(
     persistedMilestones + (phase === 'success' ? 1 : 0),
   );
-  const city = cityMilestoneModel(displayedMilestones);
-  const justAddedMilestone = phase === 'success' ? displayedMilestones : 0;
+  const city = cityDistrictModel(displayedMilestones);
+  const justAddedBuilding = phase === 'success' ? city.builtCount : 0;
   const expectedNumber = stimulus.answer;
   const maxDigits = String(expectedNumber).length;
   const effectiveConnection = isUsefulHintConnection(stimulus.factId, stimulus.connection)
@@ -284,51 +287,55 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
   }
 
   return (
-    <section className={`ml-city-game ml-city-game--${phase}`} data-city-milestones={persistedMilestones}>
-      <div className="ml-city-game__scene" aria-hidden>
+    <section
+      className={`ml-city-game ml-city-game--${phase}${helpLevel > 0 && phase === 'answering' ? ' is-hint-open' : ''}`}
+      data-city-milestones={persistedMilestones}
+      data-city-district={city.districtIndex}
+      data-city-district-built={city.builtCount}
+      data-city-district-complete={city.districtComplete}
+    >
+      <div className={`ml-city-game__scene${city.districtComplete ? ' is-district-complete' : ''}`} aria-hidden>
         <div className="ml-city-game__sun" />
-        <div className="ml-city-game__skyline">
-          {city.buildings.map((built, index) => (
-            <span key={index} className={`ml-city-game__lot ml-city-game__lot--${index + 1}`}>
+        <div className="ml-city-game__district-label">רובע {city.districtNumber}</div>
+        <div className="ml-city-game__district-row ml-city-game__district-row--back">
+          {city.backRow.map((built, index) => (
+            <span key={index} className="ml-city-game__lot" data-row="back" data-lot={index + 1}>
               <i className="ml-city-game__foundation" />
               {built ? (
                 <span
                   className="ml-city-game__building"
                   data-construction={CITY_BUILDING_CONSTRUCTION}
-                  data-just-built={justAddedMilestone === index + 1}
+                  data-just-built={justAddedBuilding === index + 1}
                 >
                   <i className="ml-city-game__window" />
                   <i className="ml-city-game__window" />
-                  {city.structures[index] ? (
-                    <i
-                      className="ml-city-game__rooftop"
-                      data-just-built={justAddedMilestone === 11 + index}
-                    />
-                  ) : null}
-                  {city.details[index] ? (
-                    <i
-                      className="ml-city-game__detail"
-                      data-just-built={justAddedMilestone === 26 + index}
-                    />
-                  ) : null}
                 </span>
               ) : null}
             </span>
           ))}
         </div>
-        <div className="ml-city-game__decorations">
-          {city.decorations.map((visible, index) => visible ? (
-            <i
-              key={index}
-              className={index % 2 === 0 ? 'is-tree' : 'is-lamp'}
-              data-just-built={justAddedMilestone === 16 + index}
-            />
-          ) : null)}
+        <div className="ml-city-game__district-row ml-city-game__district-row--front">
+          {city.frontRow.map((built, index) => {
+            const buildingNumber = CITY_DISTRICT_ROW_SIZE + index + 1;
+            return (
+              <span key={index} className="ml-city-game__lot" data-row="front" data-lot={buildingNumber}>
+                <i className="ml-city-game__foundation" />
+                {built ? (
+                  <span
+                    className="ml-city-game__building"
+                    data-construction={CITY_BUILDING_CONSTRUCTION}
+                    data-just-built={justAddedBuilding === buildingNumber}
+                  >
+                    <i className="ml-city-game__window" />
+                    <i className="ml-city-game__window" />
+                  </span>
+                ) : null}
+              </span>
+            );
+          })}
         </div>
         <div className="ml-city-game__road">
-          {city.roadUpgrades.map((visible, index) => visible ? (
-            <i key={index} data-just-built={justAddedMilestone === 21 + index} />
-          ) : null)}
+          <i /><i /><i /><i />
         </div>
         <MemoCompanion behavior={behavior} className="ml-city-game__memo" />
       </div>
@@ -429,7 +436,11 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
         {phase === 'reveal' ? (
           <div className="ml-city-game__reveal" role="status">נזכור ונפגוש אותה שוב בקרוב</div>
         ) : null}
-        {phase === 'success' ? <div className="ml-city-game__success" role="status">{CITY_SUCCESS_COPY}</div> : null}
+        {phase === 'success' ? (
+          <div className="ml-city-game__success" role="status">
+            {city.districtComplete ? CITY_DISTRICT_COMPLETE_COPY : CITY_SUCCESS_COPY}
+          </div>
+        ) : null}
       </div>
     </section>
   );

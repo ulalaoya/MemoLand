@@ -5,16 +5,40 @@
   min-height: 0;
   overflow: hidden;
   display: grid;
-  grid-template-rows: minmax(118px, .75fr) minmax(420px, 2.6fr);
+  grid-template-rows: clamp(180px, 28dvh, 210px) minmax(0, 1fr);
   color: var(--ml-navy);
   font-family: var(--ml-font-body);
+}
+
+.ml-city-game.is-hint-open {
+  grid-template-rows: clamp(150px, 22dvh, 172px) minmax(0, 1fr);
 }
 
 .ml-city-game__scene {
   position: relative;
   overflow: hidden;
-  min-height: 118px;
+  min-height: 0;
   background: linear-gradient(180deg, rgba(188, 238, 240, .14), rgba(255, 242, 192, .5));
+}
+
+.ml-city-game__scene::after {
+  content: '';
+  position: absolute;
+  z-index: 5;
+  inset: 12px 13% auto auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  opacity: 0;
+  background: #fff8b8;
+  box-shadow: 35px 13px 0 #fff, 72px -2px 0 #ffc928, 111px 20px 0 #fff,
+    154px 4px 0 #fff8b8, 198px 23px 0 #ffc928;
+  pointer-events: none;
+}
+
+.ml-city-game__scene.is-district-complete::after {
+  opacity: 1;
+  animation: ml-city-sparkle 920ms ease-out both;
 }
 
 .ml-city-game__sun {
@@ -27,14 +51,40 @@
   background: radial-gradient(circle, #fff8d6 0 22%, #ffc928 23% 45%, rgba(255, 201, 40, 0) 70%);
 }
 
-.ml-city-game__skyline {
+.ml-city-game__district-label {
   position: absolute;
-  inset: auto 60px 28px 5px;
-  height: 86px;
+  z-index: 5;
+  top: 9px;
+  right: 10px;
+  padding: 4px 10px;
+  color: #176a70;
+  background: rgba(255, 255, 255, .84);
+  border: 1px solid rgba(23, 106, 112, .25);
+  border-radius: 999px;
+  font-family: var(--ml-font-heading);
+  font-size: .72rem;
+  font-weight: 800;
+}
+
+.ml-city-game__district-row {
+  position: absolute;
   display: grid;
   grid-template-columns: repeat(10, minmax(0, 1fr));
   align-items: end;
   gap: 2px;
+}
+
+.ml-city-game__district-row--back {
+  z-index: 1;
+  inset: auto 59px 77px 18px;
+  height: 78px;
+  opacity: .86;
+}
+
+.ml-city-game__district-row--front {
+  z-index: 2;
+  inset: auto 80px 28px 4px;
+  height: 106px;
 }
 
 .ml-city-game__lot {
@@ -48,7 +98,7 @@
 .ml-city-game__foundation {
   position: absolute;
   inset: auto 1px 0;
-  height: 5px;
+  height: 6px;
   background: #8f9baa;
   border: 1px solid #68788c;
   border-radius: 2px 2px 0 0;
@@ -58,8 +108,8 @@
   position: relative;
   z-index: 1;
   width: calc(100% - 3px);
-  height: 37px;
-  margin-bottom: 5px;
+  height: 46px;
+  margin-bottom: 6px;
   display: flex;
   flex-wrap: wrap;
   align-content: start;
@@ -74,20 +124,20 @@
 }
 
 .ml-city-game__lot:nth-child(2n) .ml-city-game__building {
-  height: 51px;
+  height: 63px;
   background: linear-gradient(135deg, #67c8ff, #2e8df6);
 }
 
 .ml-city-game__lot:nth-child(3n) .ml-city-game__building {
-  height: 65px;
+  height: 78px;
   background: linear-gradient(135deg, #ffd75a, #f59d2a);
 }
 
-.ml-city-game__building[data-just-built='true'],
-.ml-city-game__rooftop[data-just-built='true'],
-.ml-city-game__detail[data-just-built='true'],
-.ml-city-game__decorations i[data-just-built='true'],
-.ml-city-game__road i[data-just-built='true'] {
+.ml-city-game__district-row--back .ml-city-game__building { height: 32px; }
+.ml-city-game__district-row--back .ml-city-game__lot:nth-child(2n) .ml-city-game__building { height: 44px; }
+.ml-city-game__district-row--back .ml-city-game__lot:nth-child(3n) .ml-city-game__building { height: 55px; }
+
+.ml-city-game__building[data-just-built='true'] {
   animation: ml-city-assemble 760ms var(--ml-ease-spring) both;
 }
 
@@ -99,72 +149,8 @@
   box-shadow: 0 0 4px rgba(255, 242, 154, .72);
 }
 
-.ml-city-game__rooftop {
-  position: absolute;
-  width: 10px;
-  height: 8px;
-  top: -9px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #d95e55;
-  border: 1px solid #8c403c;
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-}
-
-.ml-city-game__detail {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  right: 2px;
-  bottom: 3px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 0 2px #ffc928, 0 0 7px #fff1a0;
-}
-
-.ml-city-game__decorations {
-  position: absolute;
-  z-index: 3;
-  inset: auto 60px 27px 6px;
-  height: 23px;
-  display: flex;
-  align-items: end;
-  justify-content: space-around;
-  pointer-events: none;
-}
-
-.ml-city-game__decorations i { position: relative; display: block; }
-.ml-city-game__decorations .is-tree {
-  width: 14px;
-  height: 18px;
-  border-radius: 55% 55% 45% 45%;
-  background: #48a85c;
-  box-shadow: inset -3px 0 rgba(30, 111, 57, .25);
-}
-.ml-city-game__decorations .is-tree::after {
-  content: '';
-  position: absolute;
-  width: 3px;
-  height: 7px;
-  bottom: -5px;
-  left: 5px;
-  background: #875b32;
-}
-.ml-city-game__decorations .is-lamp {
-  width: 3px;
-  height: 18px;
-  background: #40536c;
-}
-.ml-city-game__decorations .is-lamp::before {
-  content: '';
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  top: -3px;
-  left: -3px;
-  border-radius: 50%;
-  background: #fff1a0;
-  box-shadow: 0 0 7px #ffd65a;
+.ml-city-game__scene.is-district-complete .ml-city-game__window {
+  animation: ml-city-window-light 820ms ease-out both;
 }
 
 .ml-city-game__road {
@@ -184,7 +170,7 @@
   border-radius: 2px;
 }
 
-.ml-city-game__memo { --ml-memo-size: 76px; z-index: 4; right: 4px; bottom: 4px; }
+.ml-city-game__memo { --ml-memo-size: 76px; z-index: 4; right: 2px; bottom: 5px; }
 
 .ml-city-game__worksite {
   position: relative;
@@ -194,7 +180,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   background: linear-gradient(180deg, rgba(241, 254, 253, .97), rgba(255, 255, 255, .99));
   border-top: 4px solid #138f91;
   box-shadow: 0 -8px 24px rgba(17, 93, 98, .14);
@@ -214,11 +200,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: clamp(6px, 2.6vw, 12px);
   font-family: var(--ml-font-display);
-  font-size: clamp(2.2rem, 9.5vw, 3.1rem);
-  line-height: 1;
+  font-size: clamp(3rem, 15.5vw, 4.2rem);
+  line-height: .98;
   color: #243247;
+  white-space: nowrap;
 }
 .ml-city-game__equation b { color: #138f91; font-family: var(--ml-font-heading); font-size: .72em; }
 .ml-city-game__unknown { color: #d97848; }
@@ -363,13 +350,25 @@
   100% { clip-path: inset(0); transform: translateY(0) scaleY(1); }
 }
 
+@keyframes ml-city-window-light {
+  0%, 30% { background: #fff; box-shadow: none; }
+  100% { background: #fff3a1; box-shadow: 0 0 7px #ffd65a; }
+}
+
+@keyframes ml-city-sparkle {
+  0% { opacity: 0; transform: translateY(8px) scale(.6); }
+  45% { opacity: 1; transform: translateY(0) scale(1.2); }
+  100% { opacity: .9; transform: translateY(-3px) scale(1); }
+}
+
 @media (max-width: 359px) {
-  .ml-city-game { grid-template-rows: 108px minmax(410px, 1fr); }
-  .ml-city-game__scene { min-height: 108px; }
-  .ml-city-game__skyline { inset-inline: 4px 55px; }
+  .ml-city-game { grid-template-rows: 170px minmax(0, 1fr); }
+  .ml-city-game.is-hint-open { grid-template-rows: 145px minmax(0, 1fr); }
+  .ml-city-game__district-row--back { right: 53px; left: 12px; }
+  .ml-city-game__district-row--front { right: 72px; left: 3px; }
   .ml-city-game__memo { --ml-memo-size: 68px; }
   .ml-city-game__worksite { padding-inline: 9px; gap: 6px; }
-  .ml-city-game__equation { font-size: 2.1rem; }
+  .ml-city-game__equation { font-size: 3rem; }
   .ml-city-game__digit-yard { gap: 5px; }
   .ml-city-game__digit-yard button { min-height: 44px; }
   .ml-city-game__help-zone { margin-top: 8px; padding-top: 8px; }
@@ -377,11 +376,11 @@
 }
 
 @media (max-height: 700px) {
-  .ml-city-game { grid-template-rows: 96px minmax(390px, 1fr); }
-  .ml-city-game__scene { min-height: 96px; }
+  .ml-city-game { grid-template-rows: 155px minmax(0, 1fr); }
+  .ml-city-game.is-hint-open { grid-template-rows: 138px minmax(0, 1fr); }
   .ml-city-game__memo { --ml-memo-size: 66px; }
   .ml-city-game__worksite { gap: 5px; padding-top: 6px; }
-  .ml-city-game__equation { font-size: 2rem; }
+  .ml-city-game__equation { font-size: clamp(3rem, 13vw, 3.5rem); }
   .ml-city-game__answer { min-height: 48px; }
   .ml-city-game__answer-brick { width: 44px; height: 46px; font-size: 1.65rem; }
   .ml-city-game__digit-yard button { min-height: 42px; }
@@ -390,5 +389,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ml-city-game__answer.is-built,
-  .ml-city-game [data-just-built='true'] { animation: none; }
+  .ml-city-game [data-just-built='true'],
+  .ml-city-game__scene.is-district-complete::after,
+  .ml-city-game__scene.is-district-complete .ml-city-game__window { animation: none; }
 }
