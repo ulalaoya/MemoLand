@@ -7,6 +7,7 @@ import type {
   AvatarKind,
   CosmeticItem,
   ExerciseId,
+  JourneyActivity,
   LandId,
   Medal,
   MultiplicationAttemptInput,
@@ -158,6 +159,66 @@ export function getTodayPoints(): number {
   return state.todayPointsDay === todayKey() ? state.todayPoints : 0;
 }
 
+function journeyForToday(s: SaveState, now = Date.now()): SaveState['dailyJourney'] {
+  const day = todayKey(now);
+  if (s.dailyJourney.day === day) return s.dailyJourney;
+  return {
+    day,
+    status: 'not-started',
+    currentActivity: 0,
+    seed: 0,
+    earnedPoints: 0,
+    plan: [],
+  };
+}
+
+export function getDailyJourneyProgress(now = Date.now()): SaveState['dailyJourney'] {
+  return journeyForToday(state, now);
+}
+
+/** Starts a fresh daily plan or returns the exact persisted resume point. */
+export function beginDailyJourney(now = Date.now()): SaveState['dailyJourney'] {
+  const current = journeyForToday(state, now);
+  if (current.status === 'in-progress' || current.status === 'completed') return current;
+  const next: SaveState['dailyJourney'] = {
+    ...current,
+    status: 'in-progress',
+    seed: now,
+  };
+  set({ ...state, dailyJourney: next });
+  return next;
+}
+
+export function setDailyJourneyPlan(plan: JourneyActivity[]): void {
+  const current = journeyForToday(state);
+  if (current.status !== 'in-progress') return;
+  set({ ...state, dailyJourney: { ...current, plan } });
+}
+
+export function setDailyJourneyActivity(currentActivity: number): void {
+  const current = journeyForToday(state);
+  if (current.status !== 'in-progress') return;
+  set({
+    ...state,
+    dailyJourney: { ...current, currentActivity: Math.max(0, Math.floor(currentActivity)) },
+  });
+}
+
+export function setDailyJourneyPoints(earnedPoints: number): void {
+  const current = journeyForToday(state);
+  if (current.status !== 'in-progress') return;
+  set({
+    ...state,
+    dailyJourney: { ...current, earnedPoints: Math.max(0, Math.floor(earnedPoints)) },
+  });
+}
+
+export function rememberChallengeFingerprint(fingerprint: string): void {
+  if (!fingerprint) return;
+  const recent = state.recentChallengeFingerprints.filter((item) => item !== fingerprint);
+  set({ ...state, recentChallengeFingerprints: [...recent, fingerprint].slice(-3) });
+}
+
 /* ------------------------------ פעולות ------------------------------ */
 
 export interface RecordAttemptInput {
@@ -275,34 +336,40 @@ export function completeTrack(landId: LandId): { castleOpened: boolean } {
 /** מסיים את המסע היומי: מעדכן רצף ימים ומגן רצף. */
 export function finishDailyJourney(): { streakDays: number } {
   const day = todayKey();
-  if (state.lastPlayedDay === day) return { streakDays: state.streakDays };
-
-  const yesterday = todayKey(Date.now() - 24 * 60 * 60 * 1000);
   let streakDays = state.streakDays;
   let shield = state.streakShieldAvailable;
 
-  if (state.lastPlayedDay === yesterday || state.lastPlayedDay === null) {
-    streakDays += 1;
-  } else if (shield) {
-    // מגן רצף סופג יום שהוחמץ
-    streakDays += 1;
-    shield = false;
-  } else {
-    streakDays = 1;
+  if (state.lastPlayedDay !== day) {
+    const yesterday = todayKey(Date.now() - 24 * 60 * 60 * 1000);
+    if (state.lastPlayedDay === yesterday || state.lastPlayedDay === null) {
+      streakDays += 1;
+    } else if (shield) {
+      // מגן רצף סופג יום שהוחמץ
+      streakDays += 1;
+      shield = false;
+    } else {
+      streakDays = 1;
+    }
   }
+
+  const currentJourney = journeyForToday(state);
 
   set({
     ...state,
     streakDays,
     lastPlayedDay: day,
     streakShieldAvailable: shield,
+    dailyJourney: { ...currentJourney, status: 'completed' },
   });
   return { streakDays };
 }
 
 /** מוסיף פריטי חזרה במרווחים. */
 export function addSpacedItems(items: SpacedItem[]): void {
-  set({ ...state, spaced: [...state.spaced, ...items] });
+  const existingIds = new Set(state.spaced.map((item) => item.id));
+  const unique = items.filter((item) => !existingIds.has(item.id));
+  if (unique.length === 0) return;
+  set({ ...state, spaced: [...state.spaced, ...unique] });
 }
 
 export function replaceSpaced(items: SpacedItem[]): void {

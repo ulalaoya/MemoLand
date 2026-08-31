@@ -1,15 +1,11 @@
 /* ממיר את מבנה הסשן לרשימת פעילויות קונקרטיות שהמסך מריץ. */
-import type { DailySession, LandId, SpacedItem } from '../types';
+import type { DailySession, JourneyActivity, LandId, SpacedItem } from '../types';
 import { LANDS } from '../config/lands';
 import { enginesForLand, playableLands } from '../engines';
 import { STORIES } from '../engines/echoesContent';
 import { makeRng } from '../engines/rng';
 
-export type Activity =
-  | { kind: 'game'; exerciseId: string; landId: LandId; levelDelta: number; label: string }
-  | { kind: 'reveal'; storyId: string; text: string; label: string }
-  | { kind: 'quiz'; landId: LandId; label: string; question: string; answer: string; options: string[]; spacedId?: string }
-  | { kind: 'speed'; landId: LandId; seconds: number; label: string };
+export type Activity = JourneyActivity;
 
 export interface BuiltActivities {
   activities: Activity[];
@@ -28,6 +24,9 @@ export function shouldAdvanceAfterCompletedIncorrect(
 
 /** Free Play remains a short, land-focused sequence and does not inherit Daily Journey quotas. */
 export function buildFreePlayActivities(landId: LandId): Activity[] {
+  if (landId === 'speed') {
+    return [{ kind: 'speed', landId: 'speed', seconds: 60, label: LANDS.speed.name }];
+  }
   const exerciseIds = enginesForLand(landId).map((engine) => engine.id);
   return Array.from({ length: FREE_PLAY_ACTIVITY_COUNT }, (_, index) => ({
     kind: 'game' as const,
@@ -40,7 +39,7 @@ export function buildFreePlayActivities(landId: LandId): Activity[] {
 
 /** Goal-extension rounds deliberately exclude City; its 20-question quota is explicit above. */
 export function buildDailySupplementalActivity(atIndex: number): Activity {
-  const lands = playableLands().filter((land) => land !== 'connections');
+  const lands = playableLands().filter((land) => land !== 'connections' && land !== 'speed');
   const land = lands[atIndex % lands.length];
   const exerciseIds = enginesForLand(land).map((engine) => engine.id);
   return {

@@ -113,6 +113,12 @@
 
 .ml-session-board__activity { width: 100%; }
 
+.ml-session-screen--castle .ml-session-hud__world {
+  color: var(--ink);
+  background: rgba(255, 255, 255, .96) !important;
+  border-color: #d6a51d;
+}
+
 .ml-session-screen--echo {
   display: flex;
   flex-direction: column;

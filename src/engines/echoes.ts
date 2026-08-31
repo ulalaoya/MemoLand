@@ -24,7 +24,9 @@ export const listenRepeat: ExerciseEngine<ListenRepeatStimulus, ListenRepeatAnsw
     const rng = makeRng(seed);
     const targetComponentCount = sentenceComponentCount(level);
     const tier = LISTEN_REPEAT_BETA_SENTENCES.filter(({ tiles }) => tiles.length === targetComponentCount);
-    const sentence = rng.pick(tier);
+    // Adjacent deterministic seeds walk every sentence in the tier before repeating.
+    // The shared recent-fingerprint selector can therefore enforce an LRU cycle.
+    const sentence = tier[(seed >>> 0) % tier.length];
     const words = [...sentence.tiles];
     const scrambled = rng.shuffle(words);
     return {

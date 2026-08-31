@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MAX_LEVEL, MIN_LEVEL, sentenceComponentCount } from '../config/curriculum';
 import { listenRepeat } from './echoes';
 import { LISTEN_REPEAT_BETA_SENTENCES } from './echoesContent';
+import { challengeFingerprint, generateVariedChallenge } from './variety';
 
 const EXPECTED_SENTENCES = [
   ['הילד מצא תפוח אדום', ['הילד', 'מצא', 'תפוח אדום']],
@@ -60,5 +61,19 @@ describe('Echo ListenRepeat curated beta content', () => {
     for (let level = MIN_LEVEL; level <= MAX_LEVEL; level += 1) {
       expect(listenRepeat.generate(level, 8472)).toEqual(listenRepeat.generate(level, 8472));
     }
+  });
+
+  it('cycles every alternative in a tier before the least-recent sentence repeats', () => {
+    const recent: string[] = [];
+    const seen: string[] = [];
+    for (let round = 0; round < 4; round += 1) {
+      const challenge = generateVariedChallenge(listenRepeat, 1, 120, recent);
+      const fingerprint = challengeFingerprint(challenge);
+      seen.push(fingerprint);
+      recent.push(fingerprint);
+      if (recent.length > 3) recent.shift();
+    }
+    expect(new Set(seen.slice(0, 3)).size).toBe(3);
+    expect(seen[3]).toBe(seen[0]);
   });
 });

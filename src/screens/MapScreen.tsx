@@ -1,6 +1,6 @@
 /* מסך הבית — מפת ממו לנד: מסלול הרפתקה אנכי שמחבר בין כל הארצות. */
 import type { CSSProperties } from 'react';
-import { DAILY_GOAL, getActiveProfile, getTodayPoints, useProfiles, useStore } from '../state/store';
+import { DAILY_GOAL, getActiveProfile, getDailyJourneyProgress, getTodayPoints, useProfiles, useStore } from '../state/store';
 import { LAND_ORDER, LANDS, TRACKS_PER_LAND } from '../config/lands';
 import { playableLands } from '../engines';
 import { HomeBackground } from '../components/svg/Backgrounds';
@@ -34,10 +34,13 @@ export function MapScreen({
   const lands = useStore((s) => s.lands);
   const equipped = useStore((s) => s.equipped);
   useStore((s) => s.todayPoints); // רה-רנדר כשמשתנה
+  useStore((s) => s.dailyJourney);
   useProfiles((r) => r.activeId);
   const profile = getActiveProfile();
   const playable = playableLands();
   const todayPoints = getTodayPoints();
+  const journey = getDailyJourneyProgress();
+  const journeyCompleted = journey.status === 'completed';
   const themeBg = THEME_GRADIENT[equipped.theme ?? 'theme.day'] ?? THEME_GRADIENT['theme.day'];
   const useSceneBg = (equipped.theme ?? 'theme.day') === 'theme.day';
   const currentLandIndex = getCurrentLandIndex(playable, lands);
@@ -67,8 +70,8 @@ export function MapScreen({
       <main className="ml-world-map-main">
         <div className="ml-world-map-intro">
           <span className="ml-world-map-intro__kicker">מפת ההרפתקה</span>
-          <h1>איזה עולם נגלה היום?</h1>
-          <p>בחרו תחנה, אספו מטבעות והתקדמו לאורך המסלול.</p>
+          <h1>{journeyCompleted ? 'המסע הושלם. לאן בא לך ללכת עכשיו?' : 'המסע של היום מחכה לך!'}</h1>
+          <p>{journeyCompleted ? 'כל העולמות פתוחים עכשיו למשחק חופשי.' : 'בחירת עולם תתחיל או תמשיך את המסע היומי.'}</p>
         </div>
 
         <section className="ml-world-map-route" aria-label="עולמות ממו לנד">
@@ -93,7 +96,7 @@ export function MapScreen({
                   current={index === currentLandIndex}
                   side={index % 2 === 0 ? 'left' : 'right'}
                   theme={LAND_THEMES[id]}
-                  onSelect={() => available && onPlayLand(id)}
+                  onSelect={() => available && (journeyCompleted ? onPlayLand(id) : onStartJourney())}
                 />
               );
             })}
@@ -102,7 +105,13 @@ export function MapScreen({
       </main>
 
       <div className="ml-daily-journey-slot">
-        <DailyJourneyBanner todayPoints={todayPoints} dailyGoal={DAILY_GOAL} onStart={onStartJourney} />
+        <DailyJourneyBanner
+          todayPoints={todayPoints}
+          dailyGoal={DAILY_GOAL}
+          status={journey.status}
+          currentActivity={journey.currentActivity}
+          onStart={onStartJourney}
+        />
       </div>
     </div>
   );

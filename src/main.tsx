@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { registerMemoLandPwa } from './pwa';
 
 // גופנים מ-self-host (עברית + לטינית) — נטענים תמיד, גם אופליין ב-PWA.
 import '@fontsource/rubik/hebrew-400.css';
@@ -34,6 +35,7 @@ document.documentElement.dataset.memolandBuildTime = __MEMOLAND_BUILD_TIME__;
 syncAppViewportHeight();
 window.addEventListener('resize', syncAppViewportHeight);
 window.visualViewport?.addEventListener('resize', syncAppViewportHeight);
+registerMemoLandPwa();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

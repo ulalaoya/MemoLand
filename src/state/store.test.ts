@@ -71,3 +71,37 @@ describe('persistent City visual growth', () => {
     expect(store.getState().coins).toBe(before + result.coinsGained);
   });
 });
+
+describe('persistent Daily Journey resume state', () => {
+  it('persists one exact plan, activity index and earned points, then completes once', () => {
+    const started = store.beginDailyJourney();
+    expect(started.status).toBe('in-progress');
+    const plan = [{
+      kind: 'game' as const,
+      exerciseId: 'numbers.forward',
+      landId: 'numbers' as const,
+      levelDelta: 0,
+      label: 'פתיחה',
+    }];
+    store.setDailyJourneyPlan(plan);
+    store.setDailyJourneyActivity(1);
+    store.setDailyJourneyPoints(45);
+
+    expect(store.beginDailyJourney()).toMatchObject({
+      status: 'in-progress',
+      currentActivity: 1,
+      earnedPoints: 45,
+      plan,
+    });
+
+    const first = store.finishDailyJourney();
+    const second = store.finishDailyJourney();
+    expect(store.getDailyJourneyProgress().status).toBe('completed');
+    expect(second.streakDays).toBe(first.streakDays);
+  });
+
+  it('keeps only the last three distinct challenge fingerprints', () => {
+    for (const fingerprint of ['a', 'b', 'c', 'd', 'c']) store.rememberChallengeFingerprint(fingerprint);
+    expect(store.getState().recentChallengeFingerprints).toEqual(['b', 'd', 'c']);
+  });
+});

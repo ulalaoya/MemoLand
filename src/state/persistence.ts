@@ -11,7 +11,18 @@ import { normalizeCityGrowthMilestones } from './cityGrowth';
 const LEGACY_KEY = 'memoland.save.v1';
 const REGISTRY_KEY = 'memoland.profiles.v1';
 const savePrefix = (id: string) => `memoland.save.v1.${id}`;
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
+
+function emptyDailyJourney(): SaveState['dailyJourney'] {
+  return {
+    day: null,
+    status: 'not-started',
+    currentActivity: 0,
+    seed: 0,
+    earnedPoints: 0,
+    plan: [],
+  };
+}
 
 export function defaultSettings(): Settings {
   return {
@@ -51,6 +62,8 @@ export function defaultSave(): SaveState {
     streakShieldAvailable: true,
     todayPoints: 0,
     todayPointsDay: null,
+    dailyJourney: emptyDailyJourney(),
+    recentChallengeFingerprints: [],
     settings: defaultSettings(),
     parentContent: { wordLists: [], sentences: [], paragraphs: [] },
     multiplication: defaultMultiplicationProgress(),
@@ -134,6 +147,15 @@ export function normalizeSave(value: unknown): SaveState {
     };
   }
 
+  const sourceJourney = source.dailyJourney;
+  const inferredJourney = !sourceJourney && source.lastPlayedDay
+    ? {
+        ...emptyDailyJourney(),
+        day: source.lastPlayedDay,
+        status: 'completed' as const,
+      }
+    : emptyDailyJourney();
+
   return {
     ...defaults,
     ...source,
@@ -141,6 +163,14 @@ export function normalizeSave(value: unknown): SaveState {
     lands,
     settings: { ...defaultSettings(), ...(source.settings ?? {}) },
     parentContent: { ...defaults.parentContent, ...(source.parentContent ?? {}) },
+    dailyJourney: {
+      ...inferredJourney,
+      ...(sourceJourney ?? {}),
+      plan: Array.isArray(sourceJourney?.plan) ? sourceJourney.plan : inferredJourney.plan,
+    },
+    recentChallengeFingerprints: Array.isArray(source.recentChallengeFingerprints)
+      ? source.recentChallengeFingerprints.filter((item): item is string => typeof item === 'string').slice(-3)
+      : [],
     multiplication: normalizeMultiplicationProgress(source.multiplication),
     cityGrowthMilestones: normalizeCityGrowthMilestones(source.cityGrowthMilestones),
   };

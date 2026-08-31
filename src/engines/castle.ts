@@ -38,7 +38,7 @@ export const castleMemorize: ExerciseEngine<MemorizeStimulus, MemorizeAnswer> = 
       stimulus: { items, scrambled, viewMs: cfg.viewMs },
       answer: [...items],
       params: { count: items.length, viewMs: cfg.viewMs },
-      prompt: 'שנן את הרשימה — ואז סדר אותה מחדש',
+      prompt: 'זכור את האוצרות לפי הסדר',
     };
   },
   check(challenge, given) {

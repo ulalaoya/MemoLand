@@ -116,6 +116,13 @@ export function CoinRewardExperience({
         data-displayed-coins={displayedTotal}
         data-persisted-coins={total}
       >
+        {activeReward ? (
+          <span className="ml-session-coin-counter__stack" aria-hidden>
+            <Coin size={14} />
+            <Coin size={14} />
+            <Coin size={14} />
+          </span>
+        ) : null}
         <Coin size={21} />
         <strong>{displayedTotal}</strong>
       </div>

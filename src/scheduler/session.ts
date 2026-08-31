@@ -51,8 +51,9 @@ export function buildDailySession(
   const weak = landsByWeakness(stats);
   const strong = [...weak].reverse();
   const rounds = rotationRounds(minutes);
-  const regularWeak = weak.filter((land) => land !== 'connections');
-  const regularStrong = strong.filter((land) => land !== 'connections');
+  // City has its two fixed blocks and Speed has its single continuous race.
+  const regularWeak = weak.filter((land) => land !== 'connections' && land !== 'speed');
+  const regularStrong = strong.filter((land) => land !== 'connections' && land !== 'speed');
 
   // 3 ארצות לרוטציה: 2 החלשות + 1 חזקה (כדי לשמור מסוגלות).
   const rotationLands: LandId[] = [];

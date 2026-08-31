@@ -1,4 +1,5 @@
 .ml-session-coin-counter {
+  position: relative;
   flex: 0 0 auto;
   min-width: 64px;
   height: 32px;
@@ -16,6 +17,19 @@
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
+
+.ml-session-coin-counter__stack {
+  position: absolute;
+  inset-inline-start: -7px;
+  top: -12px;
+  display: flex;
+  align-items: flex-end;
+  filter: drop-shadow(0 2px 2px rgba(122, 83, 16, .25));
+  animation: ml-coin-stack-arrive 420ms 500ms var(--ml-ease-spring) both;
+}
+
+.ml-session-coin-counter__stack > svg:nth-child(2) { margin-inline-start: -7px; transform: translateY(-4px); }
+.ml-session-coin-counter__stack > svg:nth-child(3) { margin-inline-start: -7px; transform: translateY(1px); }
 
 @media (max-width: 359px) {
   .ml-session-coin-counter {
@@ -65,9 +79,16 @@
   52% { transform: scale(1.13); box-shadow: 0 0 0 4px rgba(255, 201, 40, .32), 0 3px 0 rgba(36, 50, 71, .22); }
 }
 
+@keyframes ml-coin-stack-arrive {
+  0% { opacity: 0; transform: translateY(7px) scale(.7); }
+  55% { opacity: 1; transform: translateY(-2px) scale(1.08); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ml-coin-reward { display: none; }
   .ml-session-coin-counter.is-receiving { animation: ml-coin-counter-fade 220ms ease both; }
+  .ml-session-coin-counter__stack { animation: ml-coin-counter-fade 220ms ease both; }
 }
 
 @keyframes ml-coin-counter-fade {

@@ -1,9 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { ENGINES, enginesForLand, getEngine } from './index';
-import { chainMath } from './numbers';
-import { MAX_LEVEL, MIN_LEVEL } from '../config/curriculum';
+import { chainMath, digitForward } from './numbers';
+import {
+  MAX_LEVEL,
+  MIN_LEVEL,
+  chainMathConfig,
+  digitSpanLength,
+  gridConfig,
+  memorizeConfig,
+  patternLength,
+  sentenceComponentCount,
+} from '../config/curriculum';
 import { connectionsLink } from './connections';
 import { factsAvailableAtLevel } from '../learning/multiplicationFacts';
+import { speedMatch } from './speed';
+import { challengeFingerprint, generateVariedChallenge } from './variety';
 
 /** בדיקת יסוד: כל generator מייצר אתגר פתיר שהתשובה נגזרת מהגירוי,
     ובודק check() נכון לתשובה הנכונה בכל רמה וזרע. */
@@ -81,5 +92,29 @@ describe('מרשם המנועים', () => {
     expect(enginesForLand('patterns').map(({ id }) => id)).toEqual(['patterns.complete']);
     expect(enginesForLand('speed').map(({ id }) => id)).toEqual(['speed.match']);
     expect(enginesForLand('castle').map(({ id }) => id)).toEqual(['castle.memorize']);
+  });
+});
+
+describe('actual world difficulty progression', () => {
+  it('raises memory length/complexity or load in every generated-memory world', () => {
+    expect(digitSpanLength(15)).toBeGreaterThan(digitSpanLength(1));
+    expect(chainMathConfig(15).steps).toBeGreaterThan(chainMathConfig(1).steps);
+    expect(sentenceComponentCount(1)).toBe(3);
+    expect(sentenceComponentCount(15)).toBe(6);
+    expect(gridConfig(15).cells).toBeGreaterThan(gridConfig(1).cells);
+    expect(gridConfig(15).grid).toBeGreaterThan(gridConfig(1).grid);
+    expect(gridConfig(15).viewMs).toBeLessThan(gridConfig(1).viewMs);
+    expect(patternLength(15)).toBeGreaterThan(patternLength(1));
+    expect(speedMatch.generate(15, 7).stimulus.options.length).toBeGreaterThan(
+      speedMatch.generate(1, 7).stimulus.options.length,
+    );
+    expect(memorizeConfig(15).items).toBeGreaterThan(memorizeConfig(1).items);
+    expect(memorizeConfig(15).viewMs).toBeLessThan(memorizeConfig(1).viewMs);
+  });
+
+  it('uses the shared last-three rule outside Echo as well', () => {
+    const first = digitForward.generate(4, 99);
+    const varied = generateVariedChallenge(digitForward, 4, 99, [challengeFingerprint(first)]);
+    expect(challengeFingerprint(varied)).not.toBe(challengeFingerprint(first));
   });
 });

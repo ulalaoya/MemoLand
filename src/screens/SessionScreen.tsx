@@ -20,9 +20,14 @@ import {
   addSpacedItems,
   completeTrack,
   finishDailyJourney,
+  getDailyJourneyProgress,
   getState,
   recordAttempt,
+  rememberChallengeFingerprint,
   replaceSpaced,
+  setDailyJourneyActivity,
+  setDailyJourneyPlan,
+  setDailyJourneyPoints,
   useStore,
 } from '../state/store';
 import { advanceOnSuccess, regressOnFailure } from '../scheduler/spacedRepetition';
@@ -43,6 +48,7 @@ import { speak } from '../audio/speech';
 import { sfxLevelUp } from '../audio/sfx';
 import type { LandId } from '../types';
 import { multiplicationCurriculumLevel } from '../learning/multiplicationFacts';
+import { challengeFingerprint, generateVariedChallenge } from '../engines/variety';
 import './session-screen.css';
 
 interface JourneyResult {
@@ -69,19 +75,52 @@ export function SessionScreen({
 }) {
   const settings = useStore((s) => s.settings);
   const persistedCoins = useStore((s) => s.coins);
-  const [idx, setIdx] = useState(0);
+  const initialRunRef = useRef<{
+    activities: Activity[];
+    currentActivity: number;
+    seed: number;
+    earnedPoints: number;
+  } | null>(null);
+  if (initialRunRef.current === null) {
+    const now = Date.now();
+    if (landFocus) {
+      initialRunRef.current = {
+        activities: buildFreePlayActivities(landFocus),
+        currentActivity: 0,
+        seed: now,
+        earnedPoints: 0,
+      };
+    } else {
+      const journey = getDailyJourneyProgress(now);
+      const st = getState();
+      const seed = journey.seed || now;
+      const due = dueItems(st.spaced, now);
+      const session = buildDailySession(st.stats, settings.sessionMinutes, due.length > 0, seed);
+      const activities = journey.plan.length > 0
+        ? journey.plan
+        : buildActivities(session, due, seed).activities;
+      initialRunRef.current = {
+        activities,
+        currentActivity: Math.min(journey.currentActivity, Math.max(0, activities.length - 1)),
+        seed,
+        earnedPoints: journey.earnedPoints,
+      };
+    }
+  }
+  const initialRun = initialRunRef.current!;
+  const [idx, setIdx] = useState(initialRun.currentActivity);
   const [toast, setToast] = useState<string | null>(null);
   const [coinReward, setCoinReward] = useState<CoinRewardEvent | null>(null);
   const sessionWrong = useRef(0);
   const stats = useRef({ correct: 0, total: 0, bestSpan: 0 });
   const coinsStart = useRef(getState().coins);
-  const genSeed = useRef(Date.now());
+  const genSeed = useRef(initialRun.seed);
   const multiplicationSessionId = useRef(`session-${Date.now().toString(36)}`);
   const rewardSequence = useRef(0);
   const rewardClearTimer = useRef<number | null>(null);
   const sessionBoardRef = useRef<HTMLDivElement>(null);
   // נקודות שנצברו במסע הנוכחי — קובעות את אורך המסע (יעד ~1000 ≈ 20 דק').
-  const sessionPoints = useRef(0);
+  const sessionPoints = useRef(initialRun.earnedPoints);
 
   // מנגנון הלבבות — 3 לבבות למסע; טעות מורידה לב. באפס: "רוצה לנסות שוב?"
   const MAX_HEARTS = 3;
@@ -111,16 +150,7 @@ export function SessionScreen({
   }
 
   // בונים את הפעילויות ההתחלתיות פעם אחת; אפשר להוסיף סבבים עד היעד היומי.
-  const [activities, setActivities] = useState<Activity[]>(() => {
-    const now = Date.now();
-    if (landFocus) {
-      return buildFreePlayActivities(landFocus);
-    }
-    const st = getState();
-    const due = dueItems(st.spaced, now);
-    const session = buildDailySession(st.stats, settings.sessionMinutes, due.length > 0, now);
-    return buildActivities(session, due, now).activities;
-  });
+  const [activities, setActivities] = useState<Activity[]>(initialRun.activities);
   // ספירת חזרות על אותו אתגר (retry-until-success) — משנה seed ומקל את הרמה.
   const [retry, setRetry] = useState(0);
 
@@ -131,6 +161,19 @@ export function SessionScreen({
       ? idx / activities.length
       : 0
     : Math.min(1, sessionPoints.current / DAILY_GOAL);
+
+  useEffect(() => {
+    if (!landFocus && getDailyJourneyProgress().plan.length === 0) {
+      setDailyJourneyPlan(activities);
+    }
+    // Initial plan only; subsequent extensions are persisted in next().
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function addSessionPoints(points: number) {
+    sessionPoints.current += points;
+    if (!landFocus) setDailyJourneyPoints(sessionPoints.current);
+  }
 
   function showToast(msg: string) {
     setToast(msg);
@@ -158,12 +201,16 @@ export function SessionScreen({
   function next() {
     setRetry(0);
     if (idx + 1 < activities.length) {
+      if (!landFocus) setDailyJourneyActivity(idx + 1);
       setIdx((i) => i + 1);
       return;
     }
     // סיימנו את המבנה — אם עוד לא הגענו ליעד, מוסיפים סבב ומתקדמים.
     if (!landFocus && sessionPoints.current < DAILY_GOAL && activities.length < MAX_ACTIVITIES) {
-      setActivities((a) => [...a, makeExtraRotation(a.length)]);
+      const extended = [...activities, makeExtraRotation(activities.length)];
+      setActivities(extended);
+      setDailyJourneyPlan(extended);
+      setDailyJourneyActivity(idx + 1);
       setIdx((i) => i + 1);
       return;
     }
@@ -210,7 +257,7 @@ export function SessionScreen({
       // צליל ההצלחה כבר נוגן ברכיב המשחק בזמן התשובה; כאן רק חיווי ויזואלי.
       if (res.leveledUp) showToast('המסלול נעשה תלול יותר! 🔥');
       if (res.coinsGained > 0) {
-        sessionPoints.current += res.coinsGained;
+        addSessionPoints(res.coinsGained);
         showCoinReward(coinsBefore, coinsAfter);
       }
       next();
@@ -237,7 +284,7 @@ export function SessionScreen({
     stats.current.total += 1;
     if (correct) {
       stats.current.correct += 1;
-      sessionPoints.current += 8;
+      addSessionPoints(8);
       const coinsBefore = getState().coins;
       addCoins(8);
       showCoinReward(coinsBefore, getState().coins);
@@ -271,7 +318,7 @@ export function SessionScreen({
       if (story) {
         addSpacedItems([
           makeSpacedItem(
-            { id: `story-${activity.storyId}-${Date.now()}`, landId: 'echoes', kind: 'delayed', payload: story },
+            { id: `story-${genSeed.current}-${activity.storyId}`, landId: 'echoes', kind: 'delayed', payload: story },
             Date.now(),
           ),
         ]);
@@ -297,10 +344,11 @@ export function SessionScreen({
   const isEchoChallenge = activity.kind === 'game' && activityLand === 'echoes';
   const isNumbersChallenge = activity.kind === 'game' && activityLand === 'numbers';
   const isConnectionsChallenge = activity.kind === 'game' && activityLand === 'connections';
+  const isCastleChallenge = activityLand === 'castle';
   const isImmersiveChallenge = isEchoChallenge || isNumbersChallenge || isConnectionsChallenge;
 
   return (
-    <div className={`ml-session-screen${isEchoChallenge ? ' ml-session-screen--echo' : ''}${isNumbersChallenge ? ' ml-session-screen--numbers' : ''}${isConnectionsChallenge ? ' ml-session-screen--connections' : ''}`}>
+    <div className={`ml-session-screen${isEchoChallenge ? ' ml-session-screen--echo' : ''}${isNumbersChallenge ? ' ml-session-screen--numbers' : ''}${isConnectionsChallenge ? ' ml-session-screen--connections' : ''}${isCastleChallenge ? ' ml-session-screen--castle' : ''}`}>
       <LandBackground land={activityLand} />
 
       <header className="ml-session-hud">
@@ -362,15 +410,16 @@ export function SessionScreen({
             <SpeedMatchGame
               seconds={activity.seconds}
               color={color}
+              baseLevel={getState().stats['speed.match']?.level ?? 1}
+              seed={genSeed.current + idx * 100}
               onDone={(score) => {
                 const reward = score * 2;
-                sessionPoints.current += reward;
+                addSessionPoints(reward);
                 const coinsBefore = getState().coins;
                 if (reward > 0) {
                   addCoins(reward);
                   showCoinReward(coinsBefore, getState().coins);
                 }
-                showToast(`אספת ${score}!`);
                 next();
               }}
             />
@@ -468,14 +517,28 @@ function GameHostForActivity({
   const engine = getEngine(a.exerciseId);
   const currentState = getState();
   const multiplication = currentState.multiplication;
+  const recentFingerprintKey = currentState.recentChallengeFingerprints.join('\n');
   const level = a.landId === 'connections'
     ? multiplicationCurriculumLevel(multiplication)
     : clampLevel((currentState.stats[a.exerciseId]?.level ?? 1) + a.levelDelta - softenBy);
   const generatedAt = useRef(Date.now()).current;
   const challenge = useMemo(
-    () => (engine ? engine.generate(level, seed, { now: generatedAt, multiplication }) : null),
-    [engine, generatedAt, level, multiplication, seed],
+    () => (engine
+      ? generateVariedChallenge(
+          engine,
+          level,
+          seed,
+          currentState.recentChallengeFingerprints,
+          { now: generatedAt, multiplication },
+        )
+      : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [engine, generatedAt, level, multiplication, recentFingerprintKey, seed],
   );
+  const fingerprint = challenge ? challengeFingerprint(challenge) : '';
+  useEffect(() => {
+    if (fingerprint) rememberChallengeFingerprint(fingerprint);
+  }, [fingerprint]);
   if (!engine || !challenge) return <div style={{ textAlign: 'center' }}>האתגר בבנייה 🚧</div>;
   return <GameHost challenge={challenge} color={color} speechRate={speechRate} hintMode={softenBy > 0} onResult={onResult} />;
 }

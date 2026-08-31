@@ -991,6 +991,13 @@
   box-shadow: 0 7px 0 #39217d, 0 14px 26px rgba(52, 22, 112, 0.3), var(--ml-focus-ring);
 }
 
+.ml-daily-journey.is-completed,
+.ml-daily-journey.is-completed:disabled {
+  cursor: default;
+  opacity: 1;
+  filter: none;
+}
+
 @media (min-width: 560px) {
   .ml-world-map-main {
     padding-inline: 24px;

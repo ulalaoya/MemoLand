@@ -3,7 +3,9 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-const buildId = process.env.COMMIT_REF?.slice(0, 12) ?? `local-${new Date().toISOString()}`;
+const buildId = process.env.GITHUB_SHA?.slice(0, 12)
+  ?? process.env.COMMIT_REF?.slice(0, 12)
+  ?? `local-${new Date().toISOString()}`;
 const buildTime = new Date().toISOString();
 
 // base: './' keeps asset paths relative so the built app runs from any static
@@ -18,6 +20,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'icon.svg', 'app-icon.png', 'app-icon-maskable.png'],
       manifest: {
         name: 'MemoLand — עולם של זיכרון',
@@ -37,7 +40,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,wav,woff2}'],
+        cacheId: `memoland-${buildId}`,
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,wav,woff2}'],
         // גרסה חדשה משתלטת מיד — בלי להיתקע על מטמון ישן
         clientsClaim: true,
         skipWaiting: true,

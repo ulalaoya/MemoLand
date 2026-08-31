@@ -9,7 +9,7 @@ import { AchievementsScreen } from './screens/AchievementsScreen';
 import { CollectionsScreen } from './screens/CollectionsScreen';
 import { setSfxEnabled } from './audio/sfx';
 import { setPreferredVoiceName } from './audio/speech';
-import { getActiveProfile, getActiveProfileId, logoutProfile, useProfiles, useStore } from './state/store';
+import { beginDailyJourney, getActiveProfile, getActiveProfileId, logoutProfile, useProfiles, useStore } from './state/store';
 import type { LandId } from './types';
 
 type Screen =
@@ -47,6 +47,11 @@ export default function App() {
     setScreen({ name: 'profile' });
   }
 
+  function startOrResumeJourney() {
+    beginDailyJourney();
+    setScreen({ name: 'session' });
+  }
+
   switch (screen.name) {
     case 'start':
       return <StartTapScreen onStart={afterStart} playerName={activeProfile?.name} />;
@@ -57,7 +62,7 @@ export default function App() {
     case 'map':
       return (
         <MapScreen
-          onStartJourney={() => setScreen({ name: 'session' })}
+          onStartJourney={startOrResumeJourney}
           onPlayLand={(land) => setScreen({ name: 'session', landFocus: land })}
           onOpenParent={() => setScreen({ name: 'parent' })}
           onSwitchProfile={switchProfile}

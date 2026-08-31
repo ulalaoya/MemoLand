@@ -99,4 +99,13 @@ describe('SaveState migration', () => {
       districtComplete: false,
     });
   });
+
+  it('adds resumable journey and anti-repeat fields without losing an older child save', () => {
+    const old = { ...defaultSave(), version: 3, coins: 912, dailyJourney: undefined, recentChallengeFingerprints: undefined };
+    const migrated = normalizeSave(old);
+    expect(migrated.coins).toBe(912);
+    expect(migrated.dailyJourney).toMatchObject({ status: 'not-started', currentActivity: 0, earnedPoints: 0 });
+    expect(migrated.dailyJourney.plan).toEqual([]);
+    expect(migrated.recentChallengeFingerprints).toEqual([]);
+  });
 });

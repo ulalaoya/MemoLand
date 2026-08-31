@@ -182,8 +182,9 @@ describe('בניית המסע היומי', () => {
 
       const rotations = session.steps.filter((step) => step.kind === 'rotation');
       expect(rotations).toHaveLength(minutes <= 10 ? 4 : minutes <= 15 ? 6 : minutes <= 20 ? 8 : 10);
-      expect(rotations.every((step) => step.landId !== 'connections')).toBe(true);
+      expect(rotations.every((step) => step.landId !== 'connections' && step.landId !== 'speed')).toBe(true);
       expect(session.steps.find((step) => step.kind === 'speed')?.landId).toBe('speed');
+      expect(session.steps.filter((step) => step.landId === 'speed')).toHaveLength(1);
     }
   });
 
@@ -193,10 +194,14 @@ describe('בניית המסע היומי', () => {
     expect(freePlay).toHaveLength(5);
     expect(freePlay.every((activity) => activity.kind === 'game' && activity.landId === 'connections')).toBe(true);
 
+    expect(buildFreePlayActivities('speed')).toEqual([
+      { kind: 'speed', landId: 'speed', seconds: 60, label: 'מסלול הזריזות' },
+    ]);
+
     for (let index = 0; index < 30; index += 1) {
       const extra = buildDailySupplementalActivity(index);
       expect(extra.kind).toBe('game');
-      if (extra.kind === 'game') expect(extra.landId).not.toBe('connections');
+      if (extra.kind === 'game') expect(['connections', 'speed']).not.toContain(extra.landId);
     }
   });
 

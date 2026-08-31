@@ -143,6 +143,24 @@ export interface LandProgress {
   castleOpen: boolean;
 }
 
+export type DailyJourneyStatus = 'not-started' | 'in-progress' | 'completed';
+
+/** A serializable activity plan lets an interrupted journey resume at the exact challenge. */
+export type JourneyActivity =
+  | { kind: 'game'; exerciseId: string; landId: LandId; levelDelta: number; label: string }
+  | { kind: 'reveal'; storyId: string; text: string; label: string }
+  | { kind: 'quiz'; landId: LandId; label: string; question: string; answer: string; options: string[]; spacedId?: string }
+  | { kind: 'speed'; landId: LandId; seconds: number; label: string };
+
+export interface DailyJourneyProgress {
+  day: string | null;
+  status: DailyJourneyStatus;
+  currentActivity: number;
+  seed: number;
+  earnedPoints: number;
+  plan: JourneyActivity[];
+}
+
 /** מצב שמור מלא (persistence). */
 export interface SaveState {
   version: number;
@@ -161,6 +179,9 @@ export interface SaveState {
   streakShieldAvailable: boolean;
   todayPoints: number; // נקודות שנצברו היום (ליעד היומי)
   todayPointsDay: string | null; // היום שאליו שייך todayPoints
+  dailyJourney: DailyJourneyProgress;
+  /** Three most recently shown challenge contents, used for lightweight anti-repeat. */
+  recentChallengeFingerprints: string[];
   settings: Settings;
   parentContent: ParentContent;
   multiplication: MultiplicationProgress;
