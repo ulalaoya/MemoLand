@@ -37,6 +37,7 @@ export function GameHost({
     case 'echoes.multistep':
       return <MultiStepGame {...p} challenge={challenge as never} />;
     case 'connections.direct':
+    case 'connections.practice':
     case 'connections.derived':
     case 'connections.link':
       return <ConnectionsCityGame {...p} challenge={challenge as never} />;

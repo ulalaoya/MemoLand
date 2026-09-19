@@ -188,11 +188,12 @@ describe('בניית המסע היומי', () => {
     }
   });
 
-  it('שומר משחק חופשי קצר ומונע ניפוח שאלות עיר בהארכות המסע', () => {
+  it('פותח מבצע כפל רציף ומשאיר משחק חופשי קצר בשאר העולמות', () => {
     const freePlay = buildFreePlayActivities('connections');
-    expect(freePlay).toHaveLength(FREE_PLAY_ACTIVITY_COUNT);
-    expect(freePlay).toHaveLength(5);
-    expect(freePlay.every((activity) => activity.kind === 'game' && activity.landId === 'connections')).toBe(true);
+    expect(freePlay).toEqual([
+      { kind: 'game', exerciseId: 'connections.practice', landId: 'connections', levelDelta: 0, label: 'מבצע לוח הכפל' },
+    ]);
+    expect(buildFreePlayActivities('numbers')).toHaveLength(FREE_PLAY_ACTIVITY_COUNT);
 
     expect(buildFreePlayActivities('speed')).toEqual([
       { kind: 'speed', landId: 'speed', seconds: 60, label: 'מסלול הזריזות' },

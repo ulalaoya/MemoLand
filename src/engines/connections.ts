@@ -78,6 +78,39 @@ export const connectionsDirect: ExerciseEngine<MultiplicationBaseStimulus, numbe
   },
 };
 
+/** Endless, unassisted-first practice across the complete 1–10 table. */
+export const connectionsPractice: ExerciseEngine<MultiplicationBaseStimulus, number> = {
+  id: 'connections.practice',
+  landId: 'connections',
+  title: 'מבצע לוח הכפל',
+  parentDescription: 'תרגול רציף של 55 מכפלות: אחת נכונה בכפולות 1, וחמש רצופות בשאר',
+  generate(level, seed, context): Challenge<MultiplicationBaseStimulus, number> {
+    const rng = makeRng(seed);
+    const fact = selectMultiplicationFact(
+      level,
+      rng,
+      context?.multiplication,
+      contextNow(context),
+      { includeOnes: true },
+    );
+    return {
+      exerciseId: this.id,
+      landId: 'connections',
+      level,
+      stimulus: {
+        ...baseStimulus(fact, rng.next() < 0.5),
+        connection: fact.a === 1 ? undefined : preferredConnection(fact, context?.multiplication),
+      },
+      answer: fact.answer,
+      params: { factId: fact.id, challengeType: 'direct' },
+      prompt: 'כמה זה?',
+    };
+  },
+  check(challenge, given) {
+    return given === challenge.answer;
+  },
+};
+
 export const connectionsDerived: ExerciseEngine<DerivedFactStimulus, number> = {
   id: 'connections.derived',
   landId: 'connections',
@@ -146,4 +179,4 @@ export const connectionsLink: ExerciseEngine<FactLinkStimulus, string> = {
   },
 };
 
-export const CONNECTIONS_ENGINES = [connectionsDirect, connectionsDerived, connectionsLink];
+export const CONNECTIONS_ENGINES = [connectionsDirect, connectionsPractice, connectionsDerived, connectionsLink];

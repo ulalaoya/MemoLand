@@ -47,7 +47,12 @@ import { Guide, guideKindFor } from '../components/svg/Memo';
 import { speak } from '../audio/speech';
 import { sfxLevelUp } from '../audio/sfx';
 import type { LandId } from '../types';
-import { multiplicationCurriculumLevel } from '../learning/multiplicationFacts';
+import {
+  MULTIPLICATION_PRACTICE_FACTS,
+  isMultiplicationFactMastered,
+  multiplicationCurriculumLevel,
+  multiplicationMasteryCount,
+} from '../learning/multiplicationFacts';
 import { challengeFingerprint, generateVariedChallenge } from '../engines/variety';
 import './session-screen.css';
 
@@ -75,6 +80,10 @@ export function SessionScreen({
 }) {
   const settings = useStore((s) => s.settings);
   const persistedCoins = useStore((s) => s.coins);
+  const multiplicationProgress = useStore((s) => s.multiplication);
+  const practiceMode = landFocus === 'connections';
+  const masteredCount = multiplicationMasteryCount(multiplicationProgress);
+  const missionTotal = MULTIPLICATION_PRACTICE_FACTS.length;
   const initialRunRef = useRef<{
     activities: Activity[];
     currentActivity: number;
@@ -116,6 +125,7 @@ export function SessionScreen({
   const coinsStart = useRef(getState().coins);
   const genSeed = useRef(initialRun.seed);
   const multiplicationSessionId = useRef(`session-${Date.now().toString(36)}`);
+  const practiceStartedAt = useRef(Date.now());
   const rewardSequence = useRef(0);
   const rewardClearTimer = useRef<number | null>(null);
   const sessionBoardRef = useRef<HTMLDivElement>(null);
@@ -156,7 +166,9 @@ export function SessionScreen({
 
   const activity = activities[idx];
   // התקדמות המסע נמדדת לפי הנקודות שנצברו במסע (לא טיימר פנימי).
-  const progress = landFocus
+  const progress = practiceMode
+    ? masteredCount / missionTotal
+    : landFocus
     ? activities.length
       ? idx / activities.length
       : 0
@@ -199,10 +211,22 @@ export function SessionScreen({
   }
 
   function next() {
+    if (practiceMode) {
+      setRetry((current) => current + 1);
+      return;
+    }
     setRetry(0);
-    if (idx + 1 < activities.length) {
-      if (!landFocus) setDailyJourneyActivity(idx + 1);
-      setIdx((i) => i + 1);
+    let nextIndex = idx + 1;
+    if (!landFocus && masteredCount === missionTotal) {
+      while (nextIndex < activities.length) {
+        const candidate = activities[nextIndex];
+        if (candidate.kind !== 'game' || candidate.landId !== 'connections') break;
+        nextIndex += 1;
+      }
+    }
+    if (nextIndex < activities.length) {
+      if (!landFocus) setDailyJourneyActivity(nextIndex);
+      setIdx(nextIndex);
       return;
     }
     // סיימנו את המבנה — אם עוד לא הגענו ליעד, מוסיפים סבב ומתקדמים.
@@ -216,6 +240,14 @@ export function SessionScreen({
     }
     finalize();
   }
+
+  useEffect(() => {
+    // An already-finished mission may be resumed in the middle of a saved City block.
+    if (!landFocus && masteredCount === missionTotal && activity?.kind === 'game' && activity.landId === 'connections') {
+      next();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idx, masteredCount, landFocus]);
 
   function finalize() {
     addMinutes(settings.sessionMinutes);
@@ -234,8 +266,17 @@ export function SessionScreen({
     });
   }
 
+  function quit() {
+    if (practiceMode) {
+      const completedMinutes = Math.floor((Date.now() - practiceStartedAt.current) / 60_000);
+      if (completedMinutes > 0) addMinutes(completedMinutes);
+    }
+    onQuit();
+  }
+
   function handleGameResult(a: Extract<Activity, { kind: 'game' }>, r: GameResult) {
     const coinsBefore = getState().coins;
+    const masteryBefore = getState().multiplication;
     const res = recordAttempt({
       exerciseId: a.exerciseId,
       landId: a.landId,
@@ -249,13 +290,22 @@ export function SessionScreen({
       })),
     });
     const coinsAfter = getState().coins;
+    const newMasteredFact = practiceMode && r.multiplicationAttempts?.find((attempt) =>
+      !isMultiplicationFactMastered(masteryBefore, attempt.factId)
+      && isMultiplicationFactMastered(getState().multiplication, attempt.factId)
+    );
     stats.current.total += 1;
     if (r.correct) {
       stats.current.correct += 1;
       if (r.span) stats.current.bestSpan = Math.max(stats.current.bestSpan, r.span);
       sessionWrong.current = 0;
       // צליל ההצלחה כבר נוגן ברכיב המשחק בזמן התשובה; כאן רק חיווי ויזואלי.
-      if (res.leveledUp) showToast('המסלול נעשה תלול יותר! 🔥');
+      if (newMasteredFact) {
+        const [aFactor, bFactor] = newMasteredFact.factId.split('x');
+        showToast(`✨ ${aFactor} × ${bFactor} הושלמה! ${multiplicationMasteryCount(getState().multiplication)}/${missionTotal}`);
+      } else if (res.leveledUp) {
+        showToast('המסלול נעשה תלול יותר! 🔥');
+      }
       if (res.coinsGained > 0) {
         addSessionPoints(res.coinsGained);
         showCoinReward(coinsBefore, coinsAfter);
@@ -264,6 +314,10 @@ export function SessionScreen({
     } else {
       if (r.newChallengeAfterIncorrect) {
         sessionWrong.current += 1;
+        if (practiceMode) {
+          next();
+          return;
+        }
         // בעיר זו שאלה שהושלמה (אחרי ניסיון ישיר + חשיפה, או אחרי רמז).
         // מתקדמים לשאלת העיר הבאה בלי לבנות בניין; כך 20 שאלות אינן 20 הצלחות.
         if (shouldAdvanceAfterCompletedIncorrect(a, r.newChallengeAfterIncorrect)) {
@@ -275,6 +329,10 @@ export function SessionScreen({
       }
       // טעות: לא מתקדמים — נותנים עוד אתגר מאותו הסוג עד שמצליחים.
       sessionWrong.current += 1;
+      if (practiceMode) {
+        setRetry((n) => n + 1);
+        return;
+      }
       if (loseHeartAndMaybePause()) return; // נגמרו לבבות — ממתינים לבחירה
       setRetry((n) => n + 1);
     }
@@ -348,18 +406,18 @@ export function SessionScreen({
   const isImmersiveChallenge = isEchoChallenge || isNumbersChallenge || isConnectionsChallenge;
 
   return (
-    <div className={`ml-session-screen${isEchoChallenge ? ' ml-session-screen--echo' : ''}${isNumbersChallenge ? ' ml-session-screen--numbers' : ''}${isConnectionsChallenge ? ' ml-session-screen--connections' : ''}${isCastleChallenge ? ' ml-session-screen--castle' : ''}`}>
+    <div className={`ml-session-screen${isEchoChallenge ? ' ml-session-screen--echo' : ''}${isNumbersChallenge ? ' ml-session-screen--numbers' : ''}${isConnectionsChallenge ? ' ml-session-screen--connections' : ''}${practiceMode ? ' ml-session-screen--multiplication-practice' : ''}${isCastleChallenge ? ' ml-session-screen--castle' : ''}`}>
       <LandBackground land={activityLand} />
 
       <header className="ml-session-hud">
         <div className="ml-session-hud__top-row">
           <button
-            onClick={onQuit}
-            aria-label="חזרה למפה"
+            onClick={quit}
+            aria-label={practiceMode ? 'סיימתי לתרגל, חזרה למפה' : 'חזרה למפה'}
             className="ml-session-hud__back ml-pressable"
           >
             <span aria-hidden>→</span>
-            <span className="ml-session-hud__back-label">חזרה</span>
+            <span className="ml-session-hud__back-label">{practiceMode ? 'סיימתי להיום' : 'חזרה'}</span>
           </button>
 
           <div className="ml-session-hud__progress" aria-label={`התקדמות ${Math.round(progress * 100)} אחוז`}>
@@ -372,16 +430,16 @@ export function SessionScreen({
         </div>
 
         <div className="ml-session-hud__meta-row">
-          <div className="ml-session-hud__hearts" aria-label={`${hearts} לבבות`}>
+          {!practiceMode && <div className="ml-session-hud__hearts" aria-label={`${hearts} לבבות`}>
             {Array.from({ length: MAX_HEARTS }).map((_, i) => (
               <span key={i} style={{ animation: hearts === i ? 'wiggle .4s ease' : undefined }}>
                 <HeartIcon size={isImmersiveChallenge ? 20 : 24} empty={i >= hearts} />
               </span>
             ))}
-          </div>
+          </div>}
 
           <div className="ml-session-hud__world" style={{ background: color }}>
-            {activity.label}
+            {practiceMode ? `כפל: ${masteredCount}/${missionTotal}` : activity.label}
           </div>
 
           <CoinRewardExperience
@@ -399,7 +457,15 @@ export function SessionScreen({
       >
         {/* key מאלץ remount בכל פעילות ובכל ניסיון חוזר — כדי לאפס state ולתת אתגר חדש */}
         <div key={`${idx}-${retry}`} className="ml-session-board__activity">
-          {activity.kind === 'game' && (
+          {practiceMode && masteredCount === missionTotal ? (
+            <div className="ml-multiplication-complete" role="status">
+              <span aria-hidden="true">🏙️ ⭐</span>
+              <h1>מבצע לוח הכפל הושלם!</h1>
+              <p>כל {missionTotal} המכפלות הושלמו. איזה כוח זיכרון!</p>
+              <Button variant="green" size="lg" onClick={quit}>חזרה למפה</Button>
+            </div>
+          ) : null}
+          {activity.kind === 'game' && !(masteredCount === missionTotal && activity.landId === 'connections') && (
             <GameHostForActivity a={activity} color={color} speechRate={settings.speechRate} softenBy={retry} seed={genSeed.current + idx * 100 + retry} onResult={(r) => handleGameResult(activity, r)} />
           )}
           {activity.kind === 'quiz' && (

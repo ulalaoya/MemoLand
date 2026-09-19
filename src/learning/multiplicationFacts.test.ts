@@ -8,12 +8,15 @@ import {
 import {
   MULTIPLICATION_FACTS,
   MULTIPLICATION_FACT_BY_ID,
+  MULTIPLICATION_PRACTICE_FACTS,
   MULTIPLICATION_CURRICULUM,
   MULTIPLICATION_LEVEL_FACTS,
   canonicalFactId,
   connectionResult,
   factsAvailableAtLevel,
   multiplicationCurriculumLevel,
+  multiplicationMasteryCount,
+  multiplicationSuccessesNeeded,
   preferredConnection,
   selectMultiplicationFact,
 } from './multiplicationFacts';
@@ -42,6 +45,15 @@ describe('multiplication fact registry', () => {
     expect(canonicalFactId(7, 3)).toBe('3x7');
     expect(canonicalFactId(3, 7)).toBe('3x7');
     expect(MULTIPLICATION_FACTS.every((fact) => fact.a >= 2 && fact.a <= fact.b && fact.b <= 10)).toBe(true);
+  });
+
+  it('tracks 55 unique combinations from 1×1 through 10×10, counting reversed order once', () => {
+    expect(MULTIPLICATION_PRACTICE_FACTS).toHaveLength(55);
+    expect(new Set(MULTIPLICATION_PRACTICE_FACTS.map((fact) => fact.id)).size).toBe(55);
+    expect(canonicalFactId(4, 5)).toBe(canonicalFactId(5, 4));
+    expect(multiplicationMasteryCount(defaultMultiplicationProgress())).toBe(0);
+    expect(multiplicationSuccessesNeeded('1x10')).toBe(1);
+    expect(multiplicationSuccessesNeeded('4x5')).toBe(5);
   });
 
   it('introduces all 45 facts once across levels 1–12 and consolidates at 13–15', () => {
@@ -214,5 +226,21 @@ describe('multiplication fact registry', () => {
     }
     const selected = selectMultiplicationFact(1, makeRng(91), progress, 100);
     expect(progress.facts[selected.id].stage).toBe('FLUENT');
+  });
+
+  it('never selects a mastered fact while an unfinished alternative exists', () => {
+    const progress = defaultMultiplicationProgress();
+    for (const fact of MULTIPLICATION_PRACTICE_FACTS) {
+      progress.facts[fact.id] = {
+        ...defaultMultiplicationFactProgress(fact.id),
+        consecutiveDirectCorrect: 5,
+        masteredAt: 100,
+      };
+    }
+    progress.facts['4x5'].masteredAt = null;
+    progress.facts['4x5'].consecutiveDirectCorrect = 0;
+    const selected = selectMultiplicationFact(1, makeRng(42), progress, 200, { includeOnes: true });
+    expect(selected.id).toBe('4x5');
+    expect(multiplicationMasteryCount(progress)).toBe(54);
   });
 });

@@ -146,7 +146,45 @@ export const MULTIPLICATION_FACTS: readonly MultiplicationFact[] = Array.from({ 
   })))
   .sort((left, right) => left.introducedAtLevel - right.introducedAtLevel || left.a - right.a || left.b - right.b);
 
-export const MULTIPLICATION_FACT_BY_ID = new Map(MULTIPLICATION_FACTS.map((fact) => [fact.id, fact]));
+/** The mission includes 1×1–1×10; the established 45-fact curriculum stays unchanged. */
+const ONE_FACTS: readonly MultiplicationFact[] = Array.from({ length: 10 }, (_, index) => {
+  const b = index + 1;
+  return {
+    id: canonicalFactId(1, b),
+    a: 1,
+    b,
+    answer: b,
+    introducedAtLevel: Math.max(1, b - 2),
+    connections: [],
+  };
+});
+
+export const MULTIPLICATION_PRACTICE_FACTS: readonly MultiplicationFact[] = [
+  ...ONE_FACTS,
+  ...MULTIPLICATION_FACTS,
+];
+
+export const MULTIPLICATION_FACT_BY_ID = new Map(MULTIPLICATION_PRACTICE_FACTS.map((fact) => [fact.id, fact]));
+
+export function multiplicationSuccessesNeeded(factId: string): 1 | 5 {
+  return factId.startsWith('1x') ? 1 : 5;
+}
+
+export function isMultiplicationFactMastered(progress: MultiplicationProgress | undefined, factId: string): boolean {
+  const saved = progress?.facts[factId];
+  if (!saved) return false;
+  if (saved.masteredAt != null) return true;
+  return multiplicationSuccessesNeeded(factId) === 1
+    ? saved.directCorrect + saved.supportedCorrect >= 1
+    : saved.consecutiveDirectCorrect >= 5;
+}
+
+export function multiplicationMasteryCount(progress: MultiplicationProgress | undefined): number {
+  return MULTIPLICATION_PRACTICE_FACTS.reduce(
+    (count, fact) => count + Number(isMultiplicationFactMastered(progress, fact.id)),
+    0,
+  );
+}
 
 export function factsAvailableAtLevel(level: number): MultiplicationFact[] {
   const capped = Math.max(1, Math.min(15, Math.round(level)));
@@ -168,6 +206,7 @@ function hasEstablishedAnchor(fact: MultiplicationFact, progress: Multiplication
 
 export interface SelectMultiplicationFactOptions {
   requireConnection?: boolean;
+  includeOnes?: boolean;
 }
 
 const RECENT_FACT_EXCLUSION = 3;
@@ -225,11 +264,20 @@ export function selectMultiplicationFact(
   now: number,
   options: SelectMultiplicationFactOptions = {},
 ): MultiplicationFact {
-  let candidates = factsAvailableAtLevel(level);
+  let candidates = options.includeOnes
+    ? [...ONE_FACTS.filter((fact) => fact.introducedAtLevel <= level), ...factsAvailableAtLevel(level)]
+    : factsAvailableAtLevel(level);
   if (options.requireConnection) {
     candidates = candidates.filter((fact) => fact.connections.some((item) => item.sourceFactId !== fact.id));
   }
-  if (candidates.length === 0) candidates = factsAvailableAtLevel(level);
+  candidates = candidates.filter((fact) => !isMultiplicationFactMastered(progress, fact.id));
+  if (candidates.length === 0) {
+    candidates = MULTIPLICATION_PRACTICE_FACTS.filter((fact) =>
+      !isMultiplicationFactMastered(progress, fact.id)
+      && (!options.requireConnection || fact.connections.some((item) => item.sourceFactId !== fact.id))
+    );
+  }
+  if (candidates.length === 0) throw new Error('All multiplication facts are mastered');
 
   const recent = recentDistinctFactIds(progress, RECENT_FACT_EXCLUSION);
   const withoutRecent = candidates.filter((fact) => !recent.has(fact.id));
@@ -242,6 +290,7 @@ export function selectMultiplicationFact(
     const saved = progress?.facts[fact.id];
     if (latestAttemptFailed(progress, fact.id)) return 0;
     if (saved && saved.lastPracticedAt !== null && saved.dueAt <= now) return 1;
+    if (options.includeOnes && fact.a === 1 && (saved?.directCorrect ?? 0) < 2) return 2;
     if (levelFacts.has(fact.id) && (saved?.directCorrect ?? 0) < 2 && hasEstablishedAnchor(fact, progress)) return 2;
     if (levelFacts.has(fact.id) && (saved?.directCorrect ?? 0) < 2) return 3;
     if (!saved && hasEstablishedAnchor(fact, progress)) return 4;

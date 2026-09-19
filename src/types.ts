@@ -29,6 +29,8 @@ export interface MultiplicationFactProgress {
   supportedAttempts: number;
   supportedCorrect: number;
   consecutiveDirectCorrect: number;
+  /** Permanent milestone: one correct answer for 1×n, five consecutive unassisted for the rest. */
+  masteredAt: number | null;
   successfulDays: string[];
   lastPracticedAt: number | null;
   dueAt: number;

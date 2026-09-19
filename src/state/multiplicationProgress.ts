@@ -5,6 +5,7 @@ import type {
   MultiplicationProgress,
   MultiplicationStage,
 } from '../types';
+import { multiplicationSuccessesNeeded } from '../learning/multiplicationFacts';
 
 const MULTIPLICATION_INTERVALS_MS = [
   10 * 60 * 1000,
@@ -26,6 +27,7 @@ export function defaultMultiplicationFactProgress(factId: string): Multiplicatio
     supportedAttempts: 0,
     supportedCorrect: 0,
     consecutiveDirectCorrect: 0,
+    masteredAt: null,
     successfulDays: [],
     lastPracticedAt: null,
     dueAt: 0,
@@ -72,6 +74,7 @@ export function applyMultiplicationAttempts(
     const previous = facts[input.factId] ?? defaultMultiplicationFactProgress(input.factId);
     const direct = input.mode === 'direct' && input.helpLevelUsed === 0;
     const correctDirect = direct && input.correct;
+    const oneAnswerIsEnough = multiplicationSuccessesNeeded(input.factId) === 1;
     const successfulDays = correctDirect && !previous.successfulDays.includes(day)
       ? [...previous.successfulDays, day].slice(-12)
       : previous.successfulDays;
@@ -88,9 +91,12 @@ export function applyMultiplicationAttempts(
       directCorrect: previous.directCorrect + (correctDirect ? 1 : 0),
       supportedAttempts: previous.supportedAttempts + (direct ? 0 : 1),
       supportedCorrect: previous.supportedCorrect + (!direct && input.correct ? 1 : 0),
-      consecutiveDirectCorrect: direct
-        ? (input.correct ? previous.consecutiveDirectCorrect + 1 : 0)
-        : previous.consecutiveDirectCorrect,
+      consecutiveDirectCorrect: correctDirect ? previous.consecutiveDirectCorrect + 1 : 0,
+      masteredAt: previous.masteredAt ?? (
+        input.correct && (oneAnswerIsEnough || (correctDirect && previous.consecutiveDirectCorrect + 1 >= 5))
+          ? at
+          : null
+      ),
       successfulDays,
       lastPracticedAt: at,
       dueAt: at + dueInterval,
@@ -117,7 +123,15 @@ export function normalizeMultiplicationProgress(value: unknown): MultiplicationP
   if (source.facts && typeof source.facts === 'object') {
     for (const [factId, raw] of Object.entries(source.facts)) {
       if (!raw || typeof raw !== 'object') continue;
-      facts[factId] = { ...defaultMultiplicationFactProgress(factId), ...raw, factId };
+      const restored = { ...defaultMultiplicationFactProgress(factId), ...raw, factId };
+      // Old saves already contain the streak; recognize it without resetting any progress.
+      const qualifies = multiplicationSuccessesNeeded(factId) === 1
+        ? restored.directCorrect + restored.supportedCorrect >= 1
+        : restored.consecutiveDirectCorrect >= 5;
+      restored.masteredAt ??= qualifies
+        ? (restored.lastPracticedAt ?? 0)
+        : null;
+      facts[factId] = restored;
     }
   }
   return {

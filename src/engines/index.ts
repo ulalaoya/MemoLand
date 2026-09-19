@@ -6,7 +6,7 @@ import { forestGrid } from './forest';
 import { patternComplete } from './patterns';
 import { speedMatch } from './speed';
 import { castleMemorize } from './castle';
-import { connectionsDirect, connectionsDerived, connectionsLink } from './connections';
+import { connectionsDirect, connectionsPractice, connectionsDerived, connectionsLink } from './connections';
 
 export const ENGINES: ExerciseEngine[] = [
   // ארץ 1 — עמק המספרים
@@ -19,6 +19,7 @@ export const ENGINES: ExerciseEngine[] = [
   multiStep,
   // ארץ 3 — עיר הקשרים
   connectionsDirect,
+  connectionsPractice,
   connectionsDerived,
   connectionsLink,
   // ארץ 4 — יער התמונות
@@ -38,6 +39,7 @@ const BETA_DISABLED_ENGINE_IDS = new Set<ExerciseId>([
   'echoes.multistep',
   'connections.derived',
   'connections.link',
+  'connections.practice',
 ]);
 
 function isActiveBetaEngine(engine: ExerciseEngine): boolean {
@@ -65,6 +67,7 @@ export {
   listenRepeat,
   multiStep,
   connectionsDirect,
+  connectionsPractice,
   connectionsDerived,
   connectionsLink,
   forestGrid,

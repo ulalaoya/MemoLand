@@ -115,6 +115,13 @@ export function buildCityHintExplanation(
   fact: MultiplicationFact,
   connection?: MultiplicationConnection,
 ): CityHintExplanation {
+  if (fact.a === 1) {
+    return {
+      knownFact: `${fact.b} × 1 = ${fact.b}`,
+      targetRelationship: `1 × ${fact.b} = ${fact.b} × 1`,
+      arithmeticQuestion: `1 × ${fact.b} = ?`,
+    };
+  }
   if (!connection || connection.sourceFactId === fact.id || connection.operation === 'same') {
     const targetA = fact.a;
     const targetB = fact.b;
