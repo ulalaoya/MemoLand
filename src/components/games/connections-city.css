@@ -137,6 +137,58 @@
 .ml-city-game__district-row--back .ml-city-game__lot:nth-child(2n) .ml-city-game__building { height: 44px; }
 .ml-city-game__district-row--back .ml-city-game__lot:nth-child(3n) .ml-city-game__building { height: 55px; }
 
+/* Each pair of rows builds a new kind of neighborhood, not a recolored copy. */
+[data-city-style='gardens'] .ml-city-game__building {
+  background: linear-gradient(135deg, #d2b3fa, #8854ba);
+  border-color: #584079;
+  border-radius: 13px 13px 2px 2px;
+}
+[data-city-style='gardens'] .ml-city-game__lot:nth-child(2n) .ml-city-game__building {
+  background: linear-gradient(135deg, #ffc8b0, #d97570);
+}
+[data-city-style='gardens'] .ml-city-game__building::before {
+  content: '';
+  position: absolute;
+  inset: -5px -2px auto;
+  height: 9px;
+  background: #458358;
+  border-radius: 8px;
+}
+[data-city-style='towers'] .ml-city-game__building {
+  background: repeating-linear-gradient(0deg, #34679d 0 10px, #93d9ec 10px 15px);
+  border-color: #294665;
+  border-radius: 2px;
+}
+[data-city-style='towers'] .ml-city-game__lot:nth-child(2n) .ml-city-game__building {
+  background: repeating-linear-gradient(0deg, #6d518f 0 10px, #d3c7ee 10px 15px);
+}
+[data-city-style='towers'] .ml-city-game__building::before {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 9px;
+  background: #294665;
+  top: -10px;
+  left: 50%;
+}
+[data-city-style='harbor'] .ml-city-game__building {
+  background: linear-gradient(135deg, #ffb47d, #cc6652);
+  border-color: #814842;
+  border-radius: 2px;
+}
+[data-city-style='harbor'] .ml-city-game__lot:nth-child(2n) .ml-city-game__building {
+  background: linear-gradient(135deg, #96ded9, #38828f);
+}
+[data-city-style='harbor'] .ml-city-game__building::before {
+  content: '';
+  position: absolute;
+  inset: -9px -3px auto;
+  height: 10px;
+  background: #465f83;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+[data-city-style='harbor'] .ml-city-game__window { border-radius: 50%; }
+
 .ml-city-game__building[data-just-built='true'] {
   animation: ml-city-assemble 760ms var(--ml-ease-spring) both;
 }

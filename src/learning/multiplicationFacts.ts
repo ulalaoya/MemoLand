@@ -166,8 +166,10 @@ export const MULTIPLICATION_PRACTICE_FACTS: readonly MultiplicationFact[] = [
 
 export const MULTIPLICATION_FACT_BY_ID = new Map(MULTIPLICATION_PRACTICE_FACTS.map((fact) => [fact.id, fact]));
 
-export function multiplicationSuccessesNeeded(factId: string): 1 | 5 {
-  return factId.startsWith('1x') ? 1 : 5;
+export function multiplicationSuccessesNeeded(factId: string): 1 | 2 | 5 {
+  const factors = factId.split('x').map(Number);
+  if (factors.includes(1) || factors.includes(10)) return 1;
+  return factors.includes(2) ? 2 : 5;
 }
 
 export function isMultiplicationFactMastered(progress: MultiplicationProgress | undefined, factId: string): boolean {
@@ -176,7 +178,7 @@ export function isMultiplicationFactMastered(progress: MultiplicationProgress | 
   if (saved.masteredAt != null) return true;
   return multiplicationSuccessesNeeded(factId) === 1
     ? saved.directCorrect + saved.supportedCorrect >= 1
-    : saved.consecutiveDirectCorrect >= 5;
+    : saved.consecutiveDirectCorrect >= multiplicationSuccessesNeeded(factId);
 }
 
 export function multiplicationMasteryCount(progress: MultiplicationProgress | undefined): number {
@@ -240,7 +242,9 @@ function currentLevelFactIds(level: number): Set<string> {
  */
 export function multiplicationCurriculumLevel(progress: MultiplicationProgress | undefined): number {
   for (const level of MULTIPLICATION_CURRICULUM.slice(0, 12)) {
-    const ready = level.newFacts.every((factId) => (progress?.facts[factId]?.directCorrect ?? 0) >= 2);
+    const ready = level.newFacts.every((factId) =>
+      isMultiplicationFactMastered(progress, factId) || (progress?.facts[factId]?.directCorrect ?? 0) >= 2,
+    );
     if (!ready) return level.level;
   }
 
@@ -265,7 +269,7 @@ export function selectMultiplicationFact(
   options: SelectMultiplicationFactOptions = {},
 ): MultiplicationFact {
   let candidates = options.includeOnes
-    ? [...ONE_FACTS.filter((fact) => fact.introducedAtLevel <= level), ...factsAvailableAtLevel(level)]
+    ? [...MULTIPLICATION_PRACTICE_FACTS]
     : factsAvailableAtLevel(level);
   if (options.requireConnection) {
     candidates = candidates.filter((fact) => fact.connections.some((item) => item.sourceFactId !== fact.id));
@@ -282,6 +286,27 @@ export function selectMultiplicationFact(
   const recent = recentDistinctFactIds(progress, RECENT_FACT_EXCLUSION);
   const withoutRecent = candidates.filter((fact) => !recent.has(fact.id));
   if (withoutRecent.length > 0) candidates = withoutRecent;
+  if (options.includeOnes) {
+    // The mission is a mixed deck, not the level-based teaching curriculum.
+    // Least-seen facts first: cover the whole unfinished deck before repeating.
+    // Count appearances (not timestamps or individual retries) so equal clock
+    // values and interrupted sessions cannot collapse the variety.
+    const counts = new Map<string, number>();
+    const attempts = progress?.recentAttempts ?? [];
+    attempts.forEach((attempt, index) => {
+      if (index === 0 || attempts[index - 1].factId !== attempt.factId) {
+        counts.set(attempt.factId, (counts.get(attempt.factId) ?? 0) + 1);
+      }
+    });
+    const appearances = (id: string) => counts.get(id) ?? 0;
+    const minimum = Math.min(...candidates.map((fact) => appearances(fact.id)));
+    let leastSeen = candidates.filter((fact) => appearances(fact.id) === minimum);
+    const previousId = progress?.recentAttempts.at(-1)?.factId;
+    const previous = previousId ? MULTIPLICATION_FACT_BY_ID.get(previousId) : undefined;
+    const otherFamilies = leastSeen.filter((fact) => !previous || fact.a !== previous.a);
+    if (otherFamilies.length > 0) leastSeen = otherFamilies;
+    return rng.shuffle(leastSeen)[0];
+  }
   const levelFacts = currentLevelFactIds(level);
 
   // ערבוב לפני מיון שומר הכרעה דטרמיניסטית בין עובדות באותה עדיפות.
@@ -290,7 +315,6 @@ export function selectMultiplicationFact(
     const saved = progress?.facts[fact.id];
     if (latestAttemptFailed(progress, fact.id)) return 0;
     if (saved && saved.lastPracticedAt !== null && saved.dueAt <= now) return 1;
-    if (options.includeOnes && fact.a === 1 && (saved?.directCorrect ?? 0) < 2) return 2;
     if (levelFacts.has(fact.id) && (saved?.directCorrect ?? 0) < 2 && hasEstablishedAnchor(fact, progress)) return 2;
     if (levelFacts.has(fact.id) && (saved?.directCorrect ?? 0) < 2) return 3;
     if (!saved && hasEstablishedAnchor(fact, progress)) return 4;

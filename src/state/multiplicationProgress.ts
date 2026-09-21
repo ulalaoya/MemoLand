@@ -93,7 +93,7 @@ export function applyMultiplicationAttempts(
       supportedCorrect: previous.supportedCorrect + (!direct && input.correct ? 1 : 0),
       consecutiveDirectCorrect: correctDirect ? previous.consecutiveDirectCorrect + 1 : 0,
       masteredAt: previous.masteredAt ?? (
-        input.correct && (oneAnswerIsEnough || (correctDirect && previous.consecutiveDirectCorrect + 1 >= 5))
+        input.correct && (oneAnswerIsEnough || (correctDirect && previous.consecutiveDirectCorrect + 1 >= multiplicationSuccessesNeeded(input.factId)))
           ? at
           : null
       ),
@@ -127,7 +127,7 @@ export function normalizeMultiplicationProgress(value: unknown): MultiplicationP
       // Old saves already contain the streak; recognize it without resetting any progress.
       const qualifies = multiplicationSuccessesNeeded(factId) === 1
         ? restored.directCorrect + restored.supportedCorrect >= 1
-        : restored.consecutiveDirectCorrect >= 5;
+        : restored.consecutiveDirectCorrect >= multiplicationSuccessesNeeded(factId);
       restored.masteredAt ??= qualifies
         ? (restored.lastPracticedAt ?? 0)
         : null;

@@ -39,6 +39,37 @@ function recordDirect(
 }
 
 describe('multiplication fact registry', () => {
+  it('mixes the complete mission deck at level one, completes it without easy-fact loops', () => {
+    let progress = defaultMultiplicationProgress();
+    const selected: string[] = [];
+    for (let index = 0; index < 175; index++) {
+      const fact = selectMultiplicationFact(1, makeRng(730 + index), progress, index, { includeOnes: true });
+      expect(selectMultiplicationFact(1, makeRng(730 + index), progress, index, { includeOnes: true }).id).toBe(fact.id);
+      if (index < 55) expect(selected).not.toContain(fact.id);
+      selected.push(fact.id);
+      progress = recordDirect(progress, fact.id, true, index);
+    }
+    expect(new Set(selected.slice(0, 55)).size).toBe(55);
+    expect(new Set(selected.slice(0, 12).map((id) => id.split('x')[0])).size).toBeGreaterThan(3);
+    for (const fact of MULTIPLICATION_PRACTICE_FACTS) {
+      expect(selected.filter((id) => id === fact.id)).toHaveLength(multiplicationSuccessesNeeded(fact.id));
+    }
+    expect(multiplicationMasteryCount(progress)).toBe(55);
+  });
+
+  it('keeps a failed mission fact from monopolizing practice and resumes the mixed deck', () => {
+    let progress = defaultMultiplicationProgress();
+    const ids: string[] = [];
+    for (let index = 0; index < 110; index++) {
+      progress = JSON.parse(JSON.stringify(progress));
+      const fact = selectMultiplicationFact(1, makeRng(index), progress, 100, { includeOnes: true });
+      expect(ids.slice(-3)).not.toContain(fact.id);
+      ids.push(fact.id);
+      progress = recordDirect(progress, fact.id, false, 100);
+    }
+    expect(new Set(ids.slice(0, 55)).size).toBe(55);
+    expect(new Set(ids.slice(55)).size).toBe(55);
+  });
   it('contains exactly the canonical 2×2–10×10 fact set', () => {
     expect(MULTIPLICATION_FACTS).toHaveLength(45);
     expect(new Set(MULTIPLICATION_FACTS.map((fact) => fact.id)).size).toBe(45);
@@ -226,6 +257,19 @@ describe('multiplication fact registry', () => {
     }
     const selected = selectMultiplicationFact(1, makeRng(91), progress, 100);
     expect(progress.facts[selected.id].stage).toBe('FLUENT');
+  });
+
+  it('does not trap the daily curriculum behind a ten-fact already retired after one answer', () => {
+    let progress = defaultMultiplicationProgress();
+    for (const level of MULTIPLICATION_CURRICULUM.slice(0, 2)) {
+      for (const factId of level.newFacts) {
+        for (let index = 0; index < Math.min(2, multiplicationSuccessesNeeded(factId)); index++) {
+          progress = recordDirect(progress, factId, true, index);
+        }
+      }
+    }
+    expect(progress.facts['2x10'].directCorrect).toBe(1);
+    expect(multiplicationCurriculumLevel(progress)).toBe(3);
   });
 
   it('never selects a mastered fact while an unfinished alternative exists', () => {

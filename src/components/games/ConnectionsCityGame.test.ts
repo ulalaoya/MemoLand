@@ -114,8 +114,15 @@ describe('City child interaction', () => {
     }
   });
 
-  it('uses the explicit completion moment without replacing normal success feedback', () => {
-    expect(cityModule.CITY_SUCCESS_COPY).toBe('מעולה! העיר גדלה');
-    expect(cityModule.CITY_DISTRICT_COMPLETE_COPY).toBe('הרובע הושלם!');
+  it('celebrates only completed rows, and changes building styles after two rows', () => {
+    for (let total = 0; total <= 81; total++) {
+      expect(cityModule.cityRowCelebration(total)).toBe(
+        total > 0 && total % 10 === 0 ? 'מצוין, העיר גדלה!' : null,
+      );
+    }
+    expect(new Set([0, 1, 2, 3].map(cityModule.cityDistrictStyle)).size).toBe(4);
+    expect(cityModule.cityDistrictStyle(cityModule.cityDistrictModel(20).districtIndex)).toBe('townhouses');
+    expect(cityModule.cityDistrictStyle(cityModule.cityDistrictModel(21).districtIndex)).toBe('gardens');
+    expect(cityModule.cityDistrictStyle(4)).toBe('townhouses');
   });
 });

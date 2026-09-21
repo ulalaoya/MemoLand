@@ -1,6 +1,6 @@
 /* מסך המסע היומי — מריץ את רשימת הפעילויות ומנהל תגמול, הקלה שקטה,
    חזרות במרווחים, והתקדמות. מסתיים תמיד בהצלחה → תיבת האוצר. */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Activity } from '../scheduler/activities';
 import {
   buildActivities,
@@ -581,26 +581,24 @@ function GameHostForActivity({
   onResult: (r: GameResult) => void;
 }) {
   const engine = getEngine(a.exerciseId);
-  const currentState = getState();
-  const multiplication = currentState.multiplication;
-  const recentFingerprintKey = currentState.recentChallengeFingerprints.join('\n');
-  const level = a.landId === 'connections'
-    ? multiplicationCurriculumLevel(multiplication)
-    : clampLevel((currentState.stats[a.exerciseId]?.level ?? 1) + a.levelDelta - softenBy);
-  const generatedAt = useRef(Date.now()).current;
-  const challenge = useMemo(
-    () => (engine
+  // The parent key remounts this component only when advancing/retrying.
+  // A displayed question must not change when rewards, history or stats update.
+  const [challenge] = useState(() => {
+    const currentState = getState();
+    const multiplication = currentState.multiplication;
+    const level = a.landId === 'connections'
+      ? multiplicationCurriculumLevel(multiplication)
+      : clampLevel((currentState.stats[a.exerciseId]?.level ?? 1) + a.levelDelta - softenBy);
+    return engine
       ? generateVariedChallenge(
           engine,
           level,
           seed,
           currentState.recentChallengeFingerprints,
-          { now: generatedAt, multiplication },
+          { now: Date.now(), multiplication },
         )
-      : null),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [engine, generatedAt, level, multiplication, recentFingerprintKey, seed],
-  );
+      : null;
+  });
   const fingerprint = challenge ? challengeFingerprint(challenge) : '';
   useEffect(() => {
     if (fingerprint) rememberChallengeFingerprint(fingerprint);

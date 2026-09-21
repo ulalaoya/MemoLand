@@ -20,6 +20,35 @@ function direct(at: number, correct = true): MultiplicationAttemptInput {
 }
 
 describe('multiplication fact progress', () => {
+  it('uses one success for tens (including 2×10), two consecutive for twos, and five otherwise', () => {
+    for (const [factId, needed] of [['1x2', 1], ['2x10', 1], ['9x10', 1], ['10x10', 1], ['2x2', 2], ['2x9', 2], ['3x9', 5]] as const) {
+      let progress = defaultMultiplicationProgress();
+      for (let index = 1; index <= needed; index++) {
+        expect(isMultiplicationFactMastered(progress, factId)).toBe(false);
+        progress = applyMultiplicationAttempts(progress, [{ ...direct(index), factId }]);
+      }
+      expect(isMultiplicationFactMastered(progress, factId)).toBe(true);
+      expect(progress.facts[factId].masteredAt).toBe(needed);
+    }
+  });
+
+  it('resets a two-fact streak on a mistake or hint and migrates existing qualifying saves', () => {
+    for (const interruption of [direct(2, false), { ...direct(2), mode: 'derived' as const, helpLevelUsed: 1 }]) {
+      const progress = applyMultiplicationAttempts(defaultMultiplicationProgress(),
+        [direct(1), interruption, direct(3)].map((attempt) => ({ ...attempt, factId: '2x7' })),
+      );
+      expect(progress.facts['2x7'].consecutiveDirectCorrect).toBe(1);
+      expect(isMultiplicationFactMastered(progress, '2x7')).toBe(false);
+    }
+    const restored = normalizeMultiplicationProgress({ facts: {
+      '2x7': { consecutiveDirectCorrect: 2, directCorrect: 3, lastPracticedAt: 123 },
+      '8x10': { directCorrect: 1, lastPracticedAt: 456 },
+      '3x7': { consecutiveDirectCorrect: 2 },
+    } });
+    expect(restored.facts['2x7'].masteredAt).toBe(123);
+    expect(restored.facts['8x10'].masteredAt).toBe(456);
+    expect(restored.facts['3x7'].masteredAt).toBeNull();
+  });
   it('separates direct retrieval from supported success', () => {
     const next = applyMultiplicationAttempts(defaultMultiplicationProgress(), [{
       ...direct(Date.UTC(2026, 7, 20)),

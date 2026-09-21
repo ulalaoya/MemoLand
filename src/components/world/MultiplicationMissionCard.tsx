@@ -37,7 +37,7 @@ export function MultiplicationMissionCard({
       <p>
         {remaining === 0
           ? 'כל המכפלות כבר בזיכרון. כל הכבוד!'
-          : `מתרגלים כמה שרוצים. מכפלות של 1 משלימים בתשובה נכונה אחת; את השאר בחמש תשובות נכונות ברצף בלי רמז. ${daysLeft > 0 ? `נותרו ${daysLeft} ימים ליעד.` : 'ממשיכים יחד עד שמסיימים.'}`}
+          : `מתרגלים בסדר מעורבב: כפולות של 1 או 10 — תשובה נכונה אחת; כפולות של 2 — שתיים ברצף; את השאר — חמש ברצף. רצף נחשב בלי רמז. ${daysLeft > 0 ? `נותרו ${daysLeft} ימים ליעד.` : 'ממשיכים יחד עד שמסיימים.'}`}
       </p>
       <div className="ml-multiplication-mission__meter-label">
         <strong>{mastered} מתוך {total} מכפלות הושלמו</strong>
@@ -68,7 +68,7 @@ export function MultiplicationMissionCard({
               <span
                 key={fact.id}
                 className={`ml-multiplication-mission__fact${done ? ' is-mastered' : ''}`}
-                aria-label={`${fact.a} כפול ${fact.b}: ${done ? 'הושלם' : `${streak} מתוך ${needed}${needed === 5 ? ' ברצף' : ''}`}`}
+                aria-label={`${fact.a} כפול ${fact.b}: ${done ? 'הושלם' : `${streak} מתוך ${needed}${needed > 1 ? ' ברצף' : ''}`}`}
               >
                 <b dir="ltr">{fact.a}×{fact.b}</b>
                 <small>{done ? '✓' : `${streak}/${needed}`}</small>

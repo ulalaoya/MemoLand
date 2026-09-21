@@ -31,11 +31,19 @@ type CityPhase = 'answering' | 'reveal' | 'success';
 
 export const CITY_HINT_ENTRY_COPY = 'רוצה רמז? ממו כאן לעזור';
 export const CITY_RETRY_COPY = 'כמעט, נסה שוב';
-export const CITY_SUCCESS_COPY = 'מעולה! העיר גדלה';
+export const CITY_SUCCESS_COPY = 'מצוין, העיר גדלה!';
 export const CITY_DISTRICT_COMPLETE_COPY = 'הרובע הושלם!';
 export const CITY_CORRECT_REVEAL_MS = 1_500;
 export const CITY_DISTRICT_CAPACITY = CITY_DISTRICT_BUILDING_COUNT;
 export const CITY_BUILDING_CONSTRUCTION = 'rise';
+
+export function cityRowCelebration(totalBuilt: number): string | null {
+  return totalBuilt > 0 && totalBuilt % CITY_DISTRICT_ROW_SIZE === 0 ? CITY_SUCCESS_COPY : null;
+}
+
+export function cityDistrictStyle(districtIndex: number): string {
+  return ['townhouses', 'gardens', 'towers', 'harbor'][districtIndex % 4];
+}
 
 export function nextCityHelpLevel(_current: number): number {
   return 1;
@@ -170,9 +178,9 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
   const [attempts, setAttempts] = useState<MultiplicationAttemptInput[]>([]);
   const startedAt = useRef(Date.now());
   const resultTimer = useRef<number | null>(null);
-  const persistedMilestones = normalizeCityGrowthMilestones(
-    useStore((state) => state.cityGrowthMilestones),
-  );
+  const savedMilestones = useStore((state) => state.cityGrowthMilestones);
+  // Keep the optimistic building stable until this question unmounts.
+  const [persistedMilestones] = useState(() => normalizeCityGrowthMilestones(savedMilestones));
   const displayedMilestones = normalizeCityGrowthMilestones(
     persistedMilestones + (phase === 'success' ? 1 : 0),
   );
@@ -300,6 +308,7 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
       data-city-district={city.districtIndex}
       data-city-district-built={city.builtCount}
       data-city-district-complete={city.districtComplete}
+      data-city-style={cityDistrictStyle(city.districtIndex)}
     >
       <div className={`ml-city-game__scene${city.districtComplete ? ' is-district-complete' : ''}`} aria-hidden>
         <div className="ml-city-game__sun" />
@@ -443,9 +452,9 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
         {phase === 'reveal' ? (
           <div className="ml-city-game__reveal" role="status">נזכור ונפגוש אותה שוב בקרוב</div>
         ) : null}
-        {phase === 'success' ? (
+        {phase === 'success' && cityRowCelebration(displayedMilestones) ? (
           <div className="ml-city-game__success" role="status">
-            {city.districtComplete ? CITY_DISTRICT_COMPLETE_COPY : CITY_SUCCESS_COPY}
+            {cityRowCelebration(displayedMilestones)}
           </div>
         ) : null}
       </div>

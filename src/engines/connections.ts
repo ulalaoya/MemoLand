@@ -83,7 +83,7 @@ export const connectionsPractice: ExerciseEngine<MultiplicationBaseStimulus, num
   id: 'connections.practice',
   landId: 'connections',
   title: 'מבצע לוח הכפל',
-  parentDescription: 'תרגול רציף של 55 מכפלות: אחת נכונה בכפולות 1, וחמש רצופות בשאר',
+  parentDescription: '55 מכפלות מעורבבות: אחת בכפולות 1 או 10, שתיים ברצף בכפולות 2, וחמש ברצף בשאר',
   generate(level, seed, context): Challenge<MultiplicationBaseStimulus, number> {
     const rng = makeRng(seed);
     const fact = selectMultiplicationFact(
