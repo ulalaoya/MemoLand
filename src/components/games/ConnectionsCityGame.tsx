@@ -202,12 +202,10 @@ export function cityProjectDisplayModel(
 
 function ProjectPieces({
   kind,
-  icon,
   builtCount,
   justAdded,
 }: {
   kind: Exclude<CityBuildProjectKind, 'city'>;
-  icon: string;
   builtCount: number;
   justAdded: number;
 }) {
@@ -224,7 +222,6 @@ function ProjectPieces({
           />
         );
       })}
-      <span className="ml-city-game__blueprint" aria-hidden>{icon}</span>
     </div>
   );
 }
@@ -467,7 +464,7 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
     >
       <div className={`ml-city-game__scene${city.districtComplete ? ' is-district-complete' : ''}`} aria-hidden>
         <div className="ml-city-game__sun" />
-        <div className="ml-city-game__district-label">{project.icon} {project.title} · {city.districtNumber}</div>
+        <div className="ml-city-game__district-label">{project.icon} {project.title}</div>
         {project.kind === 'city' ? (
           <>
             <div className="ml-city-game__district-row ml-city-game__district-row--back">
@@ -510,7 +507,7 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
             <div className="ml-city-game__road"><i /><i /><i /><i /></div>
           </>
         ) : (
-          <ProjectPieces kind={project.kind} icon={project.icon} builtCount={city.builtCount} justAdded={justAddedBuilding} />
+          <ProjectPieces kind={project.kind} builtCount={city.builtCount} justAdded={justAddedBuilding} />
         )}
         {phase === 'success' && city.districtComplete ? (
           <div className="ml-city-game__project-complete">

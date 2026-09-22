@@ -279,97 +279,109 @@
 .ml-city-game__assembly--race-car .ml-city-game__piece:nth-child(15) { right: 35px; }
 
 .ml-city-game__assembly:not(.ml-city-game__assembly--blocks):not(.ml-city-game__assembly--race-car) {
-  --project-main: #5b8ff0;
-  --project-alt: #9dd9ff;
   inset: auto 48px 25px 20px;
   height: 138px;
-  padding: 17px 24px;
+  padding: 5px;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(3, 1fr);
   gap: 3px;
   overflow: hidden;
-  background: color-mix(in srgb, var(--project-alt) 24%, rgba(255, 255, 255, .72));
-  border: 3px solid color-mix(in srgb, var(--project-main) 70%, #243247);
+  background: rgba(255, 255, 255, .42);
+  border: 0;
   border-radius: 26px;
-  box-shadow: 0 7px 0 rgba(36, 50, 71, .17), inset 0 0 22px rgba(255, 255, 255, .58);
+  filter: drop-shadow(0 7px 0 rgba(36, 50, 71, .17));
 }
 
 .ml-city-game__assembly:not(.ml-city-game__assembly--blocks):not(.ml-city-game__assembly--race-car) .ml-city-game__piece {
-  z-index: 2;
+  z-index: 1;
   border-color: color-mix(in srgb, var(--project-main) 76%, #243247);
-  border-radius: 5px;
+  border-radius: 4px;
   background: var(--project-main);
-  box-shadow: inset 0 3px rgba(255, 255, 255, .34);
+  box-shadow: inset 0 4px rgba(255, 255, 255, .32), inset 0 -3px rgba(36, 50, 71, .14);
 }
 
 .ml-city-game__assembly:not(.ml-city-game__assembly--blocks):not(.ml-city-game__assembly--race-car) .ml-city-game__piece:nth-child(even) {
   background: var(--project-alt);
 }
 
-.ml-city-game__blueprint {
-  position: absolute;
-  z-index: 1;
-  inset: 50% auto auto 50%;
-  font-size: 5.6rem;
-  line-height: 1;
-  opacity: .3;
-  filter: grayscale(.2) drop-shadow(0 3px 0 rgba(36, 50, 71, .14));
-  transform: translate(-50%, -50%);
-}
-
 [data-city-project='rocket'] { --project-main: #ef5b5b; --project-alt: #65c8ff; }
-[data-city-project='rocket'] .ml-city-game__assembly { clip-path: polygon(50% 0, 82% 25%, 91% 78%, 67% 100%, 33% 100%, 9% 78%, 18% 25%); }
+[data-city-project='rocket'] .ml-city-game__assembly { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(5, 1fr); clip-path: polygon(50% 0, 82% 25%, 91% 78%, 67% 100%, 33% 100%, 9% 78%, 18% 25%); }
+[data-city-project='rocket'] .ml-city-game__assembly::after { content: ''; position: absolute; z-index: 3; inset: 35% auto auto 42%; width: 16%; aspect-ratio: 1; border: 3px solid rgba(36, 50, 71, .48); border-radius: 50%; }
 [data-city-project='castle'] { --project-main: #8d6ed9; --project-alt: #ffd45f; }
-[data-city-project='castle'] .ml-city-game__assembly { border-radius: 4px 4px 20px 20px; }
+[data-city-project='castle'] .ml-city-game__assembly {
+  clip-path: polygon(0 100%, 0 24%, 12% 24%, 12% 6%, 29% 6%, 29% 24%, 42% 24%, 42% 6%, 58% 6%, 58% 24%, 71% 24%, 71% 6%, 88% 6%, 88% 24%, 100% 24%, 100% 100%);
+  border-radius: 0 0 18px 18px;
+}
+[data-city-project='castle'] .ml-city-game__assembly::after {
+  content: '';
+  position: absolute;
+  z-index: 3;
+  bottom: 0;
+  left: 43%;
+  width: 14%;
+  height: 30%;
+  border: 2px solid rgba(53, 36, 84, .55);
+  border-bottom: 0;
+  border-radius: 14px 14px 0 0;
+  background: rgba(53, 36, 84, .35);
+  box-shadow: -71px -28px 0 -4px rgba(255, 232, 130, .65), 71px -28px 0 -4px rgba(255, 232, 130, .65);
+}
 [data-city-project='pirate-ship'] { --project-main: #a76a3d; --project-alt: #f1cf88; }
-[data-city-project='pirate-ship'] .ml-city-game__assembly { inset-inline: 30px 58px; height: 108px; border-radius: 8px 8px 60% 60%; transform: skewX(-5deg); }
+[data-city-project='pirate-ship'] .ml-city-game__assembly { inset-inline: 30px 58px; height: 138px; clip-path: polygon(2% 48%, 5% 16%, 37% 4%, 37% 48%, 40% 48%, 40% 0, 46% 0, 46% 47%, 95% 14%, 96% 48%, 100% 52%, 86% 92%, 70% 100%, 20% 100%); }
+[data-city-project='pirate-ship'] .ml-city-game__assembly::after { content: ''; position: absolute; z-index: 3; top: 4%; left: 40%; width: 3px; height: 49%; background: rgba(61, 40, 28, .58); transform: rotate(-1deg); }
 [data-city-project='robot'] { --project-main: #697789; --project-alt: #59d7c9; }
-[data-city-project='robot'] .ml-city-game__assembly { inset-inline: 62px 72px; border-radius: 13px; }
+[data-city-project='robot'] .ml-city-game__assembly { inset-inline: 62px 72px; clip-path: polygon(15% 0, 85% 0, 85% 15%, 100% 15%, 100% 82%, 78% 82%, 78% 100%, 22% 100%, 22% 82%, 0 82%, 0 15%, 15% 15%); }
 [data-city-project='dinosaur'] { --project-main: #53a95e; --project-alt: #b5e36d; }
-[data-city-project='dinosaur'] .ml-city-game__assembly { border-radius: 65% 38% 48% 28%; transform: rotate(-2deg); }
+[data-city-project='dinosaur'] .ml-city-game__assembly { clip-path: polygon(0 28%, 26% 24%, 55% 30%, 67% 10%, 90% 5%, 100% 25%, 83% 42%, 70% 55%, 88% 100%, 60% 100%, 52% 66%, 28% 68%, 22% 100%, 2% 100%, 13% 67%); }
 [data-city-project='airplane'] { --project-main: #3f8fd4; --project-alt: #d7efff; }
-[data-city-project='airplane'] .ml-city-game__assembly { inset-inline: 12px 42px; height: 92px; clip-path: polygon(0 44%, 40% 34%, 53% 0, 64% 34%, 100% 45%, 100% 66%, 63% 58%, 51% 100%, 40% 58%, 0 66%); }
+[data-city-project='airplane'] .ml-city-game__assembly { inset-inline: 12px 42px; height: 92px; clip-path: polygon(0 26%, 38% 22%, 50% 0, 62% 22%, 100% 26%, 100% 74%, 62% 62%, 50% 100%, 38% 62%, 0 74%); }
 [data-city-project='train'] { --project-main: #e44d48; --project-alt: #f4bd39; }
-[data-city-project='train'] .ml-city-game__assembly { inset-inline: 10px 42px; height: 92px; border-radius: 16px 46px 12px 12px; }
+[data-city-project='train'] .ml-city-game__assembly { inset-inline: 10px 42px; height: 92px; clip-path: polygon(0 100%, 0 30%, 13% 30%, 13% 0, 63% 0, 63% 30%, 88% 30%, 100% 58%, 100% 100%); }
+[data-city-project='train'] .ml-city-game__assembly::after,
+[data-city-project='safari-jeep'] .ml-city-game__assembly::after,
+[data-city-project='moon-rover'] .ml-city-game__assembly::after { content: ''; position: absolute; z-index: 3; bottom: 0; left: 15%; width: 70%; height: 28px; background: radial-gradient(circle at 13px 50%, transparent 0 7px, rgba(36, 50, 71, .65) 8px 12px, transparent 13px), radial-gradient(circle at calc(100% - 13px) 50%, transparent 0 7px, rgba(36, 50, 71, .65) 8px 12px, transparent 13px); }
 [data-city-project='amusement-park'] { --project-main: #dd5eb1; --project-alt: #59c9ef; }
 [data-city-project='amusement-park'] .ml-city-game__assembly { inset-inline: 76px 86px; border-radius: 50%; }
+[data-city-project='amusement-park'] .ml-city-game__assembly::after { content: ''; position: absolute; z-index: 3; inset: 13%; border: 3px solid rgba(67, 51, 91, .5); border-radius: 50%; background: repeating-conic-gradient(from 0deg, transparent 0 28deg, rgba(67, 51, 91, .38) 29deg 32deg); }
 [data-city-project='treehouse'] { --project-main: #8a5e3c; --project-alt: #68bd5f; }
-[data-city-project='treehouse'] .ml-city-game__assembly { inset-inline: 56px 66px; border-radius: 42% 42% 10px 10px; box-shadow: 0 18px 0 -7px #795135, 0 7px 0 rgba(36, 50, 71, .17); }
+[data-city-project='treehouse'] .ml-city-game__assembly { inset-inline: 56px 66px; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(5, 1fr); clip-path: polygon(8% 45%, 20% 12%, 80% 12%, 92% 45%, 65% 45%, 78% 100%, 55% 100%, 50% 65%, 45% 100%, 22% 100%, 35% 45%); }
 [data-city-project='submarine'] { --project-main: #e7aa29; --project-alt: #55b8d5; }
 [data-city-project='submarine'] .ml-city-game__assembly { inset-inline: 12px 42px; height: 94px; border-radius: 52% 44% 44% 52%; }
+[data-city-project='submarine'] .ml-city-game__assembly::after { content: ''; position: absolute; z-index: 3; top: 35%; left: 27%; width: 46%; height: 20px; background: radial-gradient(circle at 10px 50%, transparent 0 5px, rgba(36, 50, 71, .52) 6px 8px, transparent 9px), radial-gradient(circle at 50% 50%, transparent 0 5px, rgba(36, 50, 71, .52) 6px 8px, transparent 9px), radial-gradient(circle at calc(100% - 10px) 50%, transparent 0 5px, rgba(36, 50, 71, .52) 6px 8px, transparent 9px); }
 [data-city-project='space-station'] { --project-main: #6c71c9; --project-alt: #d3d6ff; }
-[data-city-project='space-station'] .ml-city-game__assembly { inset-inline: 60px 70px; border-radius: 50%; transform: rotate(4deg); }
+[data-city-project='space-station'] .ml-city-game__assembly { inset-inline: 60px 70px; clip-path: polygon(0 12%, 35% 12%, 35% 0, 65% 0, 65% 12%, 100% 12%, 100% 42%, 68% 42%, 68% 58%, 100% 58%, 100% 88%, 65% 88%, 65% 100%, 35% 100%, 35% 88%, 0 88%, 0 58%, 32% 58%, 32% 42%, 0 42%); transform: rotate(4deg); }
 [data-city-project='ice-palace'] { --project-main: #66bfea; --project-alt: #e6f8ff; }
-[data-city-project='ice-palace'] .ml-city-game__assembly { clip-path: polygon(0 100%, 8% 40%, 22% 66%, 35% 8%, 49% 58%, 65% 0, 77% 61%, 91% 30%, 100% 100%); }
+[data-city-project='ice-palace'] .ml-city-game__assembly { clip-path: polygon(0 100%, 0 28%, 10% 0, 20% 45%, 30% 5%, 40% 45%, 50% 0, 60% 45%, 70% 5%, 80% 45%, 90% 0, 100% 28%, 100% 100%); }
 [data-city-project='fire-station'] { --project-main: #e7463f; --project-alt: #f4f5f7; }
-[data-city-project='fire-station'] .ml-city-game__assembly { border-radius: 8px 8px 20px 20px; }
+[data-city-project='fire-station'] .ml-city-game__assembly { clip-path: polygon(0 100%, 0 20%, 37% 20%, 37% 0, 63% 0, 63% 20%, 100% 20%, 100% 100%); border-radius: 0 0 18px 18px; }
 [data-city-project='farm'] { --project-main: #b74e3c; --project-alt: #f4d56b; }
-[data-city-project='farm'] .ml-city-game__assembly { clip-path: polygon(0 100%, 0 36%, 50% 0, 100% 36%, 100% 100%); }
+[data-city-project='farm'] .ml-city-game__assembly { clip-path: polygon(0 100%, 0 28%, 50% 0, 100% 28%, 100% 100%); }
 [data-city-project='aquarium'] { --project-main: #42a9cd; --project-alt: #9ce6db; }
 [data-city-project='aquarium'] .ml-city-game__assembly { border-radius: 18px 18px 44% 44%; }
+[data-city-project='aquarium'] .ml-city-game__assembly::after { content: ''; position: absolute; z-index: 3; top: 17%; left: 22%; width: 8px; height: 8px; border: 2px solid rgba(255, 255, 255, .68); border-radius: 50%; box-shadow: 37px 20px 0 -1px transparent, 37px 20px 0 0 rgba(255, 255, 255, .68), 82px -5px 0 -1px transparent, 82px -5px 0 0 rgba(255, 255, 255, .68); }
 [data-city-project='planet-base'] { --project-main: #7663b6; --project-alt: #f0b65c; }
 [data-city-project='planet-base'] .ml-city-game__assembly { border-radius: 55% 55% 18px 18px; }
 [data-city-project='dragon'] { --project-main: #4aa45f; --project-alt: #e15a51; }
 [data-city-project='dragon'] .ml-city-game__assembly { border-radius: 64% 28% 62% 32%; transform: rotate(2deg); }
 [data-city-project='balloon'] { --project-main: #ed5e8b; --project-alt: #ffd45f; }
-[data-city-project='balloon'] .ml-city-game__assembly { inset-inline: 83px 93px; border-radius: 50% 50% 38% 38%; }
+[data-city-project='balloon'] .ml-city-game__assembly { inset-inline: 83px 93px; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(5, 1fr); clip-path: polygon(18% 0, 82% 0, 100% 26%, 88% 57%, 60% 78%, 72% 100%, 28% 100%, 40% 78%, 12% 57%, 0 26%); }
 [data-city-project='crane'] { --project-main: #efb62f; --project-alt: #596675; }
 [data-city-project='crane'] .ml-city-game__assembly { inset-inline: 35px 65px; clip-path: polygon(0 100%, 0 88%, 35% 88%, 35% 0, 48% 0, 48% 18%, 100% 18%, 100% 31%, 48% 31%, 48% 100%); }
 [data-city-project='candy-factory'] { --project-main: #ee6eab; --project-alt: #76d1e9; }
-[data-city-project='candy-factory'] .ml-city-game__assembly { border-radius: 30px 8px 22px 8px; }
+[data-city-project='candy-factory'] .ml-city-game__assembly { clip-path: polygon(0 100%, 0 28%, 18% 14%, 34% 28%, 50% 14%, 66% 28%, 82% 14%, 100% 28%, 100% 100%); }
 [data-city-project='safari-jeep'] { --project-main: #719548; --project-alt: #d7b85c; }
 [data-city-project='safari-jeep'] .ml-city-game__assembly { inset-inline: 20px 50px; height: 98px; border-radius: 22px 38px 12px 12px; }
 [data-city-project='lighthouse'] { --project-main: #e5534b; --project-alt: #f6f0df; }
-[data-city-project='lighthouse'] .ml-city-game__assembly { inset-inline: 104px 114px; clip-path: polygon(25% 100%, 36% 18%, 15% 18%, 15% 0, 85% 0, 85% 18%, 64% 18%, 75% 100%); }
+[data-city-project='lighthouse'] .ml-city-game__assembly { inset-inline: 104px 114px; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(5, 1fr); clip-path: polygon(18% 100%, 34% 18%, 8% 18%, 8% 0, 92% 0, 92% 18%, 66% 18%, 82% 100%); }
 [data-city-project='music-stage'] { --project-main: #8f61ca; --project-alt: #f25e8d; }
 [data-city-project='music-stage'] .ml-city-game__assembly { border-radius: 52px 52px 8px 8px; }
 [data-city-project='snowman'] { --project-main: #e9f7fb; --project-alt: #6dc6e8; }
-[data-city-project='snowman'] .ml-city-game__assembly { inset-inline: 86px 96px; border-radius: 50%; }
+[data-city-project='snowman'] .ml-city-game__assembly { inset-inline: 86px 96px; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(5, 1fr); clip-path: polygon(28% 0, 72% 0, 86% 12%, 82% 31%, 68% 38%, 88% 47%, 100% 72%, 88% 100%, 12% 100%, 0 72%, 12% 47%, 32% 38%, 18% 31%, 14% 12%); }
 [data-city-project='skate-park'] { --project-main: #6275d0; --project-alt: #f09b43; }
 [data-city-project='skate-park'] .ml-city-game__assembly { inset-inline: 13px 43px; height: 88px; border-radius: 8px 8px 48px 48px; }
 [data-city-project='magic-library'] { --project-main: #7d4d98; --project-alt: #e7bc4f; }
-[data-city-project='magic-library'] .ml-city-game__assembly { border-radius: 8px 8px 28px 28px; }
+[data-city-project='magic-library'] .ml-city-game__assembly { clip-path: polygon(0 8%, 45% 18%, 50% 28%, 55% 18%, 100% 8%, 100% 94%, 55% 100%, 50% 90%, 45% 100%, 0 94%); }
 [data-city-project='moon-rover'] { --project-main: #8e98a5; --project-alt: #e2c65c; }
 [data-city-project='moon-rover'] .ml-city-game__assembly { inset-inline: 20px 50px; height: 100px; border-radius: 32px 40px 12px 12px; }
 

@@ -156,6 +156,7 @@ describe('City child interaction', () => {
     const blocks = renderAt(16);
     expect(blocks).toContain('data-city-project="blocks"');
     expect(blocks).toContain('בונים פסל לגו');
+    expect(blocks).not.toContain('בונים פסל לגו ·');
     expect(blocks.match(/ml-city-game__piece/g)).toHaveLength(15);
     expect(blocks.match(/ml-city-game__piece is-built/g)).toHaveLength(1);
     expect(blocks).not.toContain('ml-city-game__building');
@@ -164,6 +165,17 @@ describe('City child interaction', () => {
     expect(raceCar).toContain('data-city-project="race-car"');
     expect(raceCar).toContain('מרכיבים מכונית מרוץ');
     expect(raceCar.match(/ml-city-game__piece/g)).toHaveLength(15);
+
+    for (let projectIndex = 3; projectIndex < cityModule.CITY_BUILD_PROJECT_COUNT; projectIndex++) {
+      const project = cityModule.cityBuildProject(projectIndex);
+      const projectHtml = renderAt(projectIndex * cityModule.CITY_DISTRICT_CAPACITY + 1);
+      expect(projectHtml).toContain(`data-city-project="${project.kind}"`);
+      expect(projectHtml).toContain(project.title);
+      expect(projectHtml).not.toContain(`${project.title} ·`);
+      expect(projectHtml.match(/ml-city-game__piece/g)).toHaveLength(15);
+      expect(projectHtml.match(/ml-city-game__piece is-built/g)).toHaveLength(1);
+      expect(projectHtml).not.toContain('ml-city-game__blueprint');
+    }
   });
 
   it('keeps a completed project during congratulations, then opens the next one empty', () => {
