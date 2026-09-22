@@ -1,7 +1,8 @@
 import type { LandId } from '../types';
 
-export const CITY_DISTRICT_BUILDING_COUNT = 20;
-export const CITY_DISTRICT_ROW_SIZE = 10;
+export const CITY_DISTRICT_BUILDING_COUNT = 15;
+export const CITY_DISTRICT_BACK_ROW_SIZE = 8;
+export const CITY_DISTRICT_FRONT_ROW_SIZE = 7;
 
 export interface CityDistrictProgress {
   /** All successful City questions preserved across districts. */
@@ -11,7 +12,7 @@ export interface CityDistrictProgress {
   districtIndex: number;
   /** One-based district label for the child-facing scene. */
   districtNumber: number;
-  /** Buildings visible in the current district (0..20). */
+  /** Parts visible in the current project (0..15). */
   builtCount: number;
   districtComplete: boolean;
 }
@@ -22,9 +23,9 @@ export function normalizeCityGrowthMilestones(value: unknown): number {
 }
 
 /**
- * Maps the existing cumulative success counter into repeatable 20-building
- * districts. The twentieth success remains visible as a completed district;
- * the twenty-first starts the next empty district with its first building.
+ * Maps the existing cumulative success counter into repeatable 15-part
+ * projects. The fifteenth success completes the current project; the
+ * sixteenth becomes the first part of the next project.
  */
 export function cityDistrictProgress(value: unknown): CityDistrictProgress {
   const totalBuilt = normalizeCityGrowthMilestones(value);

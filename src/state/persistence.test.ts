@@ -107,17 +107,17 @@ describe('SaveState migration', () => {
 
   it('preserves cumulative City growth above the former cap and maps rollover without data loss', () => {
     const current = defaultSave();
-    const atBoundary = normalizeSave({ ...current, cityGrowthMilestones: 40 });
-    const afterBoundary = normalizeSave({ ...current, cityGrowthMilestones: 41 });
+    const atBoundary = normalizeSave({ ...current, cityGrowthMilestones: 30 });
+    const afterBoundary = normalizeSave({ ...current, cityGrowthMilestones: 31 });
 
-    expect(atBoundary.cityGrowthMilestones).toBe(40);
+    expect(atBoundary.cityGrowthMilestones).toBe(30);
     expect(cityDistrictProgress(atBoundary.cityGrowthMilestones)).toMatchObject({
       completedDistricts: 2,
       districtIndex: 1,
-      builtCount: 20,
+      builtCount: 15,
       districtComplete: true,
     });
-    expect(afterBoundary.cityGrowthMilestones).toBe(41);
+    expect(afterBoundary.cityGrowthMilestones).toBe(31);
     expect(cityDistrictProgress(afterBoundary.cityGrowthMilestones)).toMatchObject({
       completedDistricts: 2,
       districtIndex: 2,

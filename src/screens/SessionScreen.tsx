@@ -320,7 +320,7 @@ export function SessionScreen({
           return;
         }
         // בעיר זו שאלה שהושלמה (אחרי ניסיון ישיר + חשיפה, או אחרי רמז).
-        // מתקדמים לשאלת העיר הבאה בלי לבנות בניין; כך 20 שאלות אינן 20 הצלחות.
+        // מתקדמים לשאלת העיר הבאה בלי לבנות חלק; רק תשובה נכונה מקדמת את הפרויקט.
         if (shouldAdvanceAfterCompletedIncorrect(a, r.newChallengeAfterIncorrect)) {
           next();
           return;

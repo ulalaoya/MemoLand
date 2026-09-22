@@ -17,8 +17,9 @@ import {
 import { sfxCorrect, sfxLevelUp, sfxSoft } from '../../audio/sfx';
 import { useStore } from '../../state/store';
 import {
+  CITY_DISTRICT_BACK_ROW_SIZE,
   CITY_DISTRICT_BUILDING_COUNT,
-  CITY_DISTRICT_ROW_SIZE,
+  CITY_DISTRICT_FRONT_ROW_SIZE,
   cityDistrictProgress,
   normalizeCityGrowthMilestones,
 } from '../../state/cityGrowth';
@@ -52,7 +53,22 @@ export type CityBuildProjectKind =
   | 'treehouse'
   | 'submarine'
   | 'space-station'
-  | 'ice-palace';
+  | 'ice-palace'
+  | 'fire-station'
+  | 'farm'
+  | 'aquarium'
+  | 'planet-base'
+  | 'dragon'
+  | 'balloon'
+  | 'crane'
+  | 'candy-factory'
+  | 'safari-jeep'
+  | 'lighthouse'
+  | 'music-stage'
+  | 'snowman'
+  | 'skate-park'
+  | 'magic-library'
+  | 'moon-rover';
 
 export interface CityBuildProject {
   kind: CityBuildProjectKind;
@@ -96,6 +112,21 @@ const CITY_BUILD_PROJECTS: readonly CityBuildProject[] = [
   { kind: 'submarine', title: 'בונים צוללת', icon: '🌊', rowCopy: 'מצוין, הצוללת מקבלת צורה!', completeCopy: 'כל הכבוד! הצוללת מוכנה לצלילה!' },
   { kind: 'space-station', title: 'בונים תחנת חלל', icon: '🛰️', rowCopy: 'מצוין, התחנה מתרחבת!', completeCopy: 'כל הכבוד! תחנת החלל הושלמה!' },
   { kind: 'ice-palace', title: 'בונים ארמון קרח', icon: '❄️', rowCopy: 'מצוין, ארמון הקרח נוצץ!', completeCopy: 'כל הכבוד! ארמון הקרח הושלם!' },
+  { kind: 'fire-station', title: 'בונים תחנת כיבוי', icon: '🚒', rowCopy: 'מצוין, תחנת הכיבוי מתקדמת!', completeCopy: 'כל הכבוד! תחנת הכיבוי מוכנה!' },
+  { kind: 'farm', title: 'בונים חווה', icon: '🚜', rowCopy: 'מצוין, החווה מתמלאת!', completeCopy: 'כל הכבוד! החווה הושלמה!' },
+  { kind: 'aquarium', title: 'בונים אקווריום', icon: '🐠', rowCopy: 'מצוין, האקווריום מתמלא!', completeCopy: 'כל הכבוד! האקווריום הושלם!' },
+  { kind: 'planet-base', title: 'בונים בסיס בכוכב', icon: '🪐', rowCopy: 'מצוין, הבסיס מתרחב!', completeCopy: 'כל הכבוד! הבסיס בכוכב הושלם!' },
+  { kind: 'dragon', title: 'בונים דרקון', icon: '🐉', rowCopy: 'מצוין, הדרקון מתעורר!', completeCopy: 'כל הכבוד! הדרקון הושלם!' },
+  { kind: 'balloon', title: 'בונים כדור פורח', icon: '🎈', rowCopy: 'מצוין, הכדור מתנפח!', completeCopy: 'כל הכבוד! הכדור הפורח מוכן!' },
+  { kind: 'crane', title: 'בונים מנוף ענק', icon: '🏗️', rowCopy: 'מצוין, המנוף מתרומם!', completeCopy: 'כל הכבוד! המנוף הענק הושלם!' },
+  { kind: 'candy-factory', title: 'בונים מפעל ממתקים', icon: '🍭', rowCopy: 'מצוין, המפעל מתמלא!', completeCopy: 'כל הכבוד! מפעל הממתקים הושלם!' },
+  { kind: 'safari-jeep', title: 'בונים ג׳יפ ספארי', icon: '🚙', rowCopy: 'מצוין, הג׳יפ מקבל צורה!', completeCopy: 'כל הכבוד! ג׳יפ הספארי מוכן!' },
+  { kind: 'lighthouse', title: 'בונים מגדלור', icon: '💡', rowCopy: 'מצוין, המגדלור עולה!', completeCopy: 'כל הכבוד! המגדלור מאיר!' },
+  { kind: 'music-stage', title: 'בונים במת מוזיקה', icon: '🎸', rowCopy: 'מצוין, הבמה מתקדמת!', completeCopy: 'כל הכבוד! במת המוזיקה מוכנה!' },
+  { kind: 'snowman', title: 'בונים איש שלג', icon: '⛄', rowCopy: 'מצוין, איש השלג גדל!', completeCopy: 'כל הכבוד! איש השלג הושלם!' },
+  { kind: 'skate-park', title: 'בונים פארק גלישה', icon: '🛹', rowCopy: 'מצוין, המסלול מתרחב!', completeCopy: 'כל הכבוד! פארק הגלישה הושלם!' },
+  { kind: 'magic-library', title: 'בונים ספרייה קסומה', icon: '📚', rowCopy: 'מצוין, הספרייה מתמלאת!', completeCopy: 'כל הכבוד! הספרייה הקסומה הושלמה!' },
+  { kind: 'moon-rover', title: 'בונים רכב ירח', icon: '🌙', rowCopy: 'מצוין, רכב הירח מתקדם!', completeCopy: 'כל הכבוד! רכב הירח מוכן!' },
 ] as const;
 
 export const CITY_BUILD_PROJECT_COUNT = CITY_BUILD_PROJECTS.length;
@@ -109,7 +140,7 @@ export function cityProjectCelebration(totalBuilt: number): string | null {
   const model = cityDistrictProgress(totalBuilt);
   const project = cityBuildProject(model.districtIndex);
   if (model.districtComplete) return project.completeCopy;
-  return model.builtCount === CITY_DISTRICT_ROW_SIZE ? project.rowCopy : null;
+  return model.builtCount === CITY_DISTRICT_BACK_ROW_SIZE ? project.rowCopy : null;
 }
 
 export function citySuccessDelay(totalBuilt: number): number {
@@ -140,12 +171,12 @@ export function cityDistrictModel(completed: number): CityDistrictModel {
   return {
     ...progress,
     backRow: Array.from(
-      { length: CITY_DISTRICT_ROW_SIZE },
+      { length: CITY_DISTRICT_BACK_ROW_SIZE },
       (_, index) => progress.builtCount >= index + 1,
     ),
     frontRow: Array.from(
-      { length: CITY_DISTRICT_ROW_SIZE },
-      (_, index) => progress.builtCount >= CITY_DISTRICT_ROW_SIZE + index + 1,
+      { length: CITY_DISTRICT_FRONT_ROW_SIZE },
+      (_, index) => progress.builtCount >= CITY_DISTRICT_BACK_ROW_SIZE + index + 1,
     ),
   };
 }
@@ -162,8 +193,8 @@ export function cityProjectDisplayModel(
       totalBuilt: normalized,
       builtCount: 0,
       districtComplete: false,
-      backRow: Array(CITY_DISTRICT_ROW_SIZE).fill(false),
-      frontRow: Array(CITY_DISTRICT_ROW_SIZE).fill(false),
+      backRow: Array(CITY_DISTRICT_BACK_ROW_SIZE).fill(false),
+      frontRow: Array(CITY_DISTRICT_FRONT_ROW_SIZE).fill(false),
     };
   }
   return cityDistrictModel(normalized);
@@ -458,7 +489,7 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
             </div>
             <div className="ml-city-game__district-row ml-city-game__district-row--front">
               {city.frontRow.map((built, index) => {
-                const buildingNumber = CITY_DISTRICT_ROW_SIZE + index + 1;
+                const buildingNumber = CITY_DISTRICT_BACK_ROW_SIZE + index + 1;
                 return (
                   <span key={index} className="ml-city-game__lot" data-row="front" data-lot={buildingNumber}>
                     <i className="ml-city-game__foundation" />

@@ -53,16 +53,16 @@ describe('persistent City visual growth', () => {
   });
 
   it('never grows from other lands and continues across district boundaries', () => {
-    store.replaceState({ ...defaultSave(), cityGrowthMilestones: 40 });
+    store.replaceState({ ...defaultSave(), cityGrowthMilestones: 30 });
     recordCity(true);
-    expect(store.getState().cityGrowthMilestones).toBe(41);
+    expect(store.getState().cityGrowthMilestones).toBe(31);
     expect(cityDistrictProgress(store.getState().cityGrowthMilestones)).toMatchObject({
       completedDistricts: 2,
       districtIndex: 2,
       builtCount: 1,
     });
     store.recordAttempt({ exerciseId: 'numbers.forward', landId: 'numbers', correct: true, rtMs: 900 });
-    expect(store.getState().cityGrowthMilestones).toBe(41);
+    expect(store.getState().cityGrowthMilestones).toBe(31);
   });
 
   it('awards the calculated coins exactly once per correct result', () => {

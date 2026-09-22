@@ -90,24 +90,24 @@ describe('City child interaction', () => {
     }));
 
     expect(html).toContain('data-city-milestones="0"');
-    expect(html.match(/class="ml-city-game__foundation"/g)).toHaveLength(20);
+    expect(html.match(/class="ml-city-game__foundation"/g)).toHaveLength(15);
     expect(html).not.toContain('class="ml-city-game__building"');
     expect(html).toContain('data-city-district="0"');
     expect(html).toContain('data-city-district-built="0"');
   });
 
-  it('builds two rows of ten and rolls into an unbounded next district', () => {
-    expect(cityModule.CITY_DISTRICT_CAPACITY).toBe(20);
+  it('builds fifteen parts and rolls into an unbounded next project', () => {
+    expect(cityModule.CITY_DISTRICT_CAPACITY).toBe(15);
     expect(cityModule.CITY_BUILDING_CONSTRUCTION).toBe('rise');
     const cases = [
       { total: 0, district: 0, back: 0, front: 0, complete: false },
       { total: 1, district: 0, back: 1, front: 0, complete: false },
-      { total: 10, district: 0, back: 10, front: 0, complete: false },
-      { total: 11, district: 0, back: 10, front: 1, complete: false },
-      { total: 20, district: 0, back: 10, front: 10, complete: true },
-      { total: 21, district: 1, back: 1, front: 0, complete: false },
-      { total: 40, district: 1, back: 10, front: 10, complete: true },
-      { total: 41, district: 2, back: 1, front: 0, complete: false },
+      { total: 8, district: 0, back: 8, front: 0, complete: false },
+      { total: 9, district: 0, back: 8, front: 1, complete: false },
+      { total: 15, district: 0, back: 8, front: 7, complete: true },
+      { total: 16, district: 1, back: 1, front: 0, complete: false },
+      { total: 30, district: 1, back: 8, front: 7, complete: true },
+      { total: 31, district: 2, back: 1, front: 0, complete: false },
     ] as const;
 
     for (const expected of cases) {
@@ -119,28 +119,28 @@ describe('City child interaction', () => {
     }
   });
 
-  it('celebrates the half-way row and gives every 20-part project a longer explicit finish', () => {
-    expect(cityModule.cityProjectCelebration(9)).toBeNull();
-    expect(cityModule.cityProjectCelebration(10)).toBe('מצוין, העיר גדלה!');
-    expect(cityModule.cityProjectCelebration(20)).toBe('כל הכבוד! סיימת לבנות את העיר!');
-    expect(cityModule.cityProjectCelebration(30)).toBe('מצוין, פסל הלגו מתקדם!');
-    expect(cityModule.cityProjectCelebration(40)).toBe('כל הכבוד! סיימת לבנות את פסל הלגו!');
-    expect(cityModule.cityProjectCelebration(50)).toBe('מצוין, מכונית המרוץ מתקדמת!');
-    expect(cityModule.cityProjectCelebration(60)).toBe('כל הכבוד! מכונית המרוץ מוכנה!');
-    expect(cityModule.citySuccessDelay(19)).toBe(920);
-    expect(cityModule.citySuccessDelay(20)).toBe(cityModule.CITY_PROJECT_COMPLETE_MS);
+  it('celebrates the second row and gives every 15-part project a longer explicit finish', () => {
+    expect(cityModule.cityProjectCelebration(7)).toBeNull();
+    expect(cityModule.cityProjectCelebration(8)).toBe('מצוין, העיר גדלה!');
+    expect(cityModule.cityProjectCelebration(15)).toBe('כל הכבוד! סיימת לבנות את העיר!');
+    expect(cityModule.cityProjectCelebration(23)).toBe('מצוין, פסל הלגו מתקדם!');
+    expect(cityModule.cityProjectCelebration(30)).toBe('כל הכבוד! סיימת לבנות את פסל הלגו!');
+    expect(cityModule.cityProjectCelebration(38)).toBe('מצוין, מכונית המרוץ מתקדמת!');
+    expect(cityModule.cityProjectCelebration(45)).toBe('כל הכבוד! מכונית המרוץ מוכנה!');
+    expect(cityModule.citySuccessDelay(14)).toBe(920);
+    expect(cityModule.citySuccessDelay(15)).toBe(cityModule.CITY_PROJECT_COMPLETE_MS);
     expect(cityModule.CITY_PROJECT_COMPLETE_MS).toBeGreaterThanOrEqual(2_500);
   });
 
-  it('cycles through fifteen distinct construction projects', () => {
+  it('cycles through thirty distinct construction projects', () => {
     const projects = Array.from(
       { length: cityModule.CITY_BUILD_PROJECT_COUNT },
       (_, index) => cityModule.cityBuildProject(index),
     );
-    expect(cityModule.CITY_BUILD_PROJECT_COUNT).toBe(15);
-    expect(new Set(projects.map((project) => project.kind))).toHaveLength(15);
-    expect(new Set(projects.map((project) => project.title))).toHaveLength(15);
-    expect(cityModule.cityBuildProject(15).kind).toBe('city');
+    expect(cityModule.CITY_BUILD_PROJECT_COUNT).toBe(30);
+    expect(new Set(projects.map((project) => project.kind))).toHaveLength(30);
+    expect(new Set(projects.map((project) => project.title))).toHaveLength(30);
+    expect(cityModule.cityBuildProject(30).kind).toBe('city');
 
     const challenge = connectionsDirect.generate(1, 17, { now: 0 });
     const renderAt = (cityGrowthMilestones: number) => {
@@ -153,32 +153,38 @@ describe('City child interaction', () => {
         onResult: () => undefined,
       }));
     };
-    const blocks = renderAt(21);
+    const blocks = renderAt(16);
     expect(blocks).toContain('data-city-project="blocks"');
     expect(blocks).toContain('בונים פסל לגו');
-    expect(blocks.match(/ml-city-game__piece/g)).toHaveLength(20);
+    expect(blocks.match(/ml-city-game__piece/g)).toHaveLength(15);
+    expect(blocks.match(/ml-city-game__piece is-built/g)).toHaveLength(1);
     expect(blocks).not.toContain('ml-city-game__building');
 
-    const raceCar = renderAt(41);
+    const raceCar = renderAt(31);
     expect(raceCar).toContain('data-city-project="race-car"');
     expect(raceCar).toContain('מרכיבים מכונית מרוץ');
-    expect(raceCar.match(/ml-city-game__piece/g)).toHaveLength(20);
+    expect(raceCar.match(/ml-city-game__piece/g)).toHaveLength(15);
   });
 
   it('keeps a completed project during congratulations, then opens the next one empty', () => {
-    const completedCity = cityModule.cityProjectDisplayModel(20, true);
+    const completedCity = cityModule.cityProjectDisplayModel(15, true);
     expect(completedCity.districtIndex).toBe(0);
-    expect(completedCity.builtCount).toBe(20);
+    expect(completedCity.builtCount).toBe(15);
     expect(completedCity.districtComplete).toBe(true);
 
-    const newBlocksProject = cityModule.cityProjectDisplayModel(20);
+    const newBlocksProject = cityModule.cityProjectDisplayModel(15);
     expect(newBlocksProject.districtIndex).toBe(1);
     expect(newBlocksProject.builtCount).toBe(0);
     expect(newBlocksProject.districtComplete).toBe(false);
     expect(newBlocksProject.backRow.filter(Boolean)).toHaveLength(0);
     expect(newBlocksProject.frontRow.filter(Boolean)).toHaveLength(0);
 
-    expect(cityModule.cityProjectDisplayModel(40).districtIndex).toBe(2);
-    expect(cityModule.cityProjectDisplayModel(40).builtCount).toBe(0);
+    const sixteenthAnswer = cityModule.cityProjectDisplayModel(16);
+    expect(sixteenthAnswer.districtIndex).toBe(1);
+    expect(sixteenthAnswer.builtCount).toBe(1);
+    expect(sixteenthAnswer.backRow.filter(Boolean)).toHaveLength(1);
+
+    expect(cityModule.cityProjectDisplayModel(30).districtIndex).toBe(2);
+    expect(cityModule.cityProjectDisplayModel(30).builtCount).toBe(0);
   });
 });
