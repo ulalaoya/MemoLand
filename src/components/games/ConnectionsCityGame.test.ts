@@ -111,6 +111,11 @@ describe('City child interaction', () => {
     expect(new Set(puzzlePaths)).toHaveLength(15);
     expect(puzzlePaths.every((path) => path.endsWith(' Z'))).toBe(true);
     expect(puzzlePaths.filter((path) => path.includes(' C '))).toHaveLength(15);
+    const firstOrder = cityModule.cityPuzzleRevealOrder(0);
+    expect(firstOrder).toEqual(cityModule.cityPuzzleRevealOrder(0));
+    expect(firstOrder).not.toEqual(Array.from({ length: 15 }, (_, index) => index + 1));
+    expect([...firstOrder].sort((a, b) => a - b)).toEqual(Array.from({ length: 15 }, (_, index) => index + 1));
+    expect(cityModule.cityPuzzleRevealOrder(1)).not.toEqual(firstOrder);
     const cases = [
       { total: 0, district: 0, back: 0, front: 0, complete: false },
       { total: 1, district: 0, back: 1, front: 0, complete: false },

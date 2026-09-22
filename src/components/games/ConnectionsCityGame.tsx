@@ -233,12 +233,30 @@ export function cityPuzzlePiecePath(index: number): string {
   return `${path} Z`;
 }
 
+export function cityPuzzleRevealOrder(projectIndex: number): number[] {
+  const normalizedIndex = Number.isFinite(projectIndex)
+    ? Math.max(0, Math.floor(projectIndex))
+    : 0;
+  const order = Array.from({ length: CITY_DISTRICT_BUILDING_COUNT }, (_, index) => index + 1);
+  let seed = Math.imul(normalizedIndex + 1, 0x9e3779b1) >>> 0;
+
+  for (let index = order.length - 1; index > 0; index -= 1) {
+    seed = (Math.imul(seed, 1_664_525) + 1_013_904_223) >>> 0;
+    const swapIndex = seed % (index + 1);
+    [order[index], order[swapIndex]] = [order[swapIndex], order[index]];
+  }
+
+  return order;
+}
+
 function ProjectPuzzle({
   project,
+  projectIndex,
   builtCount,
   justAdded,
 }: {
   project: CityBuildProject;
+  projectIndex: number;
   builtCount: number;
   justAdded: number;
 }) {
@@ -248,6 +266,8 @@ function ProjectPuzzle({
     part: index + 1,
     path: cityPuzzlePiecePath(index),
   }));
+  const revealOrder = cityPuzzleRevealOrder(projectIndex);
+  const revealPosition = new Map(revealOrder.map((part, index) => [part, index]));
 
   return (
     <svg className="ml-city-game__puzzle" viewBox="0 0 300 150" role="img" aria-label={`${project.title}, ${builtCount} מתוך 15 חלקים`}>
@@ -272,7 +292,7 @@ function ProjectPuzzle({
       </defs>
       <rect className="ml-city-game__puzzle-board" width="300" height="150" rx="18" />
       {pieces.map(({ part, path }) => {
-        const built = builtCount >= part;
+        const built = (revealPosition.get(part) ?? CITY_DISTRICT_BUILDING_COUNT) < builtCount;
         return (
           <g
             key={part}
@@ -403,7 +423,9 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
   const city = cityProjectDisplayModel(displayedMilestones, completingProject);
   const project = cityBuildProject(city.districtIndex);
   const celebration = phase === 'success' ? cityProjectCelebration(displayedMilestones) : null;
-  const justAddedPart = phase === 'success' ? city.builtCount : 0;
+  const justAddedPart = phase === 'success'
+    ? cityPuzzleRevealOrder(city.districtIndex)[city.builtCount - 1] ?? 0
+    : 0;
   const expectedNumber = stimulus.answer;
   const maxDigits = String(expectedNumber).length;
   const effectiveConnection = isUsefulHintConnection(stimulus.factId, stimulus.connection)
@@ -532,7 +554,12 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
       <div className={`ml-city-game__scene${city.districtComplete ? ' is-district-complete' : ''}`} aria-hidden>
         <div className="ml-city-game__sun" />
         <div className="ml-city-game__district-label">{project.icon} {project.title}</div>
-        <ProjectPuzzle project={project} builtCount={city.builtCount} justAdded={justAddedPart} />
+        <ProjectPuzzle
+          project={project}
+          projectIndex={city.districtIndex}
+          builtCount={city.builtCount}
+          justAdded={justAddedPart}
+        />
         {phase === 'success' && city.districtComplete ? (
           <div className="ml-city-game__project-complete">
             <span>{project.icon}</span>
