@@ -28,6 +28,7 @@ import {
   setDailyJourneyActivity,
   setDailyJourneyPlan,
   setDailyJourneyPoints,
+  updateSettings,
   useStore,
 } from '../state/store';
 import { advanceOnSuccess, regressOnFailure } from '../scheduler/spacedRepetition';
@@ -427,6 +428,16 @@ export function SessionScreen({
           <span className="ml-session-hud__guide">
             <Guide kind={guideKindFor(meta.guide)} size={36} />
           </span>
+
+          <button
+            type="button"
+            className="ml-session-hud__mute ml-pressable"
+            aria-label={settings.soundEffects ? 'השתק צלילים' : 'הפעל צלילים'}
+            aria-pressed={!settings.soundEffects}
+            onClick={() => updateSettings({ soundEffects: !settings.soundEffects })}
+          >
+            <span aria-hidden>{settings.soundEffects ? '🔊' : '🔇'}</span>
+          </button>
         </div>
 
         <div className="ml-session-hud__meta-row">

@@ -37,7 +37,22 @@ export const CITY_PROJECT_COMPLETE_MS = 2_600;
 export const CITY_DISTRICT_CAPACITY = CITY_DISTRICT_BUILDING_COUNT;
 export const CITY_BUILDING_CONSTRUCTION = 'rise';
 
-export type CityBuildProjectKind = 'city' | 'blocks' | 'race-car';
+export type CityBuildProjectKind =
+  | 'city'
+  | 'blocks'
+  | 'race-car'
+  | 'rocket'
+  | 'castle'
+  | 'pirate-ship'
+  | 'robot'
+  | 'dinosaur'
+  | 'airplane'
+  | 'train'
+  | 'amusement-park'
+  | 'treehouse'
+  | 'submarine'
+  | 'space-station'
+  | 'ice-palace';
 
 export interface CityBuildProject {
   kind: CityBuildProjectKind;
@@ -57,10 +72,10 @@ const CITY_BUILD_PROJECTS: readonly CityBuildProject[] = [
   },
   {
     kind: 'blocks',
-    title: 'בונים פסל מלבני משחק',
+    title: 'בונים פסל לגו',
     icon: '🧱',
-    rowCopy: 'מצוין, פסל הלבנים מתקדם!',
-    completeCopy: 'כל הכבוד! סיימת לבנות את פסל הלבנים!',
+    rowCopy: 'מצוין, פסל הלגו מתקדם!',
+    completeCopy: 'כל הכבוד! סיימת לבנות את פסל הלגו!',
   },
   {
     kind: 'race-car',
@@ -69,7 +84,21 @@ const CITY_BUILD_PROJECTS: readonly CityBuildProject[] = [
     rowCopy: 'מצוין, מכונית המרוץ מתקדמת!',
     completeCopy: 'כל הכבוד! מכונית המרוץ מוכנה!',
   },
+  { kind: 'rocket', title: 'בונים טיל לחלל', icon: '🚀', rowCopy: 'מצוין, הטיל כמעט מוכן!', completeCopy: 'כל הכבוד! הטיל מוכן לשיגור!' },
+  { kind: 'castle', title: 'בונים טירה', icon: '🏰', rowCopy: 'מצוין, הטירה מתרוממת!', completeCopy: 'כל הכבוד! הטירה הושלמה!' },
+  { kind: 'pirate-ship', title: 'בונים ספינת פיראטים', icon: '⛵', rowCopy: 'מצוין, הספינה מקבלת צורה!', completeCopy: 'כל הכבוד! הספינה מוכנה להפלגה!' },
+  { kind: 'robot', title: 'מרכיבים רובוט', icon: '🤖', rowCopy: 'מצוין, הרובוט מתעורר!', completeCopy: 'כל הכבוד! הרובוט מוכן לפעולה!' },
+  { kind: 'dinosaur', title: 'בונים דינוזאור', icon: '🦕', rowCopy: 'מצוין, הדינוזאור גדל!', completeCopy: 'כל הכבוד! הדינוזאור הושלם!' },
+  { kind: 'airplane', title: 'בונים מטוס', icon: '✈️', rowCopy: 'מצוין, המטוס כמעט מוכן!', completeCopy: 'כל הכבוד! המטוס מוכן להמראה!' },
+  { kind: 'train', title: 'בונים רכבת', icon: '🚂', rowCopy: 'מצוין, הרכבת מתארכת!', completeCopy: 'כל הכבוד! הרכבת מוכנה לנסיעה!' },
+  { kind: 'amusement-park', title: 'בונים פארק שעשועים', icon: '🎡', rowCopy: 'מצוין, הפארק מתמלא!', completeCopy: 'כל הכבוד! פארק השעשועים הושלם!' },
+  { kind: 'treehouse', title: 'בונים בית על העץ', icon: '🌳', rowCopy: 'מצוין, בית העץ מתרומם!', completeCopy: 'כל הכבוד! בית העץ הושלם!' },
+  { kind: 'submarine', title: 'בונים צוללת', icon: '🌊', rowCopy: 'מצוין, הצוללת מקבלת צורה!', completeCopy: 'כל הכבוד! הצוללת מוכנה לצלילה!' },
+  { kind: 'space-station', title: 'בונים תחנת חלל', icon: '🛰️', rowCopy: 'מצוין, התחנה מתרחבת!', completeCopy: 'כל הכבוד! תחנת החלל הושלמה!' },
+  { kind: 'ice-palace', title: 'בונים ארמון קרח', icon: '❄️', rowCopy: 'מצוין, ארמון הקרח נוצץ!', completeCopy: 'כל הכבוד! ארמון הקרח הושלם!' },
 ] as const;
+
+export const CITY_BUILD_PROJECT_COUNT = CITY_BUILD_PROJECTS.length;
 
 export function cityBuildProject(projectIndex: number): CityBuildProject {
   return CITY_BUILD_PROJECTS[projectIndex % CITY_BUILD_PROJECTS.length];
@@ -121,12 +150,33 @@ export function cityDistrictModel(completed: number): CityDistrictModel {
   };
 }
 
+export function cityProjectDisplayModel(
+  completed: number,
+  preserveCompletedProject = false,
+): CityDistrictModel {
+  const normalized = normalizeCityGrowthMilestones(completed);
+  if (!preserveCompletedProject && normalized > 0 && normalized % CITY_DISTRICT_CAPACITY === 0) {
+    const nextProject = cityDistrictModel(normalized + 1);
+    return {
+      ...nextProject,
+      totalBuilt: normalized,
+      builtCount: 0,
+      districtComplete: false,
+      backRow: Array(CITY_DISTRICT_ROW_SIZE).fill(false),
+      frontRow: Array(CITY_DISTRICT_ROW_SIZE).fill(false),
+    };
+  }
+  return cityDistrictModel(normalized);
+}
+
 function ProjectPieces({
   kind,
+  icon,
   builtCount,
   justAdded,
 }: {
   kind: Exclude<CityBuildProjectKind, 'city'>;
+  icon: string;
   builtCount: number;
   justAdded: number;
 }) {
@@ -143,6 +193,7 @@ function ProjectPieces({
           />
         );
       })}
+      <span className="ml-city-game__blueprint" aria-hidden>{icon}</span>
     </div>
   );
 }
@@ -252,7 +303,9 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
   const displayedMilestones = normalizeCityGrowthMilestones(
     persistedMilestones + (phase === 'success' ? 1 : 0),
   );
-  const city = cityDistrictModel(displayedMilestones);
+  const completingProject = phase === 'success'
+    && cityDistrictProgress(displayedMilestones).districtComplete;
+  const city = cityProjectDisplayModel(displayedMilestones, completingProject);
   const project = cityBuildProject(city.districtIndex);
   const celebration = phase === 'success' ? cityProjectCelebration(displayedMilestones) : null;
   const justAddedBuilding = phase === 'success' ? city.builtCount : 0;
@@ -426,7 +479,7 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
             <div className="ml-city-game__road"><i /><i /><i /><i /></div>
           </>
         ) : (
-          <ProjectPieces kind={project.kind} builtCount={city.builtCount} justAdded={justAddedBuilding} />
+          <ProjectPieces kind={project.kind} icon={project.icon} builtCount={city.builtCount} justAdded={justAddedBuilding} />
         )}
         {phase === 'success' && city.districtComplete ? (
           <div className="ml-city-game__project-complete">
@@ -476,8 +529,8 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
             {feedback ? <div className="ml-city-game__feedback" role="status">{feedback}</div> : null}
             {phase === 'answering' ? (
               <>
-                <div className="ml-city-game__digit-yard" dir="ltr">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((digit) => (
+                <div className="ml-city-game__calculator" dir="ltr" aria-label="מקלדת מחשבון">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
                     <button
                       key={digit}
                       type="button"
@@ -487,11 +540,16 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
                       {digit}
                     </button>
                   ))}
-                </div>
-                <div className="ml-city-game__actions">
-                  <button type="button" className="ml-city-game__erase" onClick={eraseDigit} disabled={digits.length === 0}>
-                    מחק
+                  <button
+                    type="button"
+                    className="ml-city-game__backspace"
+                    onClick={eraseDigit}
+                    disabled={digits.length === 0}
+                    aria-label="מחיקת ספרה אחרונה"
+                  >
+                    <span aria-hidden>⌫</span>
                   </button>
+                  <button type="button" onClick={() => enterDigit(0)} aria-label="ספרה 0">0</button>
                   <button type="button" className="ml-city-game__build" onClick={submitDigits} disabled={digits.length === 0}>
                     בדיקה
                   </button>

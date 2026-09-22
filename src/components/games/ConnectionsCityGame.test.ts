@@ -36,7 +36,10 @@ describe('City child interaction', () => {
     expect(html).not.toContain('ml-city-game__hint-panel');
     expect(html).not.toContain(`= ${challenge.answer}`);
     expect(html).not.toContain('עוד רמז');
-    expect(html.indexOf('ml-city-game__help-zone')).toBeGreaterThan(html.indexOf('ml-city-game__actions'));
+    expect(html).toContain('aria-label="מקלדת מחשבון"');
+    expect(html).toContain('aria-label="מחיקת ספרה אחרונה"');
+    expect(html).not.toContain('ml-city-game__actions');
+    expect(html.indexOf('ml-city-game__help-zone')).toBeGreaterThan(html.indexOf('ml-city-game__calculator'));
     for (let digit = 0; digit <= 9; digit++) {
       expect(html).toContain(`aria-label="ספרה ${digit}"`);
     }
@@ -120,8 +123,8 @@ describe('City child interaction', () => {
     expect(cityModule.cityProjectCelebration(9)).toBeNull();
     expect(cityModule.cityProjectCelebration(10)).toBe('מצוין, העיר גדלה!');
     expect(cityModule.cityProjectCelebration(20)).toBe('כל הכבוד! סיימת לבנות את העיר!');
-    expect(cityModule.cityProjectCelebration(30)).toBe('מצוין, פסל הלבנים מתקדם!');
-    expect(cityModule.cityProjectCelebration(40)).toBe('כל הכבוד! סיימת לבנות את פסל הלבנים!');
+    expect(cityModule.cityProjectCelebration(30)).toBe('מצוין, פסל הלגו מתקדם!');
+    expect(cityModule.cityProjectCelebration(40)).toBe('כל הכבוד! סיימת לבנות את פסל הלגו!');
     expect(cityModule.cityProjectCelebration(50)).toBe('מצוין, מכונית המרוץ מתקדמת!');
     expect(cityModule.cityProjectCelebration(60)).toBe('כל הכבוד! מכונית המרוץ מוכנה!');
     expect(cityModule.citySuccessDelay(19)).toBe(920);
@@ -129,9 +132,15 @@ describe('City child interaction', () => {
     expect(cityModule.CITY_PROJECT_COMPLETE_MS).toBeGreaterThanOrEqual(2_500);
   });
 
-  it('switches from a city to a block sculpture and then a race car', () => {
-    expect([0, 1, 2, 3].map((index) => cityModule.cityBuildProject(index).kind))
-      .toEqual(['city', 'blocks', 'race-car', 'city']);
+  it('cycles through fifteen distinct construction projects', () => {
+    const projects = Array.from(
+      { length: cityModule.CITY_BUILD_PROJECT_COUNT },
+      (_, index) => cityModule.cityBuildProject(index),
+    );
+    expect(cityModule.CITY_BUILD_PROJECT_COUNT).toBe(15);
+    expect(new Set(projects.map((project) => project.kind))).toHaveLength(15);
+    expect(new Set(projects.map((project) => project.title))).toHaveLength(15);
+    expect(cityModule.cityBuildProject(15).kind).toBe('city');
 
     const challenge = connectionsDirect.generate(1, 17, { now: 0 });
     const renderAt = (cityGrowthMilestones: number) => {
@@ -146,7 +155,7 @@ describe('City child interaction', () => {
     };
     const blocks = renderAt(21);
     expect(blocks).toContain('data-city-project="blocks"');
-    expect(blocks).toContain('בונים פסל מלבני משחק');
+    expect(blocks).toContain('בונים פסל לגו');
     expect(blocks.match(/ml-city-game__piece/g)).toHaveLength(20);
     expect(blocks).not.toContain('ml-city-game__building');
 
@@ -154,5 +163,22 @@ describe('City child interaction', () => {
     expect(raceCar).toContain('data-city-project="race-car"');
     expect(raceCar).toContain('מרכיבים מכונית מרוץ');
     expect(raceCar.match(/ml-city-game__piece/g)).toHaveLength(20);
+  });
+
+  it('keeps a completed project during congratulations, then opens the next one empty', () => {
+    const completedCity = cityModule.cityProjectDisplayModel(20, true);
+    expect(completedCity.districtIndex).toBe(0);
+    expect(completedCity.builtCount).toBe(20);
+    expect(completedCity.districtComplete).toBe(true);
+
+    const newBlocksProject = cityModule.cityProjectDisplayModel(20);
+    expect(newBlocksProject.districtIndex).toBe(1);
+    expect(newBlocksProject.builtCount).toBe(0);
+    expect(newBlocksProject.districtComplete).toBe(false);
+    expect(newBlocksProject.backRow.filter(Boolean)).toHaveLength(0);
+    expect(newBlocksProject.frontRow.filter(Boolean)).toHaveLength(0);
+
+    expect(cityModule.cityProjectDisplayModel(40).districtIndex).toBe(2);
+    expect(cityModule.cityProjectDisplayModel(40).builtCount).toBe(0);
   });
 });

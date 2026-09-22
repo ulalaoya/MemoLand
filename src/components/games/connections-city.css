@@ -277,6 +277,77 @@
 .ml-city-game__assembly--race-car .ml-city-game__piece:nth-child(19) { left: 35px; }
 .ml-city-game__assembly--race-car .ml-city-game__piece:nth-child(20) { right: 35px; }
 
+.ml-city-game__assembly:not(.ml-city-game__assembly--blocks):not(.ml-city-game__assembly--race-car) {
+  --project-main: #5b8ff0;
+  --project-alt: #9dd9ff;
+  inset: auto 48px 25px 20px;
+  height: 138px;
+  padding: 17px 24px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 3px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--project-alt) 24%, rgba(255, 255, 255, .72));
+  border: 3px solid color-mix(in srgb, var(--project-main) 70%, #243247);
+  border-radius: 26px;
+  box-shadow: 0 7px 0 rgba(36, 50, 71, .17), inset 0 0 22px rgba(255, 255, 255, .58);
+}
+
+.ml-city-game__assembly:not(.ml-city-game__assembly--blocks):not(.ml-city-game__assembly--race-car) .ml-city-game__piece {
+  z-index: 2;
+  border-color: color-mix(in srgb, var(--project-main) 76%, #243247);
+  border-radius: 5px;
+  background: var(--project-main);
+  box-shadow: inset 0 3px rgba(255, 255, 255, .34);
+}
+
+.ml-city-game__assembly:not(.ml-city-game__assembly--blocks):not(.ml-city-game__assembly--race-car) .ml-city-game__piece:nth-child(even) {
+  background: var(--project-alt);
+}
+
+.ml-city-game__blueprint {
+  position: absolute;
+  z-index: 1;
+  inset: 50% auto auto 50%;
+  font-size: 5.6rem;
+  line-height: 1;
+  opacity: .3;
+  filter: grayscale(.2) drop-shadow(0 3px 0 rgba(36, 50, 71, .14));
+  transform: translate(-50%, -50%);
+}
+
+[data-city-project='rocket'] { --project-main: #ef5b5b; --project-alt: #65c8ff; }
+[data-city-project='rocket'] .ml-city-game__assembly { clip-path: polygon(50% 0, 82% 25%, 91% 78%, 67% 100%, 33% 100%, 9% 78%, 18% 25%); }
+[data-city-project='castle'] { --project-main: #8d6ed9; --project-alt: #ffd45f; }
+[data-city-project='castle'] .ml-city-game__assembly { border-radius: 4px 4px 20px 20px; }
+[data-city-project='pirate-ship'] { --project-main: #a76a3d; --project-alt: #f1cf88; }
+[data-city-project='pirate-ship'] .ml-city-game__assembly { inset-inline: 30px 58px; height: 108px; border-radius: 8px 8px 60% 60%; transform: skewX(-5deg); }
+[data-city-project='robot'] { --project-main: #697789; --project-alt: #59d7c9; }
+[data-city-project='robot'] .ml-city-game__assembly { inset-inline: 62px 72px; border-radius: 13px; }
+[data-city-project='dinosaur'] { --project-main: #53a95e; --project-alt: #b5e36d; }
+[data-city-project='dinosaur'] .ml-city-game__assembly { border-radius: 65% 38% 48% 28%; transform: rotate(-2deg); }
+[data-city-project='airplane'] { --project-main: #3f8fd4; --project-alt: #d7efff; }
+[data-city-project='airplane'] .ml-city-game__assembly { inset-inline: 12px 42px; height: 92px; clip-path: polygon(0 44%, 40% 34%, 53% 0, 64% 34%, 100% 45%, 100% 66%, 63% 58%, 51% 100%, 40% 58%, 0 66%); }
+[data-city-project='train'] { --project-main: #e44d48; --project-alt: #f4bd39; }
+[data-city-project='train'] .ml-city-game__assembly { inset-inline: 10px 42px; height: 92px; border-radius: 16px 46px 12px 12px; }
+[data-city-project='amusement-park'] { --project-main: #dd5eb1; --project-alt: #59c9ef; }
+[data-city-project='amusement-park'] .ml-city-game__assembly { inset-inline: 76px 86px; border-radius: 50%; }
+[data-city-project='treehouse'] { --project-main: #8a5e3c; --project-alt: #68bd5f; }
+[data-city-project='treehouse'] .ml-city-game__assembly { inset-inline: 56px 66px; border-radius: 42% 42% 10px 10px; box-shadow: 0 18px 0 -7px #795135, 0 7px 0 rgba(36, 50, 71, .17); }
+[data-city-project='submarine'] { --project-main: #e7aa29; --project-alt: #55b8d5; }
+[data-city-project='submarine'] .ml-city-game__assembly { inset-inline: 12px 42px; height: 94px; border-radius: 52% 44% 44% 52%; }
+[data-city-project='space-station'] { --project-main: #6c71c9; --project-alt: #d3d6ff; }
+[data-city-project='space-station'] .ml-city-game__assembly { inset-inline: 60px 70px; border-radius: 50%; transform: rotate(4deg); }
+[data-city-project='ice-palace'] { --project-main: #66bfea; --project-alt: #e6f8ff; }
+[data-city-project='ice-palace'] .ml-city-game__assembly { clip-path: polygon(0 100%, 8% 40%, 22% 66%, 35% 8%, 49% 58%, 65% 0, 77% 61%, 91% 30%, 100% 100%); }
+
+[data-city-project='rocket'] .ml-city-game__scene,
+[data-city-project='space-station'] .ml-city-game__scene { background: linear-gradient(180deg, rgba(31, 43, 91, .72), rgba(116, 99, 169, .42)); }
+[data-city-project='pirate-ship'] .ml-city-game__scene,
+[data-city-project='submarine'] .ml-city-game__scene { background: linear-gradient(180deg, rgba(131, 220, 245, .24), rgba(31, 147, 183, .5)); }
+[data-city-project='ice-palace'] .ml-city-game__scene { background: linear-gradient(180deg, rgba(221, 249, 255, .8), rgba(124, 204, 239, .42)); }
+
 .ml-city-game__piece.is-just-built {
   animation: ml-city-piece-arrive 760ms var(--ml-ease-spring) both;
 }
@@ -372,15 +443,15 @@
 .ml-city-game__answer.is-built { animation: ml-city-block-built 760ms var(--ml-ease-spring) both; }
 .ml-city-game__feedback { margin-top: -4px; color: #8a4a2e; font-family: var(--ml-font-heading); font-weight: 800; font-size: .88rem; }
 
-.ml-city-game__digit-yard {
-  width: min(100%, 358px);
+.ml-city-game__calculator {
+  width: min(100%, 292px);
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 7px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
 }
-.ml-city-game__digit-yard button {
+.ml-city-game__calculator button {
   min-width: 0;
-  min-height: 47px;
+  min-height: 43px;
   color: #243247;
   background: linear-gradient(#fff, #e7faf7);
   border: 2px solid #62bdb8;
@@ -390,24 +461,18 @@
   font-size: 1.5rem;
   cursor: pointer;
 }
-.ml-city-game__digit-yard button:active { transform: translateY(3px); box-shadow: 0 1px 0 #368f8c; }
+.ml-city-game__calculator button:active { transform: translateY(3px); box-shadow: 0 1px 0 #368f8c; }
+.ml-city-game__calculator button:disabled { opacity: .45; cursor: default; }
+.ml-city-game__calculator .ml-city-game__backspace { color: #743f25; background: #fff3df; border-color: #e6a96a; box-shadow: 0 4px 0 #b7763c; font-size: 1.65rem; }
+.ml-city-game__calculator .ml-city-game__build { color: #fff; background: #138f91; border-color: #fff; box-shadow: 0 4px 0 #0d686c; font-family: var(--ml-font-heading); font-size: 1rem; }
 
-.ml-city-game__actions {
-  width: min(100%, 358px);
-  display: grid;
-  grid-template-columns: .72fr 1.6fr;
-  gap: 8px;
-}
-.ml-city-game__actions button, .ml-city-game__help {
+.ml-city-game__help {
   min-height: 43px;
   border-radius: 13px;
   font-family: var(--ml-font-heading);
   font-weight: 800;
   cursor: pointer;
 }
-.ml-city-game__erase { color: #40536c; background: #fff; border: 2px solid #b8c7d6; }
-.ml-city-game__build { color: #fff; background: #138f91; border: 2px solid #fff; box-shadow: 0 4px 0 #0d686c; }
-.ml-city-game__actions button:disabled { opacity: .45; cursor: default; }
 
 .ml-city-game__help-zone {
   width: min(100%, 358px);
@@ -515,8 +580,8 @@
   .ml-city-game__memo { --ml-memo-size: 68px; }
   .ml-city-game__worksite { padding-inline: 9px; gap: 6px; }
   .ml-city-game__equation { font-size: 3rem; }
-  .ml-city-game__digit-yard { gap: 5px; }
-  .ml-city-game__digit-yard button { min-height: 44px; }
+  .ml-city-game__calculator { gap: 5px; }
+  .ml-city-game__calculator button { min-height: 41px; }
   .ml-city-game__help-zone { margin-top: 8px; padding-top: 8px; }
   .ml-city-game__hint-step { grid-template-columns: 55px 1fr; gap: 3px; padding-inline: 4px; font-size: .76rem; }
 }
@@ -529,7 +594,7 @@
   .ml-city-game__equation { font-size: clamp(3rem, 13vw, 3.5rem); }
   .ml-city-game__answer { min-height: 48px; }
   .ml-city-game__answer-brick { width: 44px; height: 46px; font-size: 1.65rem; }
-  .ml-city-game__digit-yard button { min-height: 42px; }
+  .ml-city-game__calculator button { min-height: 38px; }
   .ml-city-game__help-zone { margin-top: 6px; padding-top: 6px; }
 }
 

@@ -61,6 +61,24 @@
 
 .ml-session-hud__guide > div { box-shadow: 0 2px 0 rgba(36, 50, 71, 0.18) !important; }
 
+.ml-session-hud__mute {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: var(--ml-navy);
+  background: rgba(255, 255, 255, .94);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 3px 0 rgba(36, 50, 71, .24);
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.ml-session-hud__mute[aria-pressed='true'] { background: #eef2f5; filter: grayscale(.25); }
+
 .ml-session-hud__meta-row {
   margin-top: 7px;
   min-width: 0;
@@ -368,6 +386,7 @@
   .ml-session-hud__meta-row { gap: 5px; }
   .ml-session-hud__world { max-width: 42vw; padding-inline: 9px; }
   .ml-session-hud__hearts { gap: 1px; }
+  .ml-session-hud__mute { width: 36px; height: 36px; flex-basis: 36px; }
   .ml-session-screen--echo .ml-session-hud__world { font-size: 0.7rem; }
   .ml-session-screen--numbers .ml-session-hud__world { font-size: 0.7rem; }
   .ml-session-screen--connections .ml-session-hud__world { font-size: 0.7rem; }
