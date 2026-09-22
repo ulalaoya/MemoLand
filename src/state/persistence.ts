@@ -83,7 +83,12 @@ export function loadRegistry(): ProfileRegistry {
     const raw = localStorage.getItem(REGISTRY_KEY);
     if (raw) {
       const reg = JSON.parse(raw) as ProfileRegistry;
-      if (reg && Array.isArray(reg.profiles)) return reg;
+      if (reg && Array.isArray(reg.profiles)) {
+        // A browser/device transfer can restore site storage. Preserve the
+        // profiles and progress, but never assume the current person is the
+        // child who happened to be selected on the previous installation.
+        return { ...reg, activeId: null };
+      }
     }
   } catch {
     /* מתעלמים */

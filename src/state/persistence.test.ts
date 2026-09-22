@@ -1,10 +1,36 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LAND_ORDER } from '../config/lands';
-import { SAVE_VERSION, defaultSave, normalizeSave } from './persistence';
+import { SAVE_VERSION, defaultSave, loadRegistry, normalizeSave } from './persistence';
 import { cityDistrictProgress } from './cityGrowth';
 import { defaultMultiplicationFactProgress } from './multiplicationProgress';
 
 describe('SaveState migration', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('starts with no child profile when this browser has no saved MemoLand data', () => {
+    const values = new Map<string, string>();
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+    });
+    expect(loadRegistry()).toEqual({ activeId: null, profiles: [] });
+    expect(values.size).toBe(0);
+  });
+
+  it('preserves restored profiles but never auto-selects a child on app startup', () => {
+    const stored = {
+      activeId: 'child-1',
+      profiles: [{ id: 'child-1', name: 'ילד שמור', avatar: 'memo', createdAt: 1 }],
+    };
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => key === 'memoland.profiles.v1' ? JSON.stringify(stored) : null,
+      setItem: () => undefined,
+      removeItem: () => undefined,
+    });
+    expect(loadRegistry()).toEqual({ ...stored, activeId: null });
+  });
+
   it('preserves learning/profile data while initializing missing visual City growth to zero', () => {
     const current = defaultSave();
     const oldLands = Object.fromEntries(

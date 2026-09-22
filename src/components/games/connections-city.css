@@ -137,58 +137,6 @@
 .ml-city-game__district-row--back .ml-city-game__lot:nth-child(2n) .ml-city-game__building { height: 44px; }
 .ml-city-game__district-row--back .ml-city-game__lot:nth-child(3n) .ml-city-game__building { height: 55px; }
 
-/* Each pair of rows builds a new kind of neighborhood, not a recolored copy. */
-[data-city-style='gardens'] .ml-city-game__building {
-  background: linear-gradient(135deg, #d2b3fa, #8854ba);
-  border-color: #584079;
-  border-radius: 13px 13px 2px 2px;
-}
-[data-city-style='gardens'] .ml-city-game__lot:nth-child(2n) .ml-city-game__building {
-  background: linear-gradient(135deg, #ffc8b0, #d97570);
-}
-[data-city-style='gardens'] .ml-city-game__building::before {
-  content: '';
-  position: absolute;
-  inset: -5px -2px auto;
-  height: 9px;
-  background: #458358;
-  border-radius: 8px;
-}
-[data-city-style='towers'] .ml-city-game__building {
-  background: repeating-linear-gradient(0deg, #34679d 0 10px, #93d9ec 10px 15px);
-  border-color: #294665;
-  border-radius: 2px;
-}
-[data-city-style='towers'] .ml-city-game__lot:nth-child(2n) .ml-city-game__building {
-  background: repeating-linear-gradient(0deg, #6d518f 0 10px, #d3c7ee 10px 15px);
-}
-[data-city-style='towers'] .ml-city-game__building::before {
-  content: '';
-  position: absolute;
-  width: 2px;
-  height: 9px;
-  background: #294665;
-  top: -10px;
-  left: 50%;
-}
-[data-city-style='harbor'] .ml-city-game__building {
-  background: linear-gradient(135deg, #ffb47d, #cc6652);
-  border-color: #814842;
-  border-radius: 2px;
-}
-[data-city-style='harbor'] .ml-city-game__lot:nth-child(2n) .ml-city-game__building {
-  background: linear-gradient(135deg, #96ded9, #38828f);
-}
-[data-city-style='harbor'] .ml-city-game__building::before {
-  content: '';
-  position: absolute;
-  inset: -9px -3px auto;
-  height: 10px;
-  background: #465f83;
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-}
-[data-city-style='harbor'] .ml-city-game__window { border-radius: 50%; }
-
 .ml-city-game__building[data-just-built='true'] {
   animation: ml-city-assemble 760ms var(--ml-ease-spring) both;
 }
@@ -221,6 +169,138 @@
   border-top: 3px solid rgba(255, 255, 255, .94);
   border-radius: 2px;
 }
+
+.ml-city-game__assembly {
+  position: absolute;
+  z-index: 2;
+  direction: ltr;
+}
+
+.ml-city-game__assembly--blocks {
+  inset: auto 58px 24px 24px;
+  height: 138px;
+  padding: 10px 12px 6px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(28px, 1fr));
+  grid-template-rows: repeat(4, 1fr);
+  gap: 4px;
+  align-content: end;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .3), rgba(74, 130, 83, .13));
+  border: 2px dashed rgba(64, 83, 108, .25);
+  border-radius: 18px 18px 4px 4px;
+}
+
+.ml-city-game__piece {
+  position: relative;
+  opacity: .13;
+  border: 2px dashed #6e7b8c;
+  transition: opacity .2s ease;
+}
+
+.ml-city-game__piece.is-built {
+  opacity: 1;
+  border-style: solid;
+}
+
+.ml-city-game__assembly--blocks .ml-city-game__piece {
+  border-color: #8f3a35;
+  border-radius: 5px;
+  background: #ed5a4f;
+  box-shadow: inset 0 -5px rgba(104, 32, 28, .2), 0 3px 0 rgba(36, 50, 71, .18);
+}
+
+.ml-city-game__assembly--blocks .ml-city-game__piece::before,
+.ml-city-game__assembly--blocks .ml-city-game__piece::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  width: 8px;
+  height: 5px;
+  border: 1px solid rgba(36, 50, 71, .3);
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+  background: inherit;
+}
+.ml-city-game__assembly--blocks .ml-city-game__piece::before { left: 7px; }
+.ml-city-game__assembly--blocks .ml-city-game__piece::after { right: 7px; }
+.ml-city-game__assembly--blocks .ml-city-game__piece:nth-child(4n + 2) { background: #ffd03f; border-color: #b58116; }
+.ml-city-game__assembly--blocks .ml-city-game__piece:nth-child(4n + 3) { background: #3d9af5; border-color: #2564a1; }
+.ml-city-game__assembly--blocks .ml-city-game__piece:nth-child(4n) { background: #57bd70; border-color: #337b44; }
+
+.ml-city-game__assembly--race-car {
+  inset: auto 57px 42px 19px;
+  height: 100px;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: 38px 32px;
+  gap: 3px;
+  align-content: end;
+}
+
+.ml-city-game__assembly--race-car::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: auto -4px -14px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(36, 50, 71, .17);
+}
+
+.ml-city-game__assembly--race-car .ml-city-game__piece {
+  grid-row: 2;
+  border-color: #8f302d;
+  border-radius: 5px 5px 2px 2px;
+  background: linear-gradient(#ff6a59, #d83d3c);
+  box-shadow: inset 0 4px rgba(255, 255, 255, .26);
+}
+
+.ml-city-game__assembly--race-car .ml-city-game__piece:nth-child(n + 11):nth-child(-n + 18) {
+  grid-row: 1;
+  transform: translateX(30px);
+  background: linear-gradient(#8de0ff, #3789c6);
+  border-color: #285f88;
+  border-radius: 9px 9px 2px 2px;
+}
+
+.ml-city-game__assembly--race-car .ml-city-game__piece:nth-child(19),
+.ml-city-game__assembly--race-car .ml-city-game__piece:nth-child(20) {
+  position: absolute;
+  bottom: -13px;
+  width: 34px;
+  height: 34px;
+  border: 7px solid #293445;
+  border-radius: 50%;
+  background: #ffc928;
+  box-shadow: inset 0 0 0 3px #fff;
+}
+.ml-city-game__assembly--race-car .ml-city-game__piece:nth-child(19) { left: 35px; }
+.ml-city-game__assembly--race-car .ml-city-game__piece:nth-child(20) { right: 35px; }
+
+.ml-city-game__piece.is-just-built {
+  animation: ml-city-piece-arrive 760ms var(--ml-ease-spring) both;
+}
+
+.ml-city-game__project-complete {
+  position: absolute;
+  z-index: 8;
+  inset: 42px 42px 30px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: #17364d;
+  background: rgba(255, 255, 255, .94);
+  border: 4px solid #ffc928;
+  border-radius: 22px;
+  box-shadow: 0 8px 0 rgba(101, 72, 11, .25);
+  text-align: center;
+  animation: pop .38s var(--ml-ease-spring) both;
+}
+.ml-city-game__project-complete span { font-size: 2.15rem; }
+.ml-city-game__project-complete strong { font-family: var(--ml-font-heading); font-size: 1.05rem; line-height: 1.2; }
 
 .ml-city-game__memo { --ml-memo-size: 76px; z-index: 4; right: 2px; bottom: 5px; }
 
@@ -389,6 +469,14 @@
 }
 .ml-city-game__reveal { color: #67430a; background: #fff2a9; border: 2px solid #ffc928; }
 .ml-city-game__success { color: #fff; background: #138f91; border: 2px solid #fff; box-shadow: 0 4px 0 #0d686c; animation: pop .3s ease; }
+.ml-city-game__success.is-project-complete {
+  max-width: 340px;
+  color: #17364d;
+  background: #fff4b5;
+  border: 3px solid #ffc928;
+  box-shadow: 0 5px 0 #b27b17;
+  font-size: 1rem;
+}
 
 @keyframes ml-city-block-built {
   0% { transform: scale(.86) translateY(7px); }
@@ -400,6 +488,12 @@
   0% { clip-path: inset(100% 0 0); transform: translateY(12px) scaleY(.2); }
   65% { clip-path: inset(0); transform: translateY(-3px) scaleY(1.04); }
   100% { clip-path: inset(0); transform: translateY(0) scaleY(1); }
+}
+
+@keyframes ml-city-piece-arrive {
+  0% { opacity: 0; transform: translateY(-35px) rotate(-9deg) scale(.65); }
+  65% { opacity: 1; transform: translateY(3px) rotate(2deg) scale(1.08); }
+  100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
 }
 
 @keyframes ml-city-window-light {
@@ -442,6 +536,8 @@
 @media (prefers-reduced-motion: reduce) {
   .ml-city-game__answer.is-built,
   .ml-city-game [data-just-built='true'],
+  .ml-city-game__piece.is-just-built,
+  .ml-city-game__project-complete,
   .ml-city-game__scene.is-district-complete::after,
   .ml-city-game__scene.is-district-complete .ml-city-game__window { animation: none; }
 }

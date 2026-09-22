@@ -5,6 +5,7 @@ import { connectionsDirect } from '../../engines/connections';
 import { MULTIPLICATION_FACT_BY_ID, preferredConnection } from '../../learning/multiplicationFacts';
 
 let cityModule: typeof import('./ConnectionsCityGame');
+let storeModule: typeof import('../../state/store');
 
 beforeAll(async () => {
   const values = new Map<string, string>();
@@ -14,6 +15,7 @@ beforeAll(async () => {
     removeItem: (key: string) => values.delete(key),
   });
   cityModule = await import('./ConnectionsCityGame');
+  storeModule = await import('../../state/store');
 });
 
 describe('City child interaction', () => {
@@ -114,15 +116,43 @@ describe('City child interaction', () => {
     }
   });
 
-  it('celebrates only completed rows, and changes building styles after two rows', () => {
-    for (let total = 0; total <= 81; total++) {
-      expect(cityModule.cityRowCelebration(total)).toBe(
-        total > 0 && total % 10 === 0 ? 'מצוין, העיר גדלה!' : null,
-      );
-    }
-    expect(new Set([0, 1, 2, 3].map(cityModule.cityDistrictStyle)).size).toBe(4);
-    expect(cityModule.cityDistrictStyle(cityModule.cityDistrictModel(20).districtIndex)).toBe('townhouses');
-    expect(cityModule.cityDistrictStyle(cityModule.cityDistrictModel(21).districtIndex)).toBe('gardens');
-    expect(cityModule.cityDistrictStyle(4)).toBe('townhouses');
+  it('celebrates the half-way row and gives every 20-part project a longer explicit finish', () => {
+    expect(cityModule.cityProjectCelebration(9)).toBeNull();
+    expect(cityModule.cityProjectCelebration(10)).toBe('מצוין, העיר גדלה!');
+    expect(cityModule.cityProjectCelebration(20)).toBe('כל הכבוד! סיימת לבנות את העיר!');
+    expect(cityModule.cityProjectCelebration(30)).toBe('מצוין, פסל הלבנים מתקדם!');
+    expect(cityModule.cityProjectCelebration(40)).toBe('כל הכבוד! סיימת לבנות את פסל הלבנים!');
+    expect(cityModule.cityProjectCelebration(50)).toBe('מצוין, מכונית המרוץ מתקדמת!');
+    expect(cityModule.cityProjectCelebration(60)).toBe('כל הכבוד! מכונית המרוץ מוכנה!');
+    expect(cityModule.citySuccessDelay(19)).toBe(920);
+    expect(cityModule.citySuccessDelay(20)).toBe(cityModule.CITY_PROJECT_COMPLETE_MS);
+    expect(cityModule.CITY_PROJECT_COMPLETE_MS).toBeGreaterThanOrEqual(2_500);
+  });
+
+  it('switches from a city to a block sculpture and then a race car', () => {
+    expect([0, 1, 2, 3].map((index) => cityModule.cityBuildProject(index).kind))
+      .toEqual(['city', 'blocks', 'race-car', 'city']);
+
+    const challenge = connectionsDirect.generate(1, 17, { now: 0 });
+    const renderAt = (cityGrowthMilestones: number) => {
+      storeModule.replaceState({ ...storeModule.getState(), cityGrowthMilestones });
+      return renderToStaticMarkup(createElement(cityModule.ConnectionsCityGame, {
+        challenge,
+        color: '#138f91',
+        speechRate: 0.9,
+        hintMode: false,
+        onResult: () => undefined,
+      }));
+    };
+    const blocks = renderAt(21);
+    expect(blocks).toContain('data-city-project="blocks"');
+    expect(blocks).toContain('בונים פסל מלבני משחק');
+    expect(blocks.match(/ml-city-game__piece/g)).toHaveLength(20);
+    expect(blocks).not.toContain('ml-city-game__building');
+
+    const raceCar = renderAt(41);
+    expect(raceCar).toContain('data-city-project="race-car"');
+    expect(raceCar).toContain('מרכיבים מכונית מרוץ');
+    expect(raceCar.match(/ml-city-game__piece/g)).toHaveLength(20);
   });
 });

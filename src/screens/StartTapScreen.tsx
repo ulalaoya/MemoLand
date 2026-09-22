@@ -6,7 +6,7 @@ import { Logo } from '../components/Logo';
 import { OpeningAdventureScene } from '../components/opening/OpeningAdventureScene';
 import '../components/opening/opening-screen.css';
 
-export function StartTapScreen({ onStart, playerName }: { onStart: () => void; playerName?: string }) {
+export function StartTapScreen({ onStart }: { onStart: () => void }) {
   function start() {
     unlockSpeech();
     unlockSfx();
@@ -21,7 +21,7 @@ export function StartTapScreen({ onStart, playerName }: { onStart: () => void; p
         <Logo variant="compact" width={264} />
       </div>
 
-      <p className="ml-opening-welcome">{playerName ? `ברוך הבא, ${playerName}!` : 'ברוך הבא!'}</p>
+      <p className="ml-opening-welcome">ברוכים הבאים!</p>
 
       <div className="ml-opening-action">
         <button type="button" className="ml-opening-cta ml-pressable" onClick={start}>

@@ -9,7 +9,7 @@ import { AchievementsScreen } from './screens/AchievementsScreen';
 import { CollectionsScreen } from './screens/CollectionsScreen';
 import { setSfxEnabled } from './audio/sfx';
 import { setPreferredVoiceName } from './audio/speech';
-import { beginDailyJourney, getActiveProfile, getActiveProfileId, logoutProfile, useProfiles, useStore } from './state/store';
+import { beginDailyJourney, logoutProfile, useStore } from './state/store';
 import type { LandId } from './types';
 
 type Screen =
@@ -26,8 +26,6 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'start' });
   const soundEffects = useStore((s) => s.settings.soundEffects);
   const voiceName = useStore((s) => s.settings.voiceName);
-  useProfiles((registry) => registry.activeId);
-  const activeProfile = getActiveProfile();
 
   // מסנכרן הגדרות אודיו עם המנועים
   useEffect(() => {
@@ -37,9 +35,10 @@ export default function App() {
     setPreferredVoiceName(voiceName);
   }, [voiceName]);
 
-  // אחרי מסך הפתיחה: אם אין פרופיל פעיל — בחירת משתמש; אחרת ישר למפה.
+  // תמיד בוחרים שחקן במפורש. נתוני אתר עשויים להיות משוחזרים בהעברת מכשיר,
+  // ולכן אסור לזהות את האדם שמחזיק כרגע במכשיר לפי השחקן האחרון.
   function afterStart() {
-    setScreen(getActiveProfileId() ? { name: 'map' } : { name: 'profile' });
+    setScreen({ name: 'profile' });
   }
 
   function switchProfile() {
@@ -54,7 +53,7 @@ export default function App() {
 
   switch (screen.name) {
     case 'start':
-      return <StartTapScreen onStart={afterStart} playerName={activeProfile?.name} />;
+      return <StartTapScreen onStart={afterStart} />;
 
     case 'profile':
       return <ProfileScreen onReady={() => setScreen({ name: 'map' })} />;

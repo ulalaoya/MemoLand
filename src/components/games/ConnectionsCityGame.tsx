@@ -14,7 +14,7 @@ import {
   type MultiplicationConnection,
   type MultiplicationFact,
 } from '../../learning/multiplicationFacts';
-import { sfxCorrect, sfxSoft } from '../../audio/sfx';
+import { sfxCorrect, sfxLevelUp, sfxSoft } from '../../audio/sfx';
 import { useStore } from '../../state/store';
 import {
   CITY_DISTRICT_BUILDING_COUNT,
@@ -32,17 +32,59 @@ type CityPhase = 'answering' | 'reveal' | 'success';
 export const CITY_HINT_ENTRY_COPY = 'רוצה רמז? ממו כאן לעזור';
 export const CITY_RETRY_COPY = 'כמעט, נסה שוב';
 export const CITY_SUCCESS_COPY = 'מצוין, העיר גדלה!';
-export const CITY_DISTRICT_COMPLETE_COPY = 'הרובע הושלם!';
 export const CITY_CORRECT_REVEAL_MS = 1_500;
+export const CITY_PROJECT_COMPLETE_MS = 2_600;
 export const CITY_DISTRICT_CAPACITY = CITY_DISTRICT_BUILDING_COUNT;
 export const CITY_BUILDING_CONSTRUCTION = 'rise';
 
-export function cityRowCelebration(totalBuilt: number): string | null {
-  return totalBuilt > 0 && totalBuilt % CITY_DISTRICT_ROW_SIZE === 0 ? CITY_SUCCESS_COPY : null;
+export type CityBuildProjectKind = 'city' | 'blocks' | 'race-car';
+
+export interface CityBuildProject {
+  kind: CityBuildProjectKind;
+  title: string;
+  icon: string;
+  rowCopy: string;
+  completeCopy: string;
 }
 
-export function cityDistrictStyle(districtIndex: number): string {
-  return ['townhouses', 'gardens', 'towers', 'harbor'][districtIndex % 4];
+const CITY_BUILD_PROJECTS: readonly CityBuildProject[] = [
+  {
+    kind: 'city',
+    title: 'בונים עיר',
+    icon: '🏙️',
+    rowCopy: CITY_SUCCESS_COPY,
+    completeCopy: 'כל הכבוד! סיימת לבנות את העיר!',
+  },
+  {
+    kind: 'blocks',
+    title: 'בונים פסל מלבני משחק',
+    icon: '🧱',
+    rowCopy: 'מצוין, פסל הלבנים מתקדם!',
+    completeCopy: 'כל הכבוד! סיימת לבנות את פסל הלבנים!',
+  },
+  {
+    kind: 'race-car',
+    title: 'מרכיבים מכונית מרוץ',
+    icon: '🏎️',
+    rowCopy: 'מצוין, מכונית המרוץ מתקדמת!',
+    completeCopy: 'כל הכבוד! מכונית המרוץ מוכנה!',
+  },
+] as const;
+
+export function cityBuildProject(projectIndex: number): CityBuildProject {
+  return CITY_BUILD_PROJECTS[projectIndex % CITY_BUILD_PROJECTS.length];
+}
+
+export function cityProjectCelebration(totalBuilt: number): string | null {
+  if (totalBuilt <= 0) return null;
+  const model = cityDistrictProgress(totalBuilt);
+  const project = cityBuildProject(model.districtIndex);
+  if (model.districtComplete) return project.completeCopy;
+  return model.builtCount === CITY_DISTRICT_ROW_SIZE ? project.rowCopy : null;
+}
+
+export function citySuccessDelay(totalBuilt: number): number {
+  return cityDistrictProgress(totalBuilt).districtComplete ? CITY_PROJECT_COMPLETE_MS : 920;
 }
 
 export function nextCityHelpLevel(_current: number): number {
@@ -77,6 +119,32 @@ export function cityDistrictModel(completed: number): CityDistrictModel {
       (_, index) => progress.builtCount >= CITY_DISTRICT_ROW_SIZE + index + 1,
     ),
   };
+}
+
+function ProjectPieces({
+  kind,
+  builtCount,
+  justAdded,
+}: {
+  kind: Exclude<CityBuildProjectKind, 'city'>;
+  builtCount: number;
+  justAdded: number;
+}) {
+  return (
+    <div className={`ml-city-game__assembly ml-city-game__assembly--${kind}`}>
+      {Array.from({ length: CITY_DISTRICT_BUILDING_COUNT }, (_, index) => {
+        const part = index + 1;
+        const built = builtCount >= part;
+        return (
+          <span
+            key={part}
+            className={`ml-city-game__piece${built ? ' is-built' : ''}${justAdded === part ? ' is-just-built' : ''}`}
+            data-part={part}
+          />
+        );
+      })}
+    </div>
+  );
 }
 
 export function outcomeAfterWrong(
@@ -185,6 +253,8 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
     persistedMilestones + (phase === 'success' ? 1 : 0),
   );
   const city = cityDistrictModel(displayedMilestones);
+  const project = cityBuildProject(city.districtIndex);
+  const celebration = phase === 'success' ? cityProjectCelebration(displayedMilestones) : null;
   const justAddedBuilding = phase === 'success' ? city.builtCount : 0;
   const expectedNumber = stimulus.answer;
   const maxDigits = String(expectedNumber).length;
@@ -259,8 +329,9 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
     setAttempts(completed);
     setPhase('success');
     setFeedback(null);
-    sfxCorrect();
-    finishAfter(920, () => {
+    if (cityDistrictProgress(persistedMilestones + 1).districtComplete) sfxLevelUp();
+    else sfxCorrect();
+    finishAfter(citySuccessDelay(persistedMilestones + 1), () => {
       onResult({
         correct: true,
         rtMs: Date.now() - startedAt.current,
@@ -308,51 +379,61 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
       data-city-district={city.districtIndex}
       data-city-district-built={city.builtCount}
       data-city-district-complete={city.districtComplete}
-      data-city-style={cityDistrictStyle(city.districtIndex)}
+      data-city-project={project.kind}
     >
       <div className={`ml-city-game__scene${city.districtComplete ? ' is-district-complete' : ''}`} aria-hidden>
         <div className="ml-city-game__sun" />
-        <div className="ml-city-game__district-label">רובע {city.districtNumber}</div>
-        <div className="ml-city-game__district-row ml-city-game__district-row--back">
-          {city.backRow.map((built, index) => (
-            <span key={index} className="ml-city-game__lot" data-row="back" data-lot={index + 1}>
-              <i className="ml-city-game__foundation" />
-              {built ? (
-                <span
-                  className="ml-city-game__building"
-                  data-construction={CITY_BUILDING_CONSTRUCTION}
-                  data-just-built={justAddedBuilding === index + 1}
-                >
-                  <i className="ml-city-game__window" />
-                  <i className="ml-city-game__window" />
+        <div className="ml-city-game__district-label">{project.icon} {project.title} · {city.districtNumber}</div>
+        {project.kind === 'city' ? (
+          <>
+            <div className="ml-city-game__district-row ml-city-game__district-row--back">
+              {city.backRow.map((built, index) => (
+                <span key={index} className="ml-city-game__lot" data-row="back" data-lot={index + 1}>
+                  <i className="ml-city-game__foundation" />
+                  {built ? (
+                    <span
+                      className="ml-city-game__building"
+                      data-construction={CITY_BUILDING_CONSTRUCTION}
+                      data-just-built={justAddedBuilding === index + 1}
+                    >
+                      <i className="ml-city-game__window" />
+                      <i className="ml-city-game__window" />
+                    </span>
+                  ) : null}
                 </span>
-              ) : null}
-            </span>
-          ))}
-        </div>
-        <div className="ml-city-game__district-row ml-city-game__district-row--front">
-          {city.frontRow.map((built, index) => {
-            const buildingNumber = CITY_DISTRICT_ROW_SIZE + index + 1;
-            return (
-              <span key={index} className="ml-city-game__lot" data-row="front" data-lot={buildingNumber}>
-                <i className="ml-city-game__foundation" />
-                {built ? (
-                  <span
-                    className="ml-city-game__building"
-                    data-construction={CITY_BUILDING_CONSTRUCTION}
-                    data-just-built={justAddedBuilding === buildingNumber}
-                  >
-                    <i className="ml-city-game__window" />
-                    <i className="ml-city-game__window" />
+              ))}
+            </div>
+            <div className="ml-city-game__district-row ml-city-game__district-row--front">
+              {city.frontRow.map((built, index) => {
+                const buildingNumber = CITY_DISTRICT_ROW_SIZE + index + 1;
+                return (
+                  <span key={index} className="ml-city-game__lot" data-row="front" data-lot={buildingNumber}>
+                    <i className="ml-city-game__foundation" />
+                    {built ? (
+                      <span
+                        className="ml-city-game__building"
+                        data-construction={CITY_BUILDING_CONSTRUCTION}
+                        data-just-built={justAddedBuilding === buildingNumber}
+                      >
+                        <i className="ml-city-game__window" />
+                        <i className="ml-city-game__window" />
+                      </span>
+                    ) : null}
                   </span>
-                ) : null}
-              </span>
-            );
-          })}
-        </div>
-        <div className="ml-city-game__road">
-          <i /><i /><i /><i />
-        </div>
+                );
+              })}
+            </div>
+            <div className="ml-city-game__road"><i /><i /><i /><i /></div>
+          </>
+        ) : (
+          <ProjectPieces kind={project.kind} builtCount={city.builtCount} justAdded={justAddedBuilding} />
+        )}
+        {phase === 'success' && city.districtComplete ? (
+          <div className="ml-city-game__project-complete">
+            <span>{project.icon}</span>
+            <strong>{project.completeCopy}</strong>
+          </div>
+        ) : null}
         <MemoCompanion behavior={behavior} className="ml-city-game__memo" />
       </div>
 
@@ -452,9 +533,9 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
         {phase === 'reveal' ? (
           <div className="ml-city-game__reveal" role="status">נזכור ונפגוש אותה שוב בקרוב</div>
         ) : null}
-        {phase === 'success' && cityRowCelebration(displayedMilestones) ? (
-          <div className="ml-city-game__success" role="status">
-            {cityRowCelebration(displayedMilestones)}
+        {celebration ? (
+          <div className={`ml-city-game__success${city.districtComplete ? ' is-project-complete' : ''}`} role="status" aria-live="assertive">
+            {celebration}
           </div>
         ) : null}
       </div>
