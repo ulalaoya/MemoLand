@@ -395,6 +395,74 @@
 [data-city-project='moon-rover'] .ml-city-game__scene { background: linear-gradient(180deg, rgba(42, 48, 86, .7), rgba(145, 125, 177, .42)); }
 [data-city-project='farm'] .ml-city-game__scene { background: linear-gradient(180deg, rgba(193, 235, 251, .35), rgba(143, 198, 77, .48)); }
 
+[data-city-project='city'] { --project-main: #138f91; --project-alt: #67c8ff; }
+[data-city-project='blocks'] { --project-main: #ed5a4f; --project-alt: #ffd03f; }
+[data-city-project='race-car'] { --project-main: #d83d3c; --project-alt: #8de0ff; }
+
+.ml-city-game__puzzle {
+  position: absolute;
+  z-index: 2;
+  inset: auto 52px 20px 18px;
+  width: calc(100% - 70px);
+  height: 150px;
+  overflow: visible;
+  direction: ltr;
+  filter: drop-shadow(0 7px 0 rgba(36, 50, 71, .17));
+}
+
+.ml-city-game__puzzle-board {
+  fill: rgba(255, 255, 255, .4);
+  stroke: rgba(36, 50, 71, .2);
+  stroke-width: 2;
+}
+
+.ml-city-game__puzzle-piece {
+  position: static;
+  opacity: 1;
+  border: 0;
+  transition: none;
+}
+
+.ml-city-game__puzzle-slot {
+  fill: rgba(255, 255, 255, .48);
+  stroke: rgba(36, 50, 71, .24);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+.ml-city-game__puzzle-art {
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+
+.ml-city-game__puzzle-outline {
+  fill: none;
+  stroke: rgba(36, 50, 71, .24);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.ml-city-game__puzzle-piece.is-built .ml-city-game__puzzle-art { opacity: 1; }
+.ml-city-game__puzzle-piece.is-built .ml-city-game__puzzle-slot { fill: transparent; stroke: transparent; }
+.ml-city-game__puzzle-piece.is-built .ml-city-game__puzzle-outline {
+  stroke: rgba(255, 255, 255, .72);
+  stroke-dasharray: none;
+}
+
+.ml-city-game__puzzle-icon {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  font-size: 100px;
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, .36);
+  stroke-width: 3px;
+}
+
+.ml-city-game__puzzle-piece.is-just-built {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 .ml-city-game__piece.is-just-built {
   animation: ml-city-piece-arrive 760ms var(--ml-ease-spring) both;
 }

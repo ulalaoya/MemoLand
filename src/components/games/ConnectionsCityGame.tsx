@@ -36,7 +36,8 @@ export const CITY_SUCCESS_COPY = 'מצוין, העיר גדלה!';
 export const CITY_CORRECT_REVEAL_MS = 1_500;
 export const CITY_PROJECT_COMPLETE_MS = 2_600;
 export const CITY_DISTRICT_CAPACITY = CITY_DISTRICT_BUILDING_COUNT;
-export const CITY_BUILDING_CONSTRUCTION = 'rise';
+export const CITY_PUZZLE_COLUMNS = 5;
+export const CITY_PUZZLE_ROWS = 3;
 
 export type CityBuildProjectKind =
   | 'city'
@@ -200,29 +201,95 @@ export function cityProjectDisplayModel(
   return cityDistrictModel(normalized);
 }
 
-function ProjectPieces({
-  kind,
+export function cityPuzzlePiecePath(index: number): string {
+  const column = index % CITY_PUZZLE_COLUMNS;
+  const row = Math.floor(index / CITY_PUZZLE_COLUMNS);
+  const width = 300 / CITY_PUZZLE_COLUMNS;
+  const height = 150 / CITY_PUZZLE_ROWS;
+  const x = column * width;
+  const y = row * height;
+  const tabHalf = 9;
+  const tabDepth = 8;
+  const middleX = x + width / 2;
+  const middleY = y + height / 2;
+  const topBend = (row + column) % 2 === 0 ? tabDepth : -tabDepth;
+  const rightBend = (row + column) % 2 === 0 ? tabDepth : -tabDepth;
+  const bottomBend = (row + column + 1) % 2 === 0 ? tabDepth : -tabDepth;
+  const leftBend = (row + column) % 2 === 0 ? -tabDepth : tabDepth;
+
+  let path = `M ${x} ${y}`;
+  path += row === 0
+    ? ` H ${x + width}`
+    : ` H ${middleX - tabHalf} C ${middleX - tabHalf} ${y + topBend} ${middleX + tabHalf} ${y + topBend} ${middleX + tabHalf} ${y} H ${x + width}`;
+  path += column === CITY_PUZZLE_COLUMNS - 1
+    ? ` V ${y + height}`
+    : ` V ${middleY - tabHalf} C ${x + width + rightBend} ${middleY - tabHalf} ${x + width + rightBend} ${middleY + tabHalf} ${x + width} ${middleY + tabHalf} V ${y + height}`;
+  path += row === CITY_PUZZLE_ROWS - 1
+    ? ` H ${x}`
+    : ` H ${middleX + tabHalf} C ${middleX + tabHalf} ${y + height + bottomBend} ${middleX - tabHalf} ${y + height + bottomBend} ${middleX - tabHalf} ${y + height} H ${x}`;
+  path += column === 0
+    ? ` V ${y}`
+    : ` V ${middleY + tabHalf} C ${x + leftBend} ${middleY + tabHalf} ${x + leftBend} ${middleY - tabHalf} ${x} ${middleY - tabHalf} V ${y}`;
+  return `${path} Z`;
+}
+
+function ProjectPuzzle({
+  project,
   builtCount,
   justAdded,
 }: {
-  kind: Exclude<CityBuildProjectKind, 'city'>;
+  project: CityBuildProject;
   builtCount: number;
   justAdded: number;
 }) {
+  const artId = `ml-city-puzzle-art-${project.kind}`;
+  const gradientId = `ml-city-puzzle-gradient-${project.kind}`;
+  const pieces = Array.from({ length: CITY_DISTRICT_BUILDING_COUNT }, (_, index) => ({
+    part: index + 1,
+    path: cityPuzzlePiecePath(index),
+  }));
+
   return (
-    <div className={`ml-city-game__assembly ml-city-game__assembly--${kind}`}>
-      {Array.from({ length: CITY_DISTRICT_BUILDING_COUNT }, (_, index) => {
-        const part = index + 1;
+    <svg className="ml-city-game__puzzle" viewBox="0 0 300 150" role="img" aria-label={`${project.title}, ${builtCount} מתוך 15 חלקים`}>
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="var(--project-alt, #dff7f5)" />
+          <stop offset="100%" stopColor="var(--project-main, #4e9fd8)" />
+        </linearGradient>
+        <g id={artId}>
+          <rect width="300" height="150" rx="18" fill={`url(#${gradientId})`} />
+          <circle cx="42" cy="31" r="20" fill="rgba(255,255,255,.42)" />
+          <circle cx="263" cy="120" r="29" fill="rgba(255,255,255,.18)" />
+          <circle cx="245" cy="24" r="5" fill="rgba(255,255,255,.72)" />
+          <circle cx="265" cy="42" r="3" fill="rgba(255,255,255,.66)" />
+          <text className="ml-city-game__puzzle-icon" x="150" y="118" textAnchor="middle">{project.icon}</text>
+        </g>
+        {pieces.map(({ part, path }) => (
+          <clipPath key={part} id={`ml-city-puzzle-clip-${project.kind}-${part}`}>
+            <path d={path} />
+          </clipPath>
+        ))}
+      </defs>
+      <rect className="ml-city-game__puzzle-board" width="300" height="150" rx="18" />
+      {pieces.map(({ part, path }) => {
         const built = builtCount >= part;
         return (
-          <span
+          <g
             key={part}
-            className={`ml-city-game__piece${built ? ' is-built' : ''}${justAdded === part ? ' is-just-built' : ''}`}
+            className={`ml-city-game__puzzle-piece ml-city-game__piece${built ? ' is-built' : ''}${justAdded === part ? ' is-just-built' : ''}`}
             data-part={part}
-          />
+          >
+            <path className="ml-city-game__puzzle-slot" d={path} />
+            <use
+              className="ml-city-game__puzzle-art"
+              href={`#${artId}`}
+              clipPath={`url(#ml-city-puzzle-clip-${project.kind}-${part})`}
+            />
+            <path className="ml-city-game__puzzle-outline" d={path} />
+          </g>
         );
       })}
-    </div>
+    </svg>
   );
 }
 
@@ -336,7 +403,7 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
   const city = cityProjectDisplayModel(displayedMilestones, completingProject);
   const project = cityBuildProject(city.districtIndex);
   const celebration = phase === 'success' ? cityProjectCelebration(displayedMilestones) : null;
-  const justAddedBuilding = phase === 'success' ? city.builtCount : 0;
+  const justAddedPart = phase === 'success' ? city.builtCount : 0;
   const expectedNumber = stimulus.answer;
   const maxDigits = String(expectedNumber).length;
   const effectiveConnection = isUsefulHintConnection(stimulus.factId, stimulus.connection)
@@ -465,50 +532,7 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
       <div className={`ml-city-game__scene${city.districtComplete ? ' is-district-complete' : ''}`} aria-hidden>
         <div className="ml-city-game__sun" />
         <div className="ml-city-game__district-label">{project.icon} {project.title}</div>
-        {project.kind === 'city' ? (
-          <>
-            <div className="ml-city-game__district-row ml-city-game__district-row--back">
-              {city.backRow.map((built, index) => (
-                <span key={index} className="ml-city-game__lot" data-row="back" data-lot={index + 1}>
-                  <i className="ml-city-game__foundation" />
-                  {built ? (
-                    <span
-                      className="ml-city-game__building"
-                      data-construction={CITY_BUILDING_CONSTRUCTION}
-                      data-just-built={justAddedBuilding === index + 1}
-                    >
-                      <i className="ml-city-game__window" />
-                      <i className="ml-city-game__window" />
-                    </span>
-                  ) : null}
-                </span>
-              ))}
-            </div>
-            <div className="ml-city-game__district-row ml-city-game__district-row--front">
-              {city.frontRow.map((built, index) => {
-                const buildingNumber = CITY_DISTRICT_BACK_ROW_SIZE + index + 1;
-                return (
-                  <span key={index} className="ml-city-game__lot" data-row="front" data-lot={buildingNumber}>
-                    <i className="ml-city-game__foundation" />
-                    {built ? (
-                      <span
-                        className="ml-city-game__building"
-                        data-construction={CITY_BUILDING_CONSTRUCTION}
-                        data-just-built={justAddedBuilding === buildingNumber}
-                      >
-                        <i className="ml-city-game__window" />
-                        <i className="ml-city-game__window" />
-                      </span>
-                    ) : null}
-                  </span>
-                );
-              })}
-            </div>
-            <div className="ml-city-game__road"><i /><i /><i /><i /></div>
-          </>
-        ) : (
-          <ProjectPieces kind={project.kind} builtCount={city.builtCount} justAdded={justAddedBuilding} />
-        )}
+        <ProjectPuzzle project={project} builtCount={city.builtCount} justAdded={justAddedPart} />
         {phase === 'success' && city.districtComplete ? (
           <div className="ml-city-game__project-complete">
             <span>{project.icon}</span>

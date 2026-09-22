@@ -79,7 +79,7 @@ describe('City child interaction', () => {
     expect(cityModule.CITY_CORRECT_REVEAL_MS).toBeLessThanOrEqual(1_800);
   });
 
-  it('starts as an empty construction site with no completed or faded buildings', () => {
+  it('starts with an empty fifteen-piece puzzle and no faded completed picture', () => {
     const challenge = connectionsDirect.generate(1, 17, { now: 0 });
     const html = renderToStaticMarkup(createElement(cityModule.ConnectionsCityGame, {
       challenge,
@@ -90,7 +90,11 @@ describe('City child interaction', () => {
     }));
 
     expect(html).toContain('data-city-milestones="0"');
-    expect(html.match(/class="ml-city-game__foundation"/g)).toHaveLength(15);
+    expect(html.match(/ml-city-game__puzzle-piece/g)).toHaveLength(15);
+    expect(html.match(/ml-city-game__puzzle-art/g)).toHaveLength(15);
+    expect(html).toContain('aria-label="בונים עיר, 0 מתוך 15 חלקים"');
+    expect(html).not.toContain('ml-city-game__piece is-built');
+    expect(html).not.toContain('class="ml-city-game__foundation"');
     expect(html).not.toContain('class="ml-city-game__building"');
     expect(html).toContain('data-city-district="0"');
     expect(html).toContain('data-city-district-built="0"');
@@ -98,7 +102,15 @@ describe('City child interaction', () => {
 
   it('builds fifteen parts and rolls into an unbounded next project', () => {
     expect(cityModule.CITY_DISTRICT_CAPACITY).toBe(15);
-    expect(cityModule.CITY_BUILDING_CONSTRUCTION).toBe('rise');
+    expect(cityModule.CITY_PUZZLE_COLUMNS).toBe(5);
+    expect(cityModule.CITY_PUZZLE_ROWS).toBe(3);
+    const puzzlePaths = Array.from(
+      { length: cityModule.CITY_DISTRICT_CAPACITY },
+      (_, index) => cityModule.cityPuzzlePiecePath(index),
+    );
+    expect(new Set(puzzlePaths)).toHaveLength(15);
+    expect(puzzlePaths.every((path) => path.endsWith(' Z'))).toBe(true);
+    expect(puzzlePaths.filter((path) => path.includes(' C '))).toHaveLength(15);
     const cases = [
       { total: 0, district: 0, back: 0, front: 0, complete: false },
       { total: 1, district: 0, back: 1, front: 0, complete: false },
@@ -159,6 +171,8 @@ describe('City child interaction', () => {
     expect(blocks).not.toContain('בונים פסל לגו ·');
     expect(blocks.match(/ml-city-game__piece/g)).toHaveLength(15);
     expect(blocks.match(/ml-city-game__piece is-built/g)).toHaveLength(1);
+    expect(blocks.match(/ml-city-game__puzzle-icon/g)).toHaveLength(1);
+    expect(blocks.match(/href="#ml-city-puzzle-art-blocks"/g)).toHaveLength(15);
     expect(blocks).not.toContain('ml-city-game__building');
 
     const raceCar = renderAt(31);
@@ -174,6 +188,8 @@ describe('City child interaction', () => {
       expect(projectHtml).not.toContain(`${project.title} ·`);
       expect(projectHtml.match(/ml-city-game__piece/g)).toHaveLength(15);
       expect(projectHtml.match(/ml-city-game__piece is-built/g)).toHaveLength(1);
+      expect(projectHtml.match(/ml-city-game__puzzle-icon/g)).toHaveLength(1);
+      expect(projectHtml.match(new RegExp(`href="#ml-city-puzzle-art-${project.kind}"`, 'g'))).toHaveLength(15);
       expect(projectHtml).not.toContain('ml-city-game__blueprint');
     }
   });
