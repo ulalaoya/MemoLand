@@ -9,21 +9,34 @@ import { AchievementsScreen } from './screens/AchievementsScreen';
 import { CollectionsScreen } from './screens/CollectionsScreen';
 import { setSfxEnabled } from './audio/sfx';
 import { setPreferredVoiceName } from './audio/speech';
-import { beginDailyJourney, logoutProfile, useStore } from './state/store';
+import {
+  beginDailyJourney,
+  getActiveProfileId,
+  getDailyJourneyProgress,
+  logoutProfile,
+  useStore,
+} from './state/store';
 import type { LandId } from './types';
 
 type Screen =
   | { name: 'start' }
   | { name: 'profile' }
   | { name: 'map' }
-  | { name: 'session'; landFocus?: LandId }
+  | { name: 'session'; landFocus?: LandId; multiplicationPractice?: boolean }
   | { name: 'treasure'; result: JourneyResult }
   | { name: 'parent' }
   | { name: 'achievements' }
   | { name: 'collections' };
 
+function initialScreen(): Screen {
+  if (!getActiveProfileId()) return { name: 'start' };
+  return getDailyJourneyProgress().status === 'in-progress'
+    ? { name: 'session' }
+    : { name: 'map' };
+}
+
 export default function App() {
-  const [screen, setScreen] = useState<Screen>({ name: 'start' });
+  const [screen, setScreen] = useState<Screen>(initialScreen);
   const soundEffects = useStore((s) => s.settings.soundEffects);
   const voiceName = useStore((s) => s.settings.voiceName);
 
@@ -35,10 +48,8 @@ export default function App() {
     setPreferredVoiceName(voiceName);
   }, [voiceName]);
 
-  // תמיד בוחרים שחקן במפורש. נתוני אתר עשויים להיות משוחזרים בהעברת מכשיר,
-  // ולכן אסור לזהות את האדם שמחזיק כרגע במכשיר לפי השחקן האחרון.
   function afterStart() {
-    setScreen({ name: 'profile' });
+    setScreen(getActiveProfileId() ? { name: 'map' } : { name: 'profile' });
   }
 
   function switchProfile() {
@@ -74,6 +85,7 @@ export default function App() {
       return (
         <SessionScreen
           landFocus={screen.landFocus}
+          multiplicationPractice={screen.multiplicationPractice}
           onFinish={(result) => setScreen({ name: 'treasure', result })}
           onQuit={() => setScreen({ name: 'map' })}
         />
@@ -83,7 +95,16 @@ export default function App() {
       return <TreasureScreen result={screen.result} onHome={() => setScreen({ name: 'map' })} />;
 
     case 'parent':
-      return <ParentDashboard onExit={() => setScreen({ name: 'map' })} />;
+      return (
+        <ParentDashboard
+          onExit={() => setScreen({ name: 'map' })}
+          onStartMultiplicationPractice={() => setScreen({
+            name: 'session',
+            landFocus: 'connections',
+            multiplicationPractice: true,
+          })}
+        />
+      );
 
     case 'achievements':
       return <AchievementsScreen onExit={() => setScreen({ name: 'map' })} />;

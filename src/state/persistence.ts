@@ -84,10 +84,10 @@ export function loadRegistry(): ProfileRegistry {
     if (raw) {
       const reg = JSON.parse(raw) as ProfileRegistry;
       if (reg && Array.isArray(reg.profiles)) {
-        // A browser/device transfer can restore site storage. Preserve the
-        // profiles and progress, but never assume the current person is the
-        // child who happened to be selected on the previous installation.
-        return { ...reg, activeId: null };
+        const activeId = reg.profiles.some((profile) => profile.id === reg.activeId)
+          ? reg.activeId
+          : null;
+        return { ...reg, activeId };
       }
     }
   } catch {
@@ -193,6 +193,16 @@ export function persistFor(profileId: string, state: SaveState): void {
       /* אחסון מלא — מתעלמים */
     }
   }, 200);
+}
+
+/** Flushes the latest state synchronously before the browser/PWA is suspended. */
+export function persistImmediatelyFor(profileId: string, state: SaveState): void {
+  if (saveTimers[profileId]) clearTimeout(saveTimers[profileId]);
+  try {
+    localStorage.setItem(savePrefix(profileId), JSON.stringify(state));
+  } catch {
+    /* אחסון מלא — מתעלמים */
+  }
 }
 
 /** מוחק את השמירה של פרופיל (מחיקת פרופיל). */

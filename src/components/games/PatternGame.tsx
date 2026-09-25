@@ -45,11 +45,11 @@ export function PatternGame({
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center' }}>
+    <div data-pattern-game style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center' }}>
       <p style={{ fontSize: 25, fontFamily: 'var(--font-head)', fontWeight: 700 }}>{challenge.prompt}</p>
 
       {/* הרצף */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
+      <div className="ml-pattern-sequence" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
         {stim.sequence.map((t: Token, i) => box(<ShapeGlyph shape={t.shape} color={t.color} />, `s${i}`))}
         {box(<span style={{ fontFamily: 'var(--font-display)', fontSize: 30, color }}>?</span>, 'q', { borderColor: color, borderWidth: 3, background: 'var(--gray-100)' })}
       </div>
@@ -61,7 +61,7 @@ export function PatternGame({
           const isAnswer = i === challenge.answer;
           const bg = chosen !== null ? (isAnswer ? 'var(--btn-green)' : isChosen ? color : 'var(--panel)') : 'var(--panel)';
           return (
-            <button key={i} onClick={() => pick(i)} style={{ width: 68, height: 68, display: 'grid', placeItems: 'center', background: bg, border: '3px solid var(--gray-300)', borderRadius: 16, boxShadow: '0 3px 0 rgba(36,50,71,.15)' }}>
+            <button className="ml-pattern-option" key={i} onClick={() => pick(i)} style={{ width: 68, height: 68, display: 'grid', placeItems: 'center', background: bg, border: '3px solid var(--gray-300)', borderRadius: 16, boxShadow: '0 3px 0 rgba(36,50,71,.15)' }}>
               <ShapeGlyph shape={t.shape} color={t.color} size={44} />
             </button>
           );

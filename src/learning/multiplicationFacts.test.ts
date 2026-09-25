@@ -287,4 +287,20 @@ describe('multiplication fact registry', () => {
     expect(selected.id).toBe('4x5');
     expect(multiplicationMasteryCount(progress)).toBe(54);
   });
+
+  it('continues with varied maintenance practice after all facts are mastered', () => {
+    const progress = defaultMultiplicationProgress();
+    for (const fact of MULTIPLICATION_PRACTICE_FACTS) {
+      progress.facts[fact.id] = {
+        ...defaultMultiplicationFactProgress(fact.id),
+        stage: 'FLUENT',
+        masteredAt: 100,
+      };
+    }
+    const selections = Array.from({ length: 8 }, (_, index) =>
+      selectMultiplicationFact(15, makeRng(500 + index), progress, 200 + index, { includeOnes: true }).id
+    );
+    expect(new Set(selections).size).toBeGreaterThan(1);
+    expect(selections.every((id) => MULTIPLICATION_PRACTICE_FACTS.some((fact) => fact.id === id))).toBe(true);
+  });
 });

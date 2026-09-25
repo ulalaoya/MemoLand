@@ -18,9 +18,22 @@ describe('SaveState migration', () => {
     expect(values.size).toBe(0);
   });
 
-  it('preserves restored profiles but never auto-selects a child on app startup', () => {
+  it('restores the last active child on the same installation', () => {
     const stored = {
       activeId: 'child-1',
+      profiles: [{ id: 'child-1', name: 'ילד שמור', avatar: 'memo', createdAt: 1 }],
+    };
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => key === 'memoland.profiles.v1' ? JSON.stringify(stored) : null,
+      setItem: () => undefined,
+      removeItem: () => undefined,
+    });
+    expect(loadRegistry()).toEqual(stored);
+  });
+
+  it('drops an invalid active profile id without losing saved profiles', () => {
+    const stored = {
+      activeId: 'missing-child',
       profiles: [{ id: 'child-1', name: 'ילד שמור', avatar: 'memo', createdAt: 1 }],
     };
     vi.stubGlobal('localStorage', {

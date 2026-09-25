@@ -69,20 +69,31 @@ interface JourneyResult {
 }
 
 const MAX_ACTIVITIES = 70; // תקרת ביטחון למספר האתגרים במסע
+const WORLD_ICONS: Record<LandId, string> = {
+  numbers: '🔢',
+  echoes: '💧',
+  connections: '🏙️',
+  forest: '🌳',
+  patterns: '🔮',
+  speed: '🏁',
+  castle: '🏰',
+};
 
 export function SessionScreen({
   landFocus,
+  multiplicationPractice = false,
   onFinish,
   onQuit,
 }: {
   landFocus?: LandId; // אם מוגדר — משחק חופשי בארץ אחת
+  multiplicationPractice?: boolean;
   onFinish: (r: JourneyResult) => void;
   onQuit: () => void;
 }) {
   const settings = useStore((s) => s.settings);
   const persistedCoins = useStore((s) => s.coins);
   const multiplicationProgress = useStore((s) => s.multiplication);
-  const practiceMode = landFocus === 'connections';
+  const practiceMode = multiplicationPractice;
   const masteredCount = multiplicationMasteryCount(multiplicationProgress);
   const missionTotal = MULTIPLICATION_PRACTICE_FACTS.length;
   const initialRunRef = useRef<{
@@ -93,7 +104,20 @@ export function SessionScreen({
   } | null>(null);
   if (initialRunRef.current === null) {
     const now = Date.now();
-    if (landFocus) {
+    if (practiceMode) {
+      initialRunRef.current = {
+        activities: [{
+          kind: 'game',
+          exerciseId: 'connections.practice',
+          landId: 'connections',
+          levelDelta: 0,
+          label: 'תרגול לוח הכפל',
+        }],
+        currentActivity: 0,
+        seed: now,
+        earnedPoints: 0,
+      };
+    } else if (landFocus) {
       initialRunRef.current = {
         activities: buildFreePlayActivities(landFocus),
         currentActivity: 0,
@@ -217,14 +241,7 @@ export function SessionScreen({
       return;
     }
     setRetry(0);
-    let nextIndex = idx + 1;
-    if (!landFocus && masteredCount === missionTotal) {
-      while (nextIndex < activities.length) {
-        const candidate = activities[nextIndex];
-        if (candidate.kind !== 'game' || candidate.landId !== 'connections') break;
-        nextIndex += 1;
-      }
-    }
+    const nextIndex = idx + 1;
     if (nextIndex < activities.length) {
       if (!landFocus) setDailyJourneyActivity(nextIndex);
       setIdx(nextIndex);
@@ -241,14 +258,6 @@ export function SessionScreen({
     }
     finalize();
   }
-
-  useEffect(() => {
-    // An already-finished mission may be resumed in the middle of a saved City block.
-    if (!landFocus && masteredCount === missionTotal && activity?.kind === 'game' && activity.landId === 'connections') {
-      next();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idx, masteredCount, landFocus]);
 
   function finalize() {
     addMinutes(settings.sessionMinutes);
@@ -403,11 +412,10 @@ export function SessionScreen({
   const isEchoChallenge = activity.kind === 'game' && activityLand === 'echoes';
   const isNumbersChallenge = activity.kind === 'game' && activityLand === 'numbers';
   const isConnectionsChallenge = activity.kind === 'game' && activityLand === 'connections';
-  const isCastleChallenge = activityLand === 'castle';
   const isImmersiveChallenge = isEchoChallenge || isNumbersChallenge || isConnectionsChallenge;
 
   return (
-    <div className={`ml-session-screen${isEchoChallenge ? ' ml-session-screen--echo' : ''}${isNumbersChallenge ? ' ml-session-screen--numbers' : ''}${isConnectionsChallenge ? ' ml-session-screen--connections' : ''}${practiceMode ? ' ml-session-screen--multiplication-practice' : ''}${isCastleChallenge ? ' ml-session-screen--castle' : ''}`}>
+    <div className={`ml-session-screen ml-session-screen--${activityLand}${practiceMode ? ' ml-session-screen--multiplication-practice' : ''}`}>
       <LandBackground land={activityLand} />
 
       <header className="ml-session-hud">
@@ -450,7 +458,15 @@ export function SessionScreen({
           </div>}
 
           <div className="ml-session-hud__world" style={{ background: color }}>
-            {practiceMode ? `כפל: ${masteredCount}/${missionTotal}` : activity.label}
+            <span className="ml-session-hud__world-icon" aria-hidden>{WORLD_ICONS[activityLand]}</span>
+            <span className="ml-session-hud__world-copy">
+              <strong>{meta.name}</strong>
+              <small>{practiceMode
+                ? masteredCount === missionTotal
+                  ? `תרגול שימור · ${masteredCount}/${missionTotal}`
+                  : `כפל: ${masteredCount}/${missionTotal}`
+                : activity.label}</small>
+            </span>
           </div>
 
           <CoinRewardExperience
@@ -463,20 +479,12 @@ export function SessionScreen({
 
       <div
         ref={sessionBoardRef}
-        className={`ml-session-board${isEchoChallenge ? ' ml-session-board--echo' : ''}${isNumbersChallenge ? ' ml-session-board--numbers' : ''}${isConnectionsChallenge ? ' ml-session-board--connections' : ''}`}
+        className={`ml-session-board ml-session-board--${activityLand}`}
         style={{ '--ml-session-color': color } as React.CSSProperties}
       >
         {/* key מאלץ remount בכל פעילות ובכל ניסיון חוזר — כדי לאפס state ולתת אתגר חדש */}
         <div key={`${idx}-${retry}`} className="ml-session-board__activity">
-          {practiceMode && masteredCount === missionTotal ? (
-            <div className="ml-multiplication-complete" role="status">
-              <span aria-hidden="true">🏙️ ⭐</span>
-              <h1>מבצע לוח הכפל הושלם!</h1>
-              <p>כל {missionTotal} המכפלות הושלמו. איזה כוח זיכרון!</p>
-              <Button variant="green" size="lg" onClick={quit}>חזרה למפה</Button>
-            </div>
-          ) : null}
-          {activity.kind === 'game' && !(masteredCount === missionTotal && activity.landId === 'connections') && (
+          {activity.kind === 'game' && (
             <GameHostForActivity a={activity} color={color} speechRate={settings.speechRate} softenBy={retry} seed={genSeed.current + idx * 100 + retry} onResult={(r) => handleGameResult(activity, r)} />
           )}
           {activity.kind === 'quiz' && (

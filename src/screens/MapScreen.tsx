@@ -9,7 +9,6 @@ import { LandCard } from '../components/world/LandCard';
 import { WorldMapPath } from '../components/world/WorldMapPath';
 import { DailyJourneyBanner } from '../components/world/DailyJourneyBanner';
 import { WorldMapAtmosphere } from '../components/world/WorldMapAtmosphere';
-import { MultiplicationMissionCard } from '../components/world/MultiplicationMissionCard';
 import { LAND_THEMES } from '../design/themes';
 import { THEME_GRADIENT } from '../config/collectibles';
 import type { LandId } from '../types';
@@ -33,7 +32,6 @@ export function MapScreen({
   const coins = useStore((s) => s.coins);
   const rank = useStore((s) => s.rank);
   const lands = useStore((s) => s.lands);
-  const multiplication = useStore((s) => s.multiplication);
   const equipped = useStore((s) => s.equipped);
   useStore((s) => s.todayPoints); // רה-רנדר כשמשתנה
   useStore((s) => s.dailyJourney);
@@ -70,11 +68,10 @@ export function MapScreen({
       </header>
 
       <main className="ml-world-map-main">
-        <MultiplicationMissionCard progress={multiplication} onPractice={() => onPlayLand('connections')} />
         <div className="ml-world-map-intro">
           <span className="ml-world-map-intro__kicker">מפת ההרפתקה</span>
           <h1>{journeyCompleted ? 'המסע הושלם. לאן בא לך ללכת עכשיו?' : 'המסע של היום מחכה לך!'}</h1>
-          <p>{journeyCompleted ? 'כל העולמות פתוחים עכשיו למשחק חופשי.' : 'אפשר לתרגל כפל בכל רגע. שאר העולמות יתחילו או ימשיכו את המסע היומי.'}</p>
+          <p>{journeyCompleted ? 'כל העולמות פתוחים עכשיו למשחק חופשי.' : 'כל עולם ימשיך אותך מאותה נקודה במסע היומי.'}</p>
         </div>
 
         <section className="ml-world-map-route" aria-label="עולמות ממו לנד">
@@ -99,7 +96,7 @@ export function MapScreen({
                   current={index === currentLandIndex}
                   side={index % 2 === 0 ? 'left' : 'right'}
                   theme={LAND_THEMES[id]}
-                  onSelect={() => available && (id === 'connections' || journeyCompleted ? onPlayLand(id) : onStartJourney())}
+                  onSelect={() => available && (journeyCompleted ? onPlayLand(id) : onStartJourney())}
                 />
               );
             })}

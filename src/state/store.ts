@@ -24,6 +24,7 @@ import {
   loadRegistry,
   loadSaveFor,
   persistFor,
+  persistImmediatelyFor,
   resetSaveFor,
   saveRegistry,
 } from './persistence';
@@ -38,6 +39,17 @@ let registry: ProfileRegistry = loadRegistry();
 let activeId: string | null = registry.activeId;
 let state: SaveState = activeId ? loadSaveFor(activeId) : defaultSave();
 const listeners = new Set<() => void>();
+
+export function flushActiveProfile(): void {
+  if (activeId) persistImmediatelyFor(activeId, state);
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', flushActiveProfile);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushActiveProfile();
+  });
+}
 
 function emit(): void {
   if (activeId) persistFor(activeId, state);
@@ -139,9 +151,13 @@ export function resetActiveProfile(): void {
   emit();
 }
 
-/** תאריך היום כ-YYYY-MM-DD. */
-function todayKey(now = Date.now()): string {
-  return new Date(now).toISOString().slice(0, 10);
+/** תאריך מקומי כ-YYYY-MM-DD; המסע מתחלף בחצות של המכשיר, לא בחצות UTC. */
+export function localDayKey(now = Date.now()): string {
+  const date = new Date(now);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 /** היעד היומי בנקודות — סיום המסע היומי מובטח בהגעה אליו. */
@@ -149,18 +165,18 @@ export const DAILY_GOAL = 1000;
 
 /** מחזיר את שדות הנקודות היומיות אחרי הוספה (מתאפס עם החלפת יום). */
 function addTodayPoints(s: SaveState, add: number): Pick<SaveState, 'todayPoints' | 'todayPointsDay'> {
-  const day = todayKey();
+  const day = localDayKey();
   const base = s.todayPointsDay === day ? s.todayPoints : 0;
   return { todayPoints: base + add, todayPointsDay: day };
 }
 
 /** נקודות היום (0 אם התחלף יום). */
 export function getTodayPoints(): number {
-  return state.todayPointsDay === todayKey() ? state.todayPoints : 0;
+  return state.todayPointsDay === localDayKey() ? state.todayPoints : 0;
 }
 
 function journeyForToday(s: SaveState, now = Date.now()): SaveState['dailyJourney'] {
-  const day = todayKey(now);
+  const day = localDayKey(now);
   if (s.dailyJourney.day === day) return s.dailyJourney;
   return {
     day,
@@ -270,7 +286,7 @@ export function recordAttempt(input: RecordAttemptInput): RecordAttemptResult {
   }
 
   // היסטוריה יומית
-  const day = todayKey();
+  const day = localDayKey();
   const history = [...state.history];
   let rec = history.find((h) => h.day === day);
   if (!rec) {
@@ -306,7 +322,7 @@ export function recordAttempt(input: RecordAttemptInput): RecordAttemptResult {
 
 /** מוסיף דקות תרגול ליום הנוכחי. */
 export function addMinutes(minutes: number): void {
-  const day = todayKey();
+  const day = localDayKey();
   const history = [...state.history];
   let rec = history.find((h) => h.day === day);
   if (!rec) {
@@ -335,12 +351,12 @@ export function completeTrack(landId: LandId): { castleOpened: boolean } {
 
 /** מסיים את המסע היומי: מעדכן רצף ימים ומגן רצף. */
 export function finishDailyJourney(): { streakDays: number } {
-  const day = todayKey();
+  const day = localDayKey();
   let streakDays = state.streakDays;
   let shield = state.streakShieldAvailable;
 
   if (state.lastPlayedDay !== day) {
-    const yesterday = todayKey(Date.now() - 24 * 60 * 60 * 1000);
+    const yesterday = localDayKey(Date.now() - 24 * 60 * 60 * 1000);
     if (state.lastPlayedDay === yesterday || state.lastPlayedDay === null) {
       streakDays += 1;
     } else if (shield) {

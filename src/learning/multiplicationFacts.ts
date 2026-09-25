@@ -268,20 +268,28 @@ export function selectMultiplicationFact(
   now: number,
   options: SelectMultiplicationFactOptions = {},
 ): MultiplicationFact {
-  let candidates = options.includeOnes
+  let eligible = options.includeOnes
     ? [...MULTIPLICATION_PRACTICE_FACTS]
     : factsAvailableAtLevel(level);
   if (options.requireConnection) {
-    candidates = candidates.filter((fact) => fact.connections.some((item) => item.sourceFactId !== fact.id));
+    eligible = eligible.filter((fact) => fact.connections.some((item) => item.sourceFactId !== fact.id));
   }
-  candidates = candidates.filter((fact) => !isMultiplicationFactMastered(progress, fact.id));
+  let candidates = eligible.filter((fact) => !isMultiplicationFactMastered(progress, fact.id));
   if (candidates.length === 0) {
     candidates = MULTIPLICATION_PRACTICE_FACTS.filter((fact) =>
       !isMultiplicationFactMastered(progress, fact.id)
       && (!options.requireConnection || fact.connections.some((item) => item.sourceFactId !== fact.id))
     );
   }
-  if (candidates.length === 0) throw new Error('All multiplication facts are mastered');
+  // After full mastery, keep the world playable as varied maintenance practice.
+  // Mastery remains permanent; this only supplies the next challenge.
+  if (candidates.length === 0) {
+    candidates = eligible.length > 0
+      ? eligible
+      : MULTIPLICATION_PRACTICE_FACTS.filter((fact) =>
+          !options.requireConnection || fact.connections.some((item) => item.sourceFactId !== fact.id)
+        );
+  }
 
   const recent = recentDistinctFactIds(progress, RECENT_FACT_EXCLUSION);
   const withoutRecent = candidates.filter((fact) => !recent.has(fact.id));

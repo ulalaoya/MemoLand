@@ -25,7 +25,13 @@ export function shouldAdvanceAfterCompletedIncorrect(
 /** Free Play remains a short, land-focused sequence and does not inherit Daily Journey quotas. */
 export function buildFreePlayActivities(landId: LandId): Activity[] {
   if (landId === 'connections') {
-    return [{ kind: 'game', exerciseId: 'connections.practice', landId, levelDelta: 0, label: 'מבצע לוח הכפל' }];
+    return Array.from({ length: FREE_PLAY_ACTIVITY_COUNT }, () => ({
+      kind: 'game' as const,
+      exerciseId: 'connections.direct',
+      landId,
+      levelDelta: 0,
+      label: LANDS.connections.name,
+    }));
   }
   if (landId === 'speed') {
     return [{ kind: 'speed', landId: 'speed', seconds: 60, label: LANDS.speed.name }];

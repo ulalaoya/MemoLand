@@ -183,16 +183,18 @@ describe('בניית המסע היומי', () => {
       const rotations = session.steps.filter((step) => step.kind === 'rotation');
       expect(rotations).toHaveLength(minutes <= 10 ? 4 : minutes <= 15 ? 6 : minutes <= 20 ? 8 : 10);
       expect(rotations.every((step) => step.landId !== 'connections' && step.landId !== 'speed')).toBe(true);
+      expect(new Set(session.steps.map((step) => step.landId).filter(Boolean))).toEqual(new Set(LAND_ORDER));
       expect(session.steps.find((step) => step.kind === 'speed')?.landId).toBe('speed');
       expect(session.steps.filter((step) => step.landId === 'speed')).toHaveLength(1);
     }
   });
 
-  it('פותח מבצע כפל רציף ומשאיר משחק חופשי קצר בשאר העולמות', () => {
+  it('משאיר משחק חופשי קצר בכל עולם; אימון הכפל הרציף נפתח רק מאזור ההורה', () => {
     const freePlay = buildFreePlayActivities('connections');
-    expect(freePlay).toEqual([
-      { kind: 'game', exerciseId: 'connections.practice', landId: 'connections', levelDelta: 0, label: 'מבצע לוח הכפל' },
-    ]);
+    expect(freePlay).toHaveLength(FREE_PLAY_ACTIVITY_COUNT);
+    expect(freePlay.every((activity) => activity.kind === 'game'
+      && activity.exerciseId === 'connections.direct'
+      && activity.landId === 'connections')).toBe(true);
     expect(buildFreePlayActivities('numbers')).toHaveLength(FREE_PLAY_ACTIVITY_COUNT);
 
     expect(buildFreePlayActivities('speed')).toEqual([

@@ -73,6 +73,13 @@ describe('persistent City visual growth', () => {
 });
 
 describe('persistent Daily Journey resume state', () => {
+  it('changes the daily journey date at local midnight', () => {
+    const beforeMidnight = new Date(2026, 8, 25, 23, 59, 59).getTime();
+    const afterMidnight = new Date(2026, 8, 26, 0, 0, 1).getTime();
+    expect(store.localDayKey(beforeMidnight)).toBe('2026-09-25');
+    expect(store.localDayKey(afterMidnight)).toBe('2026-09-26');
+  });
+
   it('persists one exact plan, activity index and earned points, then completes once', () => {
     const started = store.beginDailyJourney();
     expect(started.status).toBe('in-progress');

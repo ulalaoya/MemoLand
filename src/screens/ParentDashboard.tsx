@@ -16,7 +16,13 @@ import { MULTIPLICATION_FACTS, MULTIPLICATION_FACT_BY_ID } from '../learning/mul
 type View = 'day' | 'week' | 'month';
 type Tab = 'stats' | 'content' | 'settings';
 
-export function ParentDashboard({ onExit }: { onExit: () => void }) {
+export function ParentDashboard({
+  onExit,
+  onStartMultiplicationPractice,
+}: {
+  onExit: () => void;
+  onStartMultiplicationPractice: () => void;
+}) {
   const settings = useStore((s) => s.settings);
   const [authed, setAuthed] = useState(false);
   const [pin, setPin] = useState('');
@@ -39,7 +45,7 @@ export function ParentDashboard({ onExit }: { onExit: () => void }) {
       />
     );
   }
-  return <Dashboard onExit={onExit} />;
+  return <Dashboard onExit={onExit} onStartMultiplicationPractice={onStartMultiplicationPractice} />;
 }
 
 function Gate({ pin, setPin, onSubmit, onCancel, error }: { pin: string; setPin: (s: string) => void; onSubmit: () => void; onCancel: () => void; error: boolean }) {
@@ -75,7 +81,13 @@ function Gate({ pin, setPin, onSubmit, onCancel, error }: { pin: string; setPin:
   );
 }
 
-function Dashboard({ onExit }: { onExit: () => void }) {
+function Dashboard({
+  onExit,
+  onStartMultiplicationPractice,
+}: {
+  onExit: () => void;
+  onStartMultiplicationPractice: () => void;
+}) {
   const [tab, setTab] = useState<Tab>('stats');
   return (
     <div style={{ position: 'absolute', inset: 0, background: 'var(--gray-100)', overflowY: 'auto', color: 'var(--ink)' }}>
@@ -99,7 +111,7 @@ function Dashboard({ onExit }: { onExit: () => void }) {
       <div style={{ padding: '4px 14px 60px' }}>
         {tab === 'stats' && <StatsTab />}
         {tab === 'content' && <ContentTab />}
-        {tab === 'settings' && <SettingsTab />}
+        {tab === 'settings' && <SettingsTab onStartMultiplicationPractice={onStartMultiplicationPractice} />}
       </div>
 
       <footer style={{ position: 'fixed', bottom: 0, insetInline: 0, maxWidth: 520, margin: '0 auto', background: 'var(--ink)', color: '#fff', textAlign: 'center', fontSize: 12, padding: 8 }}>
@@ -342,7 +354,7 @@ function ContentTab() {
 }
 
 /* ---------- לשונית הגדרות ---------- */
-function SettingsTab() {
+function SettingsTab({ onStartMultiplicationPractice }: { onStartMultiplicationPractice: () => void }) {
   const settings = useStore((s) => s.settings);
   const [pin1, setPin1] = useState('');
 
@@ -374,6 +386,15 @@ function SettingsTab() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <Card title="תרגול ממוקד">
+        <p style={{ margin: '0 0 10px', lineHeight: 1.5 }}>
+          פתיחת אימון רציף בעיר הקשרים בלבד. הילד מחליט מתי לסיים.
+        </p>
+        <Button variant="blue" block onClick={onStartMultiplicationPractice}>
+          פתיחת תרגול לוח הכפל
+        </Button>
+      </Card>
+
       <Card title="אורך המסע">
         <div style={{ display: 'flex', gap: 8 }}>
           {([10, 15, 20, 25] as const).map((m) => (

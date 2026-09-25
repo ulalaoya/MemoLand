@@ -49,25 +49,20 @@ export function buildDailySession(
   now: number,
 ): DailySession {
   const weak = landsByWeakness(stats);
-  const strong = [...weak].reverse();
   const rounds = rotationRounds(minutes);
   // City has its two fixed blocks and Speed has its single continuous race.
   const regularWeak = weak.filter((land) => land !== 'connections' && land !== 'speed');
-  const regularStrong = strong.filter((land) => land !== 'connections' && land !== 'speed');
 
-  // 3 ארצות לרוטציה: 2 החלשות + 1 חזקה (כדי לשמור מסוגלות).
-  const rotationLands: LandId[] = [];
-  rotationLands.push(regularWeak[0]);
-  if (regularWeak[1]) rotationLands.push(regularWeak[1]);
-  const strongPick = regularStrong.find((l) => !rotationLands.includes(l));
-  if (strongPick) rotationLands.push(strongPick);
-  while (rotationLands.length < 3 && regularWeak.length > rotationLands.length) {
-    const nxt = regularWeak.find((l) => !rotationLands.includes(l));
-    if (!nxt) break;
-    rotationLands.push(nxt);
+  // Every journey visits all seven worlds. Numbers opens the route; the four
+  // regular worlds below are guaranteed once before adaptive repeats begin.
+  const requiredRotationLands: LandId[] = ['echoes', 'forest', 'patterns', 'castle'];
+  const adaptiveOrder = regularWeak.length > 0 ? regularWeak : requiredRotationLands;
+  const rotationLands = [...requiredRotationLands];
+  while (rotationLands.length < rounds) {
+    rotationLands.push(adaptiveOrder[(rotationLands.length - requiredRotationLands.length) % adaptiveOrder.length]);
   }
 
-  const warmupLand = regularStrong[0]; // חימום בארץ ותיקה וחזקה — פתיחה בהצלחה
+  const warmupLand: LandId = 'numbers';
   const speedLand: LandId = 'speed'; // קטע הטיימר נשאר במסלול הזריזות בלבד
 
   const steps: SessionStep[] = [];
@@ -103,7 +98,7 @@ export function buildDailySession(
     steps.push({ kind: 'yesterday', label: 'מה שזכרת אתמול', rounds: 1 });
   }
 
-  // 5. רוטציה — 3 ארצות שונות, בלי להוסיף עוד שאלות עיר.
+  // 5. רוטציה — ביקור מובטח במערה, ביער, בהרים ובטירה; אחר כך התאמה לחולשות.
   for (let i = 0; i < rounds; i++) {
     const land: LandId = rotationLands[i % rotationLands.length];
     steps.push({
