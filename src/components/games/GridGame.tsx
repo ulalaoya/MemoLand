@@ -11,7 +11,7 @@ type Phase = 'ready' | 'showing' | 'input' | 'done';
 const PHASE_COPY: Record<Phase, { eyebrow: string; title: string; helper: string }> = {
   ready: {
     eyebrow: 'משימת צב היער',
-    title: 'קרחת הגחליליות',
+    title: 'שביל הגחליליות',
     helper: 'האורות יידלקו לרגע בין העלים. שמור בזיכרון איפה ראית אותם.',
   },
   showing: {
