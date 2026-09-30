@@ -67,9 +67,9 @@ function NumbersValley() {
       <path d="M0 112 Q52 76 110 108 T240 100V150H0Z" fill="#58C548" stroke={OUTLINE} strokeWidth="2.5" />
       <path d="M93 150 C88 125 111 117 106 95 C101 75 123 70 134 59" fill="none" stroke="#fff" strokeWidth="18" strokeLinecap="round" />
       <path d="M93 150 C88 125 111 117 106 95 C101 75 123 70 134 59" fill="none" stroke="url(#numbers-trail)" strokeWidth="12" strokeLinecap="round" />
-      <NumberBlock x={24} y={85} value="1" color="#2E8DF6" rotation={-7} />
-      <NumberBlock x={105} y={50} value="2" color="#F04A3A" rotation={3} />
-      <NumberBlock x={178} y={88} value="3" color="#8C52D9" rotation={7} />
+      <NumberBlock x={24} y={85} value="1" color="#2E8DF6" rotation={0} />
+      <NumberBlock x={105} y={50} value="2" color="#F04A3A" rotation={0} />
+      <NumberBlock x={178} y={88} value="3" color="#8C52D9" rotation={0} />
       <circle cx="29" cy="132" r="4" fill="#fff" />
       <circle cx="211" cy="124" r="5" fill="#FFC928" stroke={OUTLINE} strokeWidth="1.5" />
     </>

@@ -61,21 +61,22 @@ function Gate({ pin, setPin, onSubmit, onCancel, error }: { pin: string; setPin:
         ))}
       </div>
       {error && <div style={{ color: 'var(--btn-red)', fontWeight: 700 }}>קוד שגוי, נסו שוב</div>}
-      <div dir="ltr" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, width: 220 }}>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((d) => (
+      <div dir="ltr" aria-label="מקלדת מחשבון" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, width: 220 }}>
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (
           <button
             key={d}
             onClick={() => pin.length < 4 && setPin(pin + d)}
-            style={{ padding: 14, fontSize: 22, fontFamily: 'var(--font-display)', borderRadius: 12, border: '2px solid var(--gray-300)', background: 'var(--panel)', gridColumn: d === 0 ? '2' : undefined }}
+            aria-label={`ספרה ${d}`}
+            style={{ padding: 14, fontSize: 22, fontFamily: 'var(--font-display)', borderRadius: 12, border: '2px solid var(--gray-300)', background: 'var(--panel)' }}
           >
             {d}
           </button>
         ))}
+        <button onClick={() => setPin(pin.slice(0, -1))} aria-label="מחק" style={{ padding: 14, fontSize: 22, borderRadius: 12, border: '2px solid var(--gray-300)', background: 'var(--panel)' }}>⌫</button>
+        <button onClick={() => pin.length < 4 && setPin(pin + '0')} aria-label="ספרה 0" style={{ padding: 14, fontSize: 22, fontFamily: 'var(--font-display)', borderRadius: 12, border: '2px solid var(--gray-300)', background: 'var(--panel)' }}>0</button>
+        <button onClick={onSubmit} disabled={pin.length < 4} aria-label="כניסה" style={{ padding: 14, fontSize: 22, color: '#fff', borderRadius: 12, border: '2px solid #fff', background: 'var(--btn-green)' }}>✓</button>
       </div>
-      <div style={{ display: 'flex', gap: 10 }}>
-        <Button variant="red" onClick={onCancel}>ביטול</Button>
-        <Button variant="green" onClick={onSubmit} disabled={pin.length < 4}>כניסה</Button>
-      </div>
+      <Button variant="red" onClick={onCancel}>ביטול</Button>
       <p style={{ fontSize: 12, opacity: 0.5 }}>ברירת מחדל: 1234</p>
     </div>
   );

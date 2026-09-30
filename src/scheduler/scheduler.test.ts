@@ -141,6 +141,21 @@ describe('בניית המסע היומי', () => {
     expect(session.steps.some((s) => s.kind === 'yesterday')).toBe(false);
   });
 
+  it('מחליף את הוראת הזכירה בין סבבי המספרים', () => {
+    const session = buildDailySession({}, 20, false, Date.UTC(2026, 8, 30));
+    const { activities } = buildActivities(session, [], 17);
+    const firstNumberActivities = activities
+      .filter((activity) => activity.kind === 'game' && activity.landId === 'numbers')
+      .slice(0, 2);
+
+    expect(firstNumberActivities).toHaveLength(2);
+    expect(new Set(firstNumberActivities.map((activity) => activity.kind === 'game' ? activity.exerciseId : '')).size).toBe(2);
+    expect(firstNumberActivities.map((activity) => activity.kind === 'game' ? activity.exerciseId : '')).toEqual([
+      'numbers.forward',
+      'numbers.backward',
+    ]);
+  });
+
   it('אורך סשן משפיע על מספר סבבי הרוטציה', () => {
     const short = buildDailySession({}, 10, false, Date.now());
     const long = buildDailySession({}, 25, false, Date.now());

@@ -71,7 +71,7 @@ export function MapScreen({
         <div className="ml-world-map-intro">
           <span className="ml-world-map-intro__kicker">מפת ההרפתקה</span>
           <h1>{journeyCompleted ? 'המסע הושלם. לאן בא לך ללכת עכשיו?' : 'המסע של היום מחכה לך!'}</h1>
-          <p>{journeyCompleted ? 'כל העולמות פתוחים עכשיו למשחק חופשי.' : 'כל עולם ימשיך אותך מאותה נקודה במסע היומי.'}</p>
+          <p>{journeyCompleted ? 'כל העולמות פתוחים עכשיו למשחק חופשי.' : 'לחצו על עולם למשחק חופשי, או המשיכו במסע היומי מהכפתור הסגול.'}</p>
         </div>
 
         <section className="ml-world-map-route" aria-label="עולמות ממו לנד">
@@ -96,7 +96,7 @@ export function MapScreen({
                   current={index === currentLandIndex}
                   side={index % 2 === 0 ? 'left' : 'right'}
                   theme={LAND_THEMES[id]}
-                  onSelect={() => available && (journeyCompleted ? onPlayLand(id) : onStartJourney())}
+                  onSelect={() => available && onPlayLand(id)}
                 />
               );
             })}

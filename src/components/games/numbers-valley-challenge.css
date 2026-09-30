@@ -140,7 +140,7 @@
   border: 3px solid #fff8dc;
   border-radius: 20px 17px 22px 18px;
   box-shadow: 0 7px 0 #8d5b36, 0 14px 25px rgba(68, 84, 50, 0.2), inset 0 -3px rgba(141, 91, 54, 0.22);
-  transform: rotate(-0.7deg);
+  transform: none;
 }
 
 .ml-valley-ready__eyebrow,
@@ -338,88 +338,58 @@
 
 .ml-valley-number-pad {
   position: relative;
-  width: min(100%, 350px);
-  padding: 7px 3px 4px;
+  width: min(100%, 300px);
+  padding: 10px;
+  border: 3px solid rgba(255, 255, 255, 0.88);
+  border-radius: 22px;
+  background: linear-gradient(170deg, rgba(246, 220, 139, 0.88), rgba(184, 127, 70, 0.86));
+  box-shadow: 0 6px 0 rgba(106, 65, 38, 0.34), 0 12px 22px rgba(68, 84, 50, 0.2);
 }
 
-.ml-valley-number-pad::before {
-  content: '';
-  position: absolute;
-  z-index: 0;
-  inset: 17px 7% 50px;
-  background: linear-gradient(170deg, rgba(246, 220, 139, 0.62), rgba(141, 91, 54, 0.34));
-  border: 2px solid rgba(255, 246, 200, 0.7);
-  border-radius: 46% 54% 48% 52%;
-  box-shadow: 0 5px 0 rgba(106, 65, 38, 0.2);
-  transform: rotate(-1.2deg);
-}
-
-.ml-valley-number-pad__digits {
+.ml-valley-number-pad__grid {
   display: grid;
-  gap: 7px;
-}
-
-.ml-valley-number-pad__row {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
-.ml-valley-number-pad__row--2 { transform: translateX(5px); }
-
 .ml-valley-key {
-  --stone-y: 0px;
-  --stone-tilt: 0deg;
   --stone-top: #67c8ff;
   --stone-bottom: #2e8df6;
   --stone-shadow: #176bc6;
   min-width: 0;
-  min-height: 52px;
+  min-height: 50px;
   padding: 3px;
   color: #fff;
   background:
     radial-gradient(circle at 36% 18%, rgba(255, 255, 255, 0.6), transparent 27%),
     linear-gradient(155deg, var(--stone-top), var(--stone-bottom));
   border: 3px solid #fff;
-  border-radius: 43% 47% 39% 45%;
+  border-radius: 14px;
   box-shadow: 0 5px 0 var(--stone-shadow), 0 8px 12px rgba(68, 84, 50, 0.16);
   font-family: var(--ml-font-display);
   font-size: 1.65rem;
   font-weight: 900;
   text-shadow: 0 2px rgba(36, 50, 71, 0.2);
   cursor: pointer;
-  transform: translateY(var(--stone-y)) rotate(var(--stone-tilt));
 }
 
-.ml-valley-key:nth-child(2) { --stone-y: 2px; --stone-tilt: 0.8deg; --stone-top: #b58aef; --stone-bottom: #8c52d9; --stone-shadow: #6231ad; }
-.ml-valley-key:nth-child(3) { --stone-tilt: -0.8deg; --stone-top: #91e35d; --stone-bottom: #58c548; --stone-shadow: #32983a; }
-.ml-valley-key:nth-child(4) { --stone-y: 1px; --stone-tilt: 0.5deg; --stone-top: #ffbd65; --stone-bottom: #f59d2a; --stone-shadow: #b86b1d; }
-.ml-valley-key:nth-child(5) { --stone-tilt: -0.6deg; --stone-top: #ffe98d; --stone-bottom: #ffc928; --stone-shadow: #dc9611; color: var(--ml-navy); text-shadow: 0 2px rgba(255, 255, 255, 0.28); }
-.ml-valley-key:active { transform: translateY(calc(var(--stone-y) + 4px)) rotate(var(--stone-tilt)) scale(0.98); box-shadow: 0 1px 0 var(--stone-shadow); }
+.ml-valley-key:nth-child(3n + 2) { --stone-top: #b58aef; --stone-bottom: #8c52d9; --stone-shadow: #6231ad; }
+.ml-valley-key:nth-child(3n) { --stone-top: #91e35d; --stone-bottom: #58c548; --stone-shadow: #32983a; }
+.ml-valley-key:active { transform: translateY(4px) scale(0.98); box-shadow: 0 1px 0 var(--stone-shadow); }
 .ml-valley-key:focus-visible { outline: none; box-shadow: 0 5px 0 var(--stone-shadow), var(--ml-focus-ring); }
 
-.ml-valley-number-pad__actions {
-  position: relative;
-  z-index: 2;
-  margin-top: 9px;
-  display: grid;
-  grid-template-columns: 0.8fr 1.2fr;
-  gap: 9px;
-}
-
 .ml-valley-action {
-  min-height: 48px;
-  padding: 7px 12px;
+  min-width: 0;
+  min-height: 50px;
+  padding: 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
   border: 2px solid #fff;
-  border-radius: 16px;
+  border-radius: 14px;
   font-family: var(--ml-font-heading);
-  font-size: 0.9rem;
+  font-size: 1.45rem;
   font-weight: 800;
   cursor: pointer;
 }
@@ -529,8 +499,7 @@
   .ml-valley-focus-breath { min-height: 205px; height: 44vh; }
   .ml-valley-number-token { min-width: 124px; min-height: 138px; }
   .ml-valley-number-pad { padding: 8px; }
-  .ml-valley-number-pad__digits,
-  .ml-valley-number-pad__row { gap: 6px; }
+  .ml-valley-number-pad__grid { gap: 6px; }
   .ml-valley-key { min-height: 48px; font-size: 1.45rem; }
   .ml-numbers-challenge__memo { left: 1%; bottom: 1%; --ml-memo-size: 80px; }
 }

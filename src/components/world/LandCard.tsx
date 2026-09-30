@@ -50,7 +50,7 @@ export function LandCard({
         className={`ml-land-card ml-pressable${current ? ' ml-land-card--current' : ''}`}
         onClick={onSelect}
         disabled={!available}
-        aria-label={`${name}, עולם ${worldNumber}, ${completedTracks} מתוך ${totalTracks} מסלולים${available ? '' : ', לא זמין'}`}
+        aria-label={`${name}, עולם ${worldNumber}, משחק חופשי, ${completedTracks} מתוך ${totalTracks} מסלולים${available ? '' : ', לא זמין'}`}
       >
         <span className="ml-land-card__art" aria-hidden>
           <WorldIllustration land={landId} />
@@ -64,7 +64,7 @@ export function LandCard({
 
         <span className="ml-land-card__content">
           <span className="ml-land-card__eyebrow">
-            {current ? 'התחנה הבאה' : available ? 'עולם פתוח' : 'עולם נעול'}
+            {available ? 'משחק חופשי' : 'עולם נעול'}
           </span>
           <strong className="ml-land-card__title">{name}</strong>
           <span className="ml-land-card__subtitle">{subtitle}</span>

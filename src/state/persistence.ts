@@ -12,6 +12,7 @@ const LEGACY_KEY = 'memoland.save.v1';
 const REGISTRY_KEY = 'memoland.profiles.v1';
 const savePrefix = (id: string) => `memoland.save.v1.${id}`;
 export const SAVE_VERSION = 5;
+const NUMBER_RECALL_EXERCISES = ['numbers.forward', 'numbers.backward', 'numbers.sort'] as const;
 
 function emptyDailyJourney(): SaveState['dailyJourney'] {
   return {
@@ -59,8 +60,21 @@ function normalizeJourneyPlan(plan: unknown[], currentActivity: number) {
     if (isLegacyStory && index < currentActivity) removedBeforeCurrent += 1;
     return !isLegacyStory;
   }) as SaveState['dailyJourney']['plan'];
+  let firstNumberMode = -1;
+  let numberActivityOffset = 0;
+  const varied = filtered.map((activity) => {
+    if (activity.kind !== 'game' || activity.landId !== 'numbers') return activity;
+    const currentMode = NUMBER_RECALL_EXERCISES.findIndex((exerciseId) => exerciseId === activity.exerciseId);
+    if (currentMode < 0) return activity;
+    if (firstNumberMode < 0) firstNumberMode = currentMode;
+    const exerciseId = NUMBER_RECALL_EXERCISES[
+      (firstNumberMode + numberActivityOffset) % NUMBER_RECALL_EXERCISES.length
+    ];
+    numberActivityOffset += 1;
+    return activity.exerciseId === exerciseId ? activity : { ...activity, exerciseId };
+  });
   return {
-    plan: filtered,
+    plan: varied,
     currentActivity: Math.max(0, currentActivity - removedBeforeCurrent),
   };
 }

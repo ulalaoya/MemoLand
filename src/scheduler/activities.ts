@@ -1,5 +1,5 @@
 /* ממיר את מבנה הסשן לרשימת פעילויות קונקרטיות שהמסך מריץ. */
-import type { DailySession, JourneyActivity, LandId, SpacedItem } from '../types';
+import type { DailySession, ExerciseId, JourneyActivity, LandId, SpacedItem } from '../types';
 import { LANDS } from '../config/lands';
 import { enginesForLand, playableLands } from '../engines';
 
@@ -10,6 +10,12 @@ export interface BuiltActivities {
 }
 
 export const FREE_PLAY_ACTIVITY_COUNT = 5;
+
+const NUMBER_RECALL_EXERCISES: ExerciseId[] = [
+  'numbers.forward',
+  'numbers.backward',
+  'numbers.sort',
+];
 
 export function shouldAdvanceAfterCompletedIncorrect(
   activity: Extract<Activity, { kind: 'game' }>,
@@ -63,12 +69,28 @@ export function buildActivities(
 ): BuiltActivities {
   const activities: Activity[] = [];
   let dueIdx = 0;
+  let numberRecallOffset = 0;
+
+  function variedExercise(exerciseId: ExerciseId, landId: LandId): ExerciseId {
+    if (landId !== 'numbers') return exerciseId;
+    const preferredIndex = NUMBER_RECALL_EXERCISES.indexOf(exerciseId);
+    if (preferredIndex < 0) return exerciseId;
+    const varied = NUMBER_RECALL_EXERCISES[(preferredIndex + numberRecallOffset) % NUMBER_RECALL_EXERCISES.length];
+    numberRecallOffset += 1;
+    return varied;
+  }
 
   for (const step of session.steps) {
     switch (step.kind) {
       case 'warmup':
         for (let i = 0; i < step.rounds; i++)
-          activities.push({ kind: 'game', exerciseId: step.exerciseId!, landId: step.landId!, levelDelta: -2, label: step.label });
+          activities.push({
+            kind: 'game',
+            exerciseId: variedExercise(step.exerciseId!, step.landId!),
+            landId: step.landId!,
+            levelDelta: -2,
+            label: step.label,
+          });
         break;
 
       case 'connections-practice':
@@ -100,7 +122,13 @@ export function buildActivities(
       }
 
       case 'rotation':
-        activities.push({ kind: 'game', exerciseId: step.exerciseId!, landId: step.landId!, levelDelta: 0, label: step.label });
+        activities.push({
+          kind: 'game',
+          exerciseId: variedExercise(step.exerciseId!, step.landId!),
+          landId: step.landId!,
+          levelDelta: 0,
+          label: step.label,
+        });
         break;
 
       case 'speed':
@@ -109,7 +137,13 @@ export function buildActivities(
 
       case 'guaranteed-finish':
         for (let i = 0; i < step.rounds; i++)
-          activities.push({ kind: 'game', exerciseId: step.exerciseId!, landId: step.landId!, levelDelta: -3, label: step.label });
+          activities.push({
+            kind: 'game',
+            exerciseId: variedExercise(step.exerciseId!, step.landId!),
+            landId: step.landId!,
+            levelDelta: -3,
+            label: step.label,
+          });
         break;
     }
   }

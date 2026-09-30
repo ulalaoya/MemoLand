@@ -181,4 +181,26 @@ describe('SaveState migration', () => {
     expect(migrated.dailyJourney.secret).toBeNull();
     expect(migrated.spaced).toEqual([]);
   });
+
+  it('upgrades an interrupted journey to varied number-recall instructions without moving its position', () => {
+    const current = defaultSave();
+    const plan = [
+      { kind: 'game' as const, exerciseId: 'numbers.backward', landId: 'numbers' as const, levelDelta: -2, label: 'חימום' },
+      { kind: 'game' as const, exerciseId: 'numbers.backward', landId: 'numbers' as const, levelDelta: -2, label: 'חימום' },
+      { kind: 'game' as const, exerciseId: 'numbers.backward', landId: 'numbers' as const, levelDelta: 0, label: 'הרפתקה' },
+    ];
+    const migrated = normalizeSave({
+      ...current,
+      dailyJourney: { ...current.dailyJourney, status: 'in-progress', currentActivity: 1, plan },
+    });
+    const migratedAgain = normalizeSave(migrated);
+
+    expect(migrated.dailyJourney.currentActivity).toBe(1);
+    expect(migrated.dailyJourney.plan.map((activity) => activity.kind === 'game' ? activity.exerciseId : '')).toEqual([
+      'numbers.backward',
+      'numbers.sort',
+      'numbers.forward',
+    ]);
+    expect(migratedAgain.dailyJourney.plan).toEqual(migrated.dailyJourney.plan);
+  });
 });
