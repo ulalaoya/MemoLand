@@ -17,6 +17,7 @@ import {
 import { SPACED_INTERVALS_MS, floorFromPeak } from '../config/curriculum';
 import type { ExerciseStats, SpacedItem } from '../types';
 import { LAND_ORDER } from '../config/lands';
+import { createJourneySecret } from './journeySecret';
 
 describe('world registry order', () => {
   it('inserts City as world 3 without renaming persisted land ids', () => {
@@ -109,12 +110,30 @@ describe('בניית המסע היומי', () => {
     const kinds = session.steps.map((s) => s.kind);
     expect(kinds[0]).toBe('warmup');
     expect(kinds).toContain('connections-practice');
-    expect(kinds).toContain('delayed-reveal');
     expect(kinds).toContain('yesterday');
     expect(kinds).toContain('rotation');
     expect(kinds).toContain('speed');
-    expect(kinds).toContain('delayed-recall');
     expect(kinds[kinds.length - 1]).toBe('guaranteed-finish');
+    expect(kinds).not.toContain('delayed-reveal');
+    expect(kinds).not.toContain('delayed-recall');
+  });
+
+  it('יוצר סוד מסע דטרמיניסטי עם שלוש אפשרויות הוגנות ומגוונות', () => {
+    const first = createJourneySecret(12345);
+    expect(createJourneySecret(12345)).toEqual(first);
+    expect(first.options).toHaveLength(3);
+    expect(new Set(first.options).size).toBe(3);
+    expect(first.options).toContain(first.value);
+    expect(first).toMatchObject({
+      revealed: false,
+      recallStarted: false,
+      answered: false,
+      wasCorrect: null,
+      rewardClaimed: false,
+    });
+
+    const kinds = new Set(Array.from({ length: 40 }, (_, seed) => createJourneySecret(seed).kind));
+    expect(kinds).toEqual(new Set(['word', 'number']));
   });
 
   it('בלי חזרה מאתמול — אין שלב yesterday', () => {

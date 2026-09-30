@@ -34,6 +34,7 @@ import { TRACKS_PER_LAND } from '../config/lands';
 import { applyMultiplicationAttempts } from './multiplicationProgress';
 import { multiplicationCurriculumLevel } from '../learning/multiplicationFacts';
 import { cityGrowthAfterCompletedQuestion } from './cityGrowth';
+import { createJourneySecret } from '../scheduler/journeySecret';
 
 let registry: ProfileRegistry = loadRegistry();
 let activeId: string | null = registry.activeId;
@@ -185,6 +186,7 @@ function journeyForToday(s: SaveState, now = Date.now()): SaveState['dailyJourne
     seed: 0,
     earnedPoints: 0,
     plan: [],
+    secret: null,
   };
 }
 
@@ -195,14 +197,97 @@ export function getDailyJourneyProgress(now = Date.now()): SaveState['dailyJourn
 /** Starts a fresh daily plan or returns the exact persisted resume point. */
 export function beginDailyJourney(now = Date.now()): SaveState['dailyJourney'] {
   const current = journeyForToday(state, now);
-  if (current.status === 'in-progress' || current.status === 'completed') return current;
+  if (current.status === 'completed') return current;
+  if (current.status === 'in-progress') {
+    if (current.secret) return current;
+    const resumed = {
+      ...current,
+      secret: createJourneySecret(current.seed || now),
+    };
+    set({ ...state, dailyJourney: resumed });
+    return resumed;
+  }
+  const seed = now;
   const next: SaveState['dailyJourney'] = {
     ...current,
     status: 'in-progress',
-    seed: now,
+    seed,
+    secret: createJourneySecret(seed),
   };
   set({ ...state, dailyJourney: next });
   return next;
+}
+
+export const JOURNEY_SECRET_REWARD = 8;
+
+export function markDailyJourneySecretRevealed(): void {
+  const current = journeyForToday(state);
+  if (current.status !== 'in-progress' || !current.secret || current.secret.revealed) return;
+  set({
+    ...state,
+    dailyJourney: {
+      ...current,
+      secret: { ...current.secret, revealed: true },
+    },
+  });
+}
+
+export function startDailyJourneySecretRecall(): void {
+  const current = journeyForToday(state);
+  if (current.status !== 'in-progress' || !current.secret || current.secret.recallStarted) return;
+  set({
+    ...state,
+    dailyJourney: {
+      ...current,
+      secret: { ...current.secret, recallStarted: true },
+    },
+  });
+}
+
+export interface JourneySecretAnswerResult {
+  accepted: boolean;
+  correct: boolean;
+  answer: string;
+  rewardCoins: number;
+}
+
+/** Resolves the secret and its reward in one state update, making retries and rapid taps idempotent. */
+export function answerDailyJourneySecret(selected: string): JourneySecretAnswerResult {
+  const current = journeyForToday(state);
+  const secret = current.secret;
+  if (current.status !== 'in-progress' || !secret) {
+    return { accepted: false, correct: false, answer: '', rewardCoins: 0 };
+  }
+  if (secret.answered) {
+    return {
+      accepted: false,
+      correct: secret.wasCorrect === true,
+      answer: secret.value,
+      rewardCoins: 0,
+    };
+  }
+  const correct = selected === secret.value;
+  const rewardCoins = correct ? JOURNEY_SECRET_REWARD : 0;
+  const coins = state.coins + rewardCoins;
+  const todayPoints = addTodayPoints(state, rewardCoins);
+  set({
+    ...state,
+    coins,
+    rank: rankForCoins(coins),
+    ...todayPoints,
+    dailyJourney: {
+      ...current,
+      earnedPoints: current.earnedPoints + rewardCoins,
+      secret: {
+        ...secret,
+        recallStarted: true,
+        answered: true,
+        wasCorrect: correct,
+        rewardClaimed: correct,
+      },
+    },
+  });
+  return { accepted: true, correct, answer: secret.value, rewardCoins };
 }
 
 export function setDailyJourneyPlan(plan: JourneyActivity[]): void {

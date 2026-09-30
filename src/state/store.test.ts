@@ -107,6 +107,59 @@ describe('persistent Daily Journey resume state', () => {
     expect(second.streakDays).toBe(first.streakDays);
   });
 
+  it('keeps the same journey secret, reveal state and activity when resuming', () => {
+    const now = Date.now();
+    const started = store.beginDailyJourney(now);
+    expect(started.secret).not.toBeNull();
+    expect(started.secret?.options).toHaveLength(3);
+    store.markDailyJourneySecretRevealed();
+    store.setDailyJourneyActivity(7);
+
+    const resumed = store.beginDailyJourney(now + 1);
+    expect(resumed.currentActivity).toBe(7);
+    expect(resumed.secret).toEqual({ ...started.secret, revealed: true });
+  });
+
+  it('awards a correct journey secret exactly once across repeated answers', () => {
+    const started = store.beginDailyJourney();
+    const answer = started.secret!.value;
+    const coinsBefore = store.getState().coins;
+    store.markDailyJourneySecretRevealed();
+    store.startDailyJourneySecretRecall();
+
+    const first = store.answerDailyJourneySecret(answer);
+    const second = store.answerDailyJourneySecret(answer);
+
+    expect(first).toMatchObject({ accepted: true, correct: true, answer, rewardCoins: store.JOURNEY_SECRET_REWARD });
+    expect(second).toMatchObject({ accepted: false, correct: true, answer, rewardCoins: 0 });
+    expect(store.getState().coins).toBe(coinsBefore + store.JOURNEY_SECRET_REWARD);
+    expect(store.getDailyJourneyProgress().secret).toMatchObject({
+      answered: true,
+      wasCorrect: true,
+      rewardClaimed: true,
+    });
+  });
+
+  it('shows the right answer positively after a wrong secret choice without a reward', () => {
+    const started = store.beginDailyJourney();
+    const secret = started.secret!;
+    const wrong = secret.options.find((option) => option !== secret.value)!;
+    const coinsBefore = store.getState().coins;
+    store.startDailyJourneySecretRecall();
+
+    const result = store.answerDailyJourneySecret(wrong);
+    const repeated = store.answerDailyJourneySecret(secret.value);
+
+    expect(result).toEqual({ accepted: true, correct: false, answer: secret.value, rewardCoins: 0 });
+    expect(repeated.accepted).toBe(false);
+    expect(store.getState().coins).toBe(coinsBefore);
+    expect(store.getDailyJourneyProgress().secret).toMatchObject({
+      answered: true,
+      wasCorrect: false,
+      rewardClaimed: false,
+    });
+  });
+
   it('keeps only the last three distinct challenge fingerprints', () => {
     for (const fingerprint of ['a', 'b', 'c', 'd', 'c']) store.rememberChallengeFingerprint(fingerprint);
     expect(store.getState().recentChallengeFingerprints).toEqual(['b', 'd', 'c']);

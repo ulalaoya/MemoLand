@@ -147,4 +147,38 @@ describe('SaveState migration', () => {
     expect(migrated.dailyJourney.plan).toEqual([]);
     expect(migrated.recentChallengeFingerprints).toEqual([]);
   });
+
+  it('removes the replaced story activities while preserving the resume position', () => {
+    const current = defaultSave();
+    const legacyPlan = [
+      { kind: 'game', exerciseId: 'numbers.forward', landId: 'numbers', levelDelta: 0, label: 'פתיחה' },
+      { kind: 'reveal', storyId: 'story.picnic', text: 'סיפור', label: 'סוד לזכור' },
+      { kind: 'game', exerciseId: 'forest.grid', landId: 'forest', levelDelta: 0, label: 'הרפתקה' },
+      { kind: 'quiz', landId: 'echoes', label: 'זוכר את הסוד?', question: 'שאלה', answer: 'תשובה', options: ['תשובה'] },
+      { kind: 'game', exerciseId: 'patterns.complete', landId: 'patterns', levelDelta: 0, label: 'הרפתקה' },
+    ];
+    const migrated = normalizeSave({
+      ...current,
+      dailyJourney: {
+        ...current.dailyJourney,
+        status: 'in-progress',
+        currentActivity: 4,
+        plan: legacyPlan,
+      },
+      spaced: [{
+        id: 'story-legacy-story.picnic',
+        landId: 'echoes',
+        kind: 'delayed',
+        payload: { question: 'שאלת סיפור', answer: 'תשובה' },
+        intervalIdx: 0,
+        dueAt: 1,
+        createdAt: 1,
+      }],
+    });
+
+    expect(migrated.dailyJourney.plan.map((activity) => activity.kind)).toEqual(['game', 'game', 'game']);
+    expect(migrated.dailyJourney.currentActivity).toBe(2);
+    expect(migrated.dailyJourney.secret).toBeNull();
+    expect(migrated.spaced).toEqual([]);
+  });
 });

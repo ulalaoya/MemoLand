@@ -67,6 +67,9 @@ export function buildDailySession(
 
   const steps: SessionStep[] = [];
 
+  // סוד המסע מוצג במסך עצמו לפני הפעילות הראשונה ונשלף ממש לפני הסיום.
+  // הוא אינו שלב משחק כדי שלא יאריך או יסבך את תוכנית המסע.
+
   // 1. חימום — קל, בארץ שהילד שולט בה
   steps.push({
     kind: 'warmup',
@@ -85,20 +88,12 @@ export function buildDailySession(
     rounds: 10,
   });
 
-  // 3. המשימה המושהית נחשפת (סיפור/רשימה) — לא נשאל עכשיו
-  steps.push({
-    kind: 'delayed-reveal',
-    label: 'סוד לזכור — שמור אותו בלב',
-    landId: 'echoes',
-    rounds: 1,
-  });
-
-  // 4. "מה שזכרת אתמול" — חזרה במרווחים
+  // 3. "מה שזכרת אתמול" — חזרה במרווחים
   if (hasYesterday) {
     steps.push({ kind: 'yesterday', label: 'מה שזכרת אתמול', rounds: 1 });
   }
 
-  // 5. רוטציה — ביקור מובטח במערה, ביער, בהרים ובטירה; אחר כך התאמה לחולשות.
+  // 4. רוטציה — ביקור מובטח במערה, ביער, בהרים ובטירה; אחר כך התאמה לחולשות.
   for (let i = 0; i < rounds; i++) {
     const land: LandId = rotationLands[i % rotationLands.length];
     steps.push({
@@ -110,7 +105,7 @@ export function buildDailySession(
     });
   }
 
-  // 6. אתגר מהירות — עם טיימר, מסגור חיובי בלבד
+  // 5. אתגר מהירות — עם טיימר, מסגור חיובי בלבד
   steps.push({
     kind: 'speed',
     label: 'כמה תספיק ב-60 שניות?',
@@ -121,10 +116,7 @@ export function buildDailySession(
     timerSeconds: 60,
   });
 
-  // 7. שליפה מושהית — שאלות על הפריט שנחשף קודם
-  steps.push({ kind: 'delayed-recall', label: 'זוכר את הסוד?', rounds: 1 });
-
-  // 8. עשר שליפות ישירות נוספות — אחרי פעילויות מארצות אחרות.
+  // 6. עשר שליפות ישירות נוספות — אחרי פעילויות מארצות אחרות.
   steps.push({
     kind: 'connections-practice',
     label: 'ממשיכים לבנות את העיר',
@@ -133,7 +125,7 @@ export function buildDailySession(
     rounds: 10,
   });
 
-  // 9. סיום מובטח — קל בוודאות, ואז תיבת האוצר
+  // 7. סיום מובטח — קל בוודאות, אחריו שליפת סוד המסע ואז תיבת האוצר
   steps.push({
     kind: 'guaranteed-finish',
     label: 'ישר לטירה — סיבוב ניצחון',

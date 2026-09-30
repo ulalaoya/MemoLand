@@ -9,25 +9,28 @@ import {
   shouldAdvanceAfterCompletedIncorrect,
 } from '../scheduler/activities';
 import { buildDailySession } from '../scheduler/session';
-import { dueItems, makeSpacedItem } from '../scheduler/spacedRepetition';
+import { dueItems } from '../scheduler/spacedRepetition';
 import { clampLevel } from '../config/curriculum';
 import { getEngine } from '../engines';
 import { landColor, LANDS } from '../config/lands';
 import {
   DAILY_GOAL,
+  JOURNEY_SECRET_REWARD,
   addCoins,
   addMinutes,
-  addSpacedItems,
+  answerDailyJourneySecret,
   completeTrack,
   finishDailyJourney,
   getDailyJourneyProgress,
   getState,
+  markDailyJourneySecretRevealed,
   recordAttempt,
   rememberChallengeFingerprint,
   replaceSpaced,
   setDailyJourneyActivity,
   setDailyJourneyPlan,
   setDailyJourneyPoints,
+  startDailyJourneySecretRecall,
   updateSettings,
   useStore,
 } from '../state/store';
@@ -47,7 +50,7 @@ import { LandBackground } from '../components/svg/Backgrounds';
 import { Guide, guideKindFor } from '../components/svg/Memo';
 import { speak } from '../audio/speech';
 import { sfxLevelUp } from '../audio/sfx';
-import type { LandId } from '../types';
+import type { JourneySecret, LandId } from '../types';
 import {
   MULTIPLICATION_PRACTICE_FACTS,
   isMultiplicationFactMastered,
@@ -93,6 +96,7 @@ export function SessionScreen({
   const settings = useStore((s) => s.settings);
   const persistedCoins = useStore((s) => s.coins);
   const multiplicationProgress = useStore((s) => s.multiplication);
+  const journeySecret = useStore((s) => s.dailyJourney.secret);
   const practiceMode = multiplicationPractice;
   const masteredCount = multiplicationMasteryCount(multiplicationProgress);
   const missionTotal = MULTIPLICATION_PRACTICE_FACTS.length;
@@ -153,9 +157,15 @@ export function SessionScreen({
   const practiceStartedAt = useRef(Date.now());
   const rewardSequence = useRef(0);
   const rewardClearTimer = useRef<number | null>(null);
+  const finishTimer = useRef<number | null>(null);
+  const finalizingRef = useRef(false);
   const sessionBoardRef = useRef<HTMLDivElement>(null);
   // נקודות שנצברו במסע הנוכחי — קובעות את אורך המסע (יעד ~1000 ≈ 20 דק').
   const sessionPoints = useRef(initialRun.earnedPoints);
+  const isDailyJourney = !landFocus && !practiceMode;
+  const resumeAfterSecretAnswer = useRef(
+    isDailyJourney && journeySecret?.recallStarted === true && journeySecret.answered,
+  );
 
   // מנגנון הלבבות — 3 לבבות למסע; טעות מורידה לב. באפס: "רוצה לנסות שוב?"
   const MAX_HEARTS = 3;
@@ -228,6 +238,13 @@ export function SessionScreen({
 
   useEffect(() => () => {
     if (rewardClearTimer.current !== null) window.clearTimeout(rewardClearTimer.current);
+    if (finishTimer.current !== null) window.clearTimeout(finishTimer.current);
+  }, []);
+
+  useEffect(() => {
+    if (resumeAfterSecretAnswer.current) finalize();
+    // Only recovery after a refresh between answering and reaching the treasure screen.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /** יוצר אתגר-משחק נוסף (סבב הרפתקה) כשעדיין לא הגענו ליעד היומי. */
@@ -256,10 +273,27 @@ export function SessionScreen({
       setIdx((i) => i + 1);
       return;
     }
+    if (isDailyJourney) {
+      const secret = getDailyJourneyProgress().secret;
+      if (secret && !secret.answered) {
+        startDailyJourneySecretRecall();
+        return;
+      }
+    }
     finalize();
   }
 
   function finalize() {
+    if (isDailyJourney) {
+      const journey = getDailyJourneyProgress();
+      if (journey.status === 'completed') return;
+      if (journey.secret && !journey.secret.answered) {
+        startDailyJourneySecretRecall();
+        return;
+      }
+    }
+    if (finalizingRef.current) return;
+    finalizingRef.current = true;
     addMinutes(settings.sessionMinutes);
     const streakRes = landFocus ? { streakDays: getState().streakDays } : finishDailyJourney();
     const focusLand: LandId = landFocus ?? 'numbers';
@@ -274,6 +308,15 @@ export function SessionScreen({
       castleOpened: trackRes.castleOpened,
       reachedGoal: !landFocus && sessionPoints.current >= DAILY_GOAL,
     });
+  }
+
+  function handleSecretAnswer(selected: string) {
+    const result = answerDailyJourneySecret(selected);
+    if (!result.accepted) return;
+    stats.current.total += 1;
+    if (result.correct) stats.current.correct += 1;
+    sessionPoints.current += result.rewardCoins;
+    finishTimer.current = window.setTimeout(finalize, 1700);
   }
 
   function quit() {
@@ -372,28 +415,27 @@ export function SessionScreen({
     next();
   }
 
-  function handleReveal() {
-    next();
+  if (isDailyJourney && journeySecret && !journeySecret.revealed) {
+    return (
+      <JourneySecretScreen
+        secret={journeySecret}
+        speechRate={settings.speechRate}
+        onRevealDone={markDailyJourneySecretRevealed}
+        onAnswer={handleSecretAnswer}
+      />
+    );
   }
 
-  // הקראה + יצירת פריט חזרה כשמגיעים לפעילות reveal
-  useEffect(() => {
-    if (!activity) return;
-    if (activity.kind === 'reveal') {
-      speak(activity.text, settings.speechRate);
-      // יוצרים פריט חזרה מושהית לסיפור (לשליפה מחר)
-      const story = getStoryQuestion(activity.storyId);
-      if (story) {
-        addSpacedItems([
-          makeSpacedItem(
-            { id: `story-${genSeed.current}-${activity.storyId}`, landId: 'echoes', kind: 'delayed', payload: story },
-            Date.now(),
-          ),
-        ]);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idx]);
+  if (isDailyJourney && journeySecret?.recallStarted) {
+    return (
+      <JourneySecretScreen
+        secret={journeySecret}
+        speechRate={settings.speechRate}
+        onRevealDone={markDailyJourneySecretRevealed}
+        onAnswer={handleSecretAnswer}
+      />
+    );
+  }
 
   if (!activity) {
     // אין פעילויות (מקרה קצה) — מסיימים בהצלחה
@@ -490,7 +532,6 @@ export function SessionScreen({
           {activity.kind === 'quiz' && (
             <QuizGame question={activity.question} answer={activity.answer} options={activity.options} color={color} speechRate={settings.speechRate} onResult={(c) => handleQuizResult(activity, c)} />
           )}
-          {activity.kind === 'reveal' && <RevealCard text={activity.text} color={color} onContinue={handleReveal} onReplay={() => speak(activity.text, settings.speechRate)} />}
           {activity.kind === 'speed' && (
             <SpeedMatchGame
               seconds={activity.seconds}
@@ -626,16 +667,74 @@ function GameHostForActivity({
   return <GameHost challenge={challenge} color={color} speechRate={speechRate} hintMode={softenBy > 0} onResult={onResult} />;
 }
 
-function RevealCard({ text, color, onContinue, onReplay }: { text: string; color: string; onContinue: () => void; onReplay: () => void }) {
+function JourneySecretScreen({
+  secret,
+  speechRate,
+  onRevealDone,
+  onAnswer,
+}: {
+  secret: JourneySecret;
+  speechRate: number;
+  onRevealDone: () => void;
+  onAnswer: (selected: string) => void;
+}) {
+  const [chosen, setChosen] = useState<string | null>(secret.answered ? secret.value : null);
+  const recalling = secret.recallStarted;
+
+  function choose(option: string) {
+    if (chosen !== null || secret.answered) return;
+    setChosen(option);
+    onAnswer(option);
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center', textAlign: 'center' }}>
-      <div style={{ fontSize: 40 }}>🔒</div>
-      <p style={{ fontFamily: 'var(--font-head)', fontWeight: 600, fontSize: 20 }}>שמור את הסוד בלב — נשאל עליו בסוף המסע</p>
-      <p style={{ fontFamily: 'var(--font-body)', fontSize: 19, lineHeight: 1.6, background: 'var(--gray-100)', padding: 16, borderRadius: 16, border: `2px solid ${color}` }}>{text}</p>
-      <div style={{ display: 'flex', gap: 10 }}>
-        <Button variant="orange" onClick={onReplay}>🔊 הקרא שוב</Button>
-        <Button variant="green" onClick={onContinue} icon="←">שמרתי</Button>
-      </div>
+    <div className="ml-journey-secret-screen">
+      <LandBackground land="numbers" />
+      <main className="ml-journey-secret-card" aria-live="polite">
+        <div className="ml-journey-secret-lock" aria-hidden>{recalling ? '🗝️' : '🔐'}</div>
+        <span className="ml-journey-secret-eyebrow">סוד המסע</span>
+        {!recalling ? (
+          <>
+            <h1>יש לי סוד קטן בשבילך</h1>
+            <p>זכור את {secret.kind === 'word' ? 'המילה' : 'המספר'} עד סוף המסע.</p>
+            <strong className="ml-journey-secret-value ltr">{secret.value}</strong>
+            <div className="ml-journey-secret-actions">
+              <Button variant="orange" onClick={() => speak(secret.value, speechRate)}>🔊 שמע שוב</Button>
+              <Button variant="green" size="lg" onClick={onRevealDone} icon="←">זכרתי, יוצאים לדרך</Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <h1>מה היה סוד המסע?</h1>
+            <p>בחר את {secret.kind === 'word' ? 'המילה' : 'המספר'} שפגשת בהתחלה.</p>
+            <div className="ml-journey-secret-options">
+              {secret.options.map((option) => {
+                const answered = chosen !== null || secret.answered;
+                const isAnswer = option === secret.value;
+                const isChosen = option === chosen;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    className={`${isAnswer && answered ? 'is-correct' : ''}${isChosen && !isAnswer ? ' is-wrong' : ''}`}
+                    disabled={answered}
+                    onClick={() => choose(option)}
+                  >
+                    <span className="ltr">{option}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {(chosen !== null || secret.answered) && (
+              <div className={`ml-journey-secret-result ${secret.wasCorrect ? 'is-correct' : 'is-kind-retry'}`}>
+                {secret.wasCorrect
+                  ? `מצוין! זכרת את סוד המסע וקיבלת ${JOURNEY_SECRET_REWARD} מטבעות.`
+                  : `כמעט! סוד המסע היה ${secret.value}. עשית דרך שלמה — כל הכבוד!`}
+              </div>
+            )}
+          </>
+        )}
+      </main>
     </div>
   );
 }
@@ -647,14 +746,4 @@ function CenterScreen({ children, land }: { children: React.ReactNode; land: Lan
       <div style={{ position: 'relative', zIndex: 2 }}>{children}</div>
     </div>
   );
-}
-
-/* עזרי תוכן */
-import { STORIES } from '../engines/echoesContent';
-
-function getStoryQuestion(storyId: string) {
-  const s = STORIES.find((x) => x.id === storyId);
-  if (!s) return null;
-  const q = s.questions[0];
-  return { question: q.q, answer: q.answer, options: q.options };
 }

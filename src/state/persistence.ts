@@ -3,7 +3,7 @@
    לכל פרופיל (ילד/משתמש) התקדמות נפרדת תחת מפתח משלו.
    הנתונים שורדים רענון וסגירת דפדפן, והאפליקציה נטענת ללא רשת.
    ========================================================================= */
-import type { AvatarKind, LandId, Profile, ProfileRegistry, SaveState, Settings } from '../types';
+import type { AvatarKind, JourneySecret, LandId, Profile, ProfileRegistry, SaveState, Settings } from '../types';
 import { LAND_ORDER } from '../config/lands';
 import { defaultMultiplicationProgress, normalizeMultiplicationProgress } from './multiplicationProgress';
 import { normalizeCityGrowthMilestones } from './cityGrowth';
@@ -11,7 +11,7 @@ import { normalizeCityGrowthMilestones } from './cityGrowth';
 const LEGACY_KEY = 'memoland.save.v1';
 const REGISTRY_KEY = 'memoland.profiles.v1';
 const savePrefix = (id: string) => `memoland.save.v1.${id}`;
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 function emptyDailyJourney(): SaveState['dailyJourney'] {
   return {
@@ -21,7 +21,59 @@ function emptyDailyJourney(): SaveState['dailyJourney'] {
     seed: 0,
     earnedPoints: 0,
     plan: [],
+    secret: null,
   };
+}
+
+function normalizeJourneySecret(value: unknown): JourneySecret | null {
+  if (!value || typeof value !== 'object') return null;
+  const secret = value as Partial<JourneySecret>;
+  const options = Array.isArray(secret.options)
+    ? secret.options.filter((option): option is string => typeof option === 'string')
+    : [];
+  if ((secret.kind !== 'word' && secret.kind !== 'number')
+    || typeof secret.value !== 'string'
+    || options.length !== 3
+    || new Set(options).size !== 3
+    || !options.includes(secret.value)) return null;
+  return {
+    kind: secret.kind,
+    value: secret.value,
+    options: options as [string, string, string],
+    revealed: secret.revealed === true,
+    recallStarted: secret.recallStarted === true,
+    answered: secret.answered === true,
+    wasCorrect: typeof secret.wasCorrect === 'boolean' ? secret.wasCorrect : null,
+    rewardClaimed: secret.rewardClaimed === true,
+  };
+}
+
+function normalizeJourneyPlan(plan: unknown[], currentActivity: number) {
+  let removedBeforeCurrent = 0;
+  const filtered = plan.filter((activity, index) => {
+    const item = activity && typeof activity === 'object'
+      ? activity as { kind?: unknown; label?: unknown }
+      : null;
+    const isLegacyStory = item?.kind === 'reveal'
+      || (item?.kind === 'quiz' && item.label === 'זוכר את הסוד?');
+    if (isLegacyStory && index < currentActivity) removedBeforeCurrent += 1;
+    return !isLegacyStory;
+  }) as SaveState['dailyJourney']['plan'];
+  return {
+    plan: filtered,
+    currentActivity: Math.max(0, currentActivity - removedBeforeCurrent),
+  };
+}
+
+function withoutLegacyStoryItems(value: unknown): SaveState['spaced'] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is SaveState['spaced'][number] => {
+    if (!item || typeof item !== 'object') return false;
+    const spaced = item as Partial<SaveState['spaced'][number]>;
+    return !(spaced.kind === 'delayed'
+      && typeof spaced.id === 'string'
+      && spaced.id.startsWith('story-'));
+  });
 }
 
 export function defaultSettings(): Settings {
@@ -160,6 +212,11 @@ export function normalizeSave(value: unknown): SaveState {
         status: 'completed' as const,
       }
     : emptyDailyJourney();
+  const rawJourneyPlan = Array.isArray(sourceJourney?.plan) ? sourceJourney.plan : inferredJourney.plan;
+  const rawCurrentActivity = Number.isFinite(sourceJourney?.currentActivity)
+    ? Math.max(0, Math.floor(sourceJourney!.currentActivity))
+    : inferredJourney.currentActivity;
+  const normalizedJourneyPlan = normalizeJourneyPlan(rawJourneyPlan, rawCurrentActivity);
 
   return {
     ...defaults,
@@ -168,10 +225,12 @@ export function normalizeSave(value: unknown): SaveState {
     lands,
     settings: { ...defaultSettings(), ...(source.settings ?? {}) },
     parentContent: { ...defaults.parentContent, ...(source.parentContent ?? {}) },
+    spaced: withoutLegacyStoryItems(source.spaced),
     dailyJourney: {
       ...inferredJourney,
       ...(sourceJourney ?? {}),
-      plan: Array.isArray(sourceJourney?.plan) ? sourceJourney.plan : inferredJourney.plan,
+      ...normalizedJourneyPlan,
+      secret: normalizeJourneySecret(sourceJourney?.secret),
     },
     recentChallengeFingerprints: Array.isArray(source.recentChallengeFingerprints)
       ? source.recentChallengeFingerprints.filter((item): item is string => typeof item === 'string').slice(-3)

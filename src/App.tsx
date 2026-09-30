@@ -30,9 +30,11 @@ type Screen =
 
 function initialScreen(): Screen {
   if (!getActiveProfileId()) return { name: 'start' };
-  return getDailyJourneyProgress().status === 'in-progress'
-    ? { name: 'session' }
-    : { name: 'map' };
+  if (getDailyJourneyProgress().status === 'in-progress') {
+    beginDailyJourney(); // upgrades an interrupted pre-secret journey without losing its position
+    return { name: 'session' };
+  }
+  return { name: 'map' };
 }
 
 export default function App() {

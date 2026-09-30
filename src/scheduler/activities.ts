@@ -2,15 +2,11 @@
 import type { DailySession, JourneyActivity, LandId, SpacedItem } from '../types';
 import { LANDS } from '../config/lands';
 import { enginesForLand, playableLands } from '../engines';
-import { STORIES } from '../engines/echoesContent';
-import { makeRng } from '../engines/rng';
 
 export type Activity = JourneyActivity;
 
 export interface BuiltActivities {
   activities: Activity[];
-  /** הסיפור שנחשף (למעקב שליפה מושהית). */
-  revealStoryId: string;
 }
 
 export const FREE_PLAY_ACTIVITY_COUNT = 5;
@@ -63,10 +59,8 @@ export function buildDailySupplementalActivity(atIndex: number): Activity {
 export function buildActivities(
   session: DailySession,
   dueSpaced: SpacedItem[],
-  seed: number,
+  _seed: number,
 ): BuiltActivities {
-  const rng = makeRng(seed);
-  const story = rng.pick(STORIES);
   const activities: Activity[] = [];
   let dueIdx = 0;
 
@@ -87,10 +81,6 @@ export function buildActivities(
             label: step.label,
           });
         }
-        break;
-
-      case 'delayed-reveal':
-        activities.push({ kind: 'reveal', storyId: story.id, text: story.text, label: step.label });
         break;
 
       case 'yesterday': {
@@ -117,13 +107,6 @@ export function buildActivities(
         activities.push({ kind: 'speed', landId: step.landId!, seconds: step.timerSeconds ?? 60, label: step.label });
         break;
 
-      case 'delayed-recall':
-        // שאלה אחת (או שתיים) על הסיפור שנחשף
-        for (const q of story.questions.slice(0, 2)) {
-          activities.push({ kind: 'quiz', landId: 'echoes', label: step.label, question: q.q, answer: q.answer, options: q.options });
-        }
-        break;
-
       case 'guaranteed-finish':
         for (let i = 0; i < step.rounds; i++)
           activities.push({ kind: 'game', exerciseId: step.exerciseId!, landId: step.landId!, levelDelta: -3, label: step.label });
@@ -131,5 +114,5 @@ export function buildActivities(
     }
   }
 
-  return { activities, revealStoryId: story.id };
+  return { activities };
 }

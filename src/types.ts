@@ -147,10 +147,20 @@ export interface LandProgress {
 
 export type DailyJourneyStatus = 'not-started' | 'in-progress' | 'completed';
 
+export interface JourneySecret {
+  kind: 'word' | 'number';
+  value: string;
+  options: [string, string, string];
+  revealed: boolean;
+  recallStarted: boolean;
+  answered: boolean;
+  wasCorrect: boolean | null;
+  rewardClaimed: boolean;
+}
+
 /** A serializable activity plan lets an interrupted journey resume at the exact challenge. */
 export type JourneyActivity =
   | { kind: 'game'; exerciseId: string; landId: LandId; levelDelta: number; label: string }
-  | { kind: 'reveal'; storyId: string; text: string; label: string }
   | { kind: 'quiz'; landId: LandId; label: string; question: string; answer: string; options: string[]; spacedId?: string }
   | { kind: 'speed'; landId: LandId; seconds: number; label: string };
 
@@ -161,6 +171,7 @@ export interface DailyJourneyProgress {
   seed: number;
   earnedPoints: number;
   plan: JourneyActivity[];
+  secret: JourneySecret | null;
 }
 
 /** מצב שמור מלא (persistence). */
@@ -235,11 +246,9 @@ export interface DayRecord {
 export type SessionStepKind =
   | 'warmup'
   | 'connections-practice'
-  | 'delayed-reveal'
   | 'yesterday'
   | 'rotation'
   | 'speed'
-  | 'delayed-recall'
   | 'guaranteed-finish';
 
 export interface SessionStep {
