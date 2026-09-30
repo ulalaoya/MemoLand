@@ -211,8 +211,14 @@
 .ml-session-screen--castle { background: #241b4a; }
 
 .ml-session-board--forest {
-  background: linear-gradient(145deg, rgba(247, 255, 244, .97), rgba(222, 250, 224, .9));
-  border-color: #3f9e47;
+  margin: 6px 9px calc(8px + var(--safe-bottom));
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  border: 0;
+  border-radius: 28px;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .ml-session-board--patterns {
@@ -239,7 +245,73 @@
 
 .ml-session-board--echo::before,
 .ml-session-board--numbers::before,
-.ml-session-board--connections::before { display: none; }
+.ml-session-board--connections::before,
+.ml-session-board--forest::before { display: none; }
+
+.ml-session-board--forest .ml-session-board__activity { height: 100%; }
+
+.ml-session-screen--forest > svg {
+  opacity: 1;
+  filter: saturate(1.08) contrast(1.03);
+}
+
+.ml-session-screen--forest .ml-session-hud {
+  padding: calc(6px + var(--safe-top)) 10px 0;
+}
+
+.ml-session-screen--forest .ml-session-hud__top-row { gap: 7px; }
+.ml-session-screen--forest .ml-session-hud__back {
+  width: 40px;
+  min-width: 40px;
+  height: 38px;
+  padding: 0;
+  color: #17432f;
+  background: rgba(240, 255, 232, .96);
+  box-shadow: 0 3px 0 rgba(17, 85, 54, .32);
+}
+
+.ml-session-screen--forest .ml-session-hud__back-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.ml-session-screen--forest .ml-session-hud__progress {
+  height: 10px;
+  background: rgba(18, 91, 55, .28);
+  border-color: rgba(255, 255, 255, .92);
+}
+
+.ml-session-screen--forest .ml-session-hud__guide > div {
+  width: 34px !important;
+  height: 34px !important;
+  background: rgba(240, 255, 232, .96) !important;
+  border-color: #fff !important;
+}
+
+.ml-session-screen--forest .ml-session-hud__mute {
+  width: 38px;
+  height: 38px;
+  flex-basis: 38px;
+  background: rgba(240, 255, 232, .96);
+  box-shadow: 0 3px 0 rgba(17, 85, 54, .32);
+}
+
+.ml-session-screen--forest .ml-session-hud__meta-row {
+  margin-top: 5px;
+  flex-direction: row-reverse;
+  gap: 8px;
+}
+
+.ml-session-screen--forest .ml-session-hud__world {
+  padding: 3px 12px;
+  color: #fff;
+  background: rgba(34, 126, 69, .92) !important;
+  border-color: #fff;
+  font-size: .76rem;
+}
 
 [data-pattern-game] { width: 100%; }
 .ml-pattern-sequence {

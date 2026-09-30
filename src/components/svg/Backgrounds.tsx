@@ -265,36 +265,59 @@ function Forest() {
   return (
     <>
       <defs>
-        <Grad id="f-sky" stops={[['0', '#bdeeff'], ['1', '#8fe0a0']]} />
+        <Grad id="f-sky" stops={[['0', '#8fddcf'], ['0.58', '#5ab77f'], ['1', '#1c6547']]} />
+        <radialGradient id="f-sun" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stopColor="#fffbc7" stopOpacity="0.95" />
+          <stop offset="0.45" stopColor="#ffe67b" stopOpacity="0.52" />
+          <stop offset="1" stopColor="#ffe67b" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="f-path" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#e1b77d" />
+          <stop offset="1" stopColor="#9b633b" />
+        </linearGradient>
       </defs>
       <rect width="400" height="800" fill="url(#f-sky)" />
-      {/* קרני שמש */}
-      <g opacity="0.25">
-        {[-30, 0, 30, 60].map((a) => (
-          <polygon key={a} points={`60,60 ${60 + Math.cos((a * Math.PI) / 180) * 500},${60 + Math.sin((a * Math.PI) / 180) * 500} ${60 + Math.cos(((a + 8) * Math.PI) / 180) * 500},${60 + Math.sin(((a + 8) * Math.PI) / 180) * 500}`} fill="#fff" />
-        ))}
+      <circle cx="72" cy="88" r="112" fill="url(#f-sun)" />
+      <g opacity="0.18" fill="#fffde1">
+        <polygon points="42,0 112,0 276,610 214,610" />
+        <polygon points="130,0 164,0 348,530 310,530" />
       </g>
-      {/* שכבת עצים רחוקה */}
-      {[40, 120, 200, 280, 360].map((x, i) => (
-        <g key={`b${x}`} opacity="0.6">
-          <circle cx={x} cy={430 - (i % 2) * 20} r="52" fill="#5fb84f" />
+
+      <path d="M0 365 Q72 318 145 360 T286 350 T400 322 V540 H0Z" fill="#3d9566" opacity="0.72" />
+      {[18, 74, 132, 192, 250, 312, 374].map((x, i) => (
+        <g key={`f-back-${x}`} opacity="0.76">
+          <rect x={x - 7} y={356 - (i % 3) * 18} width="14" height="142" rx="7" fill="#397052" />
+          <circle cx={x} cy={342 - (i % 3) * 18} r="39" fill={i % 2 ? '#369360' : '#48a86e'} />
+          <circle cx={x - 22} cy={355 - (i % 3) * 18} r="25" fill="#58b879" />
         </g>
       ))}
-      <rect y="500" width="400" height="300" fill="#7a4f2e" />
-      <rect y="500" width="400" height="24" fill="#8d5b36" />
-      {/* עצים קדמיים */}
-      {[30, 130, 250, 370].map((x, i) => (
-        <g key={x}>
-          <rect x={x - 9} y={430 - (i % 2) * 30} width="18" height="120" rx="4" fill="#6A4126" />
-          <circle cx={x} cy={410 - (i % 2) * 30} r="46" fill="#4fae3f" stroke="#3d8a31" strokeWidth="3" />
-          <circle cx={x - 16} cy={420 - (i % 2) * 30} r="30" fill="#5fc84f" />
+
+      <path d="M0 485 Q92 444 200 481 T400 470 V800 H0Z" fill="#164c37" />
+      <path d="M183 800 C170 702 132 638 174 554 C193 516 211 510 224 552 C250 638 228 704 222 800Z" fill="url(#f-path)" opacity="0.94" />
+      <path d="M187 800 C177 698 154 637 184 561" fill="none" stroke="#f4d8a0" strokeWidth="5" strokeLinecap="round" opacity="0.52" />
+
+      {[-14, 58, 340, 414].map((x, i) => (
+        <g key={`f-front-${x}`}>
+          <rect x={x - 15} y={365 - (i % 2) * 30} width="30" height="275" rx="13" fill="#523824" />
+          <path d={`M${x - 12} ${520 - (i % 2) * 30} Q${x + 8} 470 ${x + 22} 438`} fill="none" stroke="#765034" strokeWidth="7" strokeLinecap="round" />
+          <circle cx={x} cy={338 - (i % 2) * 30} r="76" fill="#176d48" />
+          <circle cx={x + (i % 2 ? 28 : -28)} cy={374 - (i % 2) * 30} r="54" fill="#218358" />
+          <circle cx={x - (i % 2 ? 34 : -34)} cy={300 - (i % 2) * 30} r="48" fill="#2a9962" />
         </g>
       ))}
-      {/* שיחים */}
-      {[70, 200, 330].map((x) => (
-        <g key={`sh${x}`}>
-          <ellipse cx={x} cy={640} rx="40" ry="26" fill="#3d8a31" />
-          <ellipse cx={x - 18} cy={648} rx="26" ry="18" fill="#4fae3f" />
+
+      {[34, 96, 304, 364].map((x, i) => (
+        <g key={`f-bush-${x}`}>
+          <ellipse cx={x} cy={668 + (i % 2) * 42} rx="54" ry="33" fill="#176b45" />
+          <ellipse cx={x + 24} cy={674 + (i % 2) * 42} rx="34" ry="24" fill="#2d955e" />
+          <circle cx={x - 14} cy={657 + (i % 2) * 42} r="5" fill="#8fdc85" />
+        </g>
+      ))}
+
+      {[[92, 510], [301, 494], [74, 612], [326, 618], [126, 708], [278, 734]].map(([x, y], i) => (
+        <g key={`f-glow-${x}-${y}`}>
+          <circle cx={x} cy={y} r={i % 2 ? 11 : 8} fill="#ffe66d" opacity="0.12" />
+          <circle cx={x} cy={y} r="2.6" fill="#fff5a4" />
         </g>
       ))}
     </>

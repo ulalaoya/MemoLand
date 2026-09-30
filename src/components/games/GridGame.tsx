@@ -3,14 +3,36 @@ import type { Challenge } from '../../types';
 import type { GridStimulus } from '../../engines/forest';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import { Button } from '../Button';
-import { FeedbackBanner } from './common';
 import type { GameProps } from './common';
+import './forest-grid-game.css';
 
 type Phase = 'ready' | 'showing' | 'input' | 'done';
 
+const PHASE_COPY: Record<Phase, { eyebrow: string; title: string; helper: string }> = {
+  ready: {
+    eyebrow: 'משימת צב היער',
+    title: 'קרחת הגחליליות',
+    helper: 'האורות יידלקו לרגע בין העלים. שמור בזיכרון איפה ראית אותם.',
+  },
+  showing: {
+    eyebrow: 'היער מתעורר',
+    title: 'זכור איפה האור נדלק',
+    helper: 'הבט היטב בקרחת היער…',
+  },
+  input: {
+    eyebrow: 'עכשיו תורך',
+    title: 'מצא את מקומות האור',
+    helper: 'הקש על המקומות שבהם הופיעו הגחליליות.',
+  },
+  done: {
+    eyebrow: 'הקרחת נפתחה',
+    title: 'היער מגלה את הדרך',
+    helper: 'האורות הנכונים מאירים שוב בין העלים.',
+  },
+};
+
 export function GridGame({
   challenge,
-  color,
   onResult,
 }: GameProps & { challenge: Challenge<GridStimulus, number[]> }) {
   const stim = challenge.stimulus;
@@ -23,6 +45,8 @@ export function GridGame({
   const startRef = useRef(0);
   const submittedRef = useRef(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const copy = PHASE_COPY[phase];
+
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   function run() {
@@ -35,61 +59,139 @@ export function GridGame({
     );
   }
 
-  function toggle(i: number) {
-    setPicked((p) => (p.includes(i) ? p.filter((x) => x !== i) : [...p, i]));
+  function toggle(index: number) {
+    setPicked((current) => (
+      current.includes(index)
+        ? current.filter((cell) => cell !== index)
+        : [...current, index]
+    ));
   }
 
   function submit() {
     if (submittedRef.current) return;
     submittedRef.current = true;
     const given = pickedRef.current;
-    const exp = challenge.answer;
-    const correct = given.length === exp.length && given.every((x) => exp.includes(x));
+    const expected = challenge.answer;
+    const correct = given.length === expected.length && given.every((cell) => expected.includes(cell));
     correct ? sfxCorrect() : sfxSoft();
     setResult(correct);
     setPhase('done');
-    setTimeout(() => onResult({ correct, rtMs: performance.now() - startRef.current, span: correct ? exp.length : undefined }), 1300);
+    timers.current.push(setTimeout(
+      () => onResult({
+        correct,
+        rtMs: performance.now() - startRef.current,
+        span: correct ? expected.length : undefined,
+      }),
+      1300,
+    ));
   }
 
-  const cellStyle = (i: number): React.CSSProperties => {
-    const lit = phase === 'showing' && stim.cells.includes(i);
-    const chosen = picked.includes(i);
-    const reveal = phase === 'done' && stim.cells.includes(i);
-    return {
-      aspectRatio: '1',
-      borderRadius: 12,
-      border: `3px solid ${chosen || lit || reveal ? '#fff' : 'var(--gray-300)'}`,
-      background: lit || reveal ? color : chosen ? 'var(--btn-blue)' : 'var(--gray-100)',
-      boxShadow: '0 2px 0 rgba(36,50,71,.15)',
-      transition: 'background .15s',
-    };
-  };
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-      {phase === 'ready' && (
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-          <p style={{ fontSize: 25, fontFamily: 'var(--font-head)', fontWeight: 700, lineHeight: 1.3 }}>{challenge.prompt}</p>
-          <p style={{ fontSize: 18, fontWeight: 600 }}>שים לב איפה נדלק האור!</p>
-          <Button variant="green" size="lg" onClick={run} icon="▶">אני מוכן</Button>
+    <section className={`ml-forest-game ml-forest-game--${phase}`} data-forest-game data-phase={phase}>
+      <ForestCanopy />
+
+      <header className="ml-forest-game__header" aria-live="polite">
+        <span className="ml-forest-game__eyebrow">{copy.eyebrow}</span>
+        <h2>{copy.title}</h2>
+        <p>{copy.helper}</p>
+      </header>
+
+      {phase === 'ready' ? (
+        <div className="ml-forest-game__ready">
+          <ForestPortalArt />
+          <Button variant="green" size="lg" onClick={run} icon="✦">
+            הדלק את אורות היער
+          </Button>
+        </div>
+      ) : (
+        <div className="ml-forest-game__challenge">
+          <div className="ml-forest-board" data-forest-grid={stim.grid}>
+            <span className="ml-forest-board__vine ml-forest-board__vine--start" aria-hidden>❧</span>
+            <span className="ml-forest-board__vine ml-forest-board__vine--end" aria-hidden>❧</span>
+            <div
+              className="ml-forest-grid"
+              style={{ '--ml-forest-grid': stim.grid } as React.CSSProperties}
+              role="group"
+              aria-label="קרחת אורות היער"
+            >
+              {Array.from({ length: total }).map((_, index) => {
+                const answerCell = stim.cells.includes(index);
+                const selected = picked.includes(index);
+                const lit = phase === 'showing' && answerCell;
+                const revealed = phase === 'done' && answerCell;
+                const wrongPick = phase === 'done' && selected && !answerCell;
+                const className = [
+                  'ml-forest-cell',
+                  lit ? 'is-lit' : '',
+                  selected ? 'is-selected' : '',
+                  revealed ? 'is-answer' : '',
+                  wrongPick ? 'is-wrong-pick' : '',
+                ].filter(Boolean).join(' ');
+                const stateLabel = phase === 'input'
+                  ? selected ? 'נבחר' : 'לא נבחר'
+                  : lit || revealed ? 'מואר' : 'כבוי';
+
+                return (
+                  <button
+                    key={index}
+                    type="button"
+                    className={className}
+                    disabled={phase !== 'input'}
+                    aria-pressed={phase === 'input' ? selected : undefined}
+                    aria-label={`מקום ${index + 1}, ${stateLabel}`}
+                    onClick={() => toggle(index)}
+                  >
+                    <span className="ml-forest-cell__rings" aria-hidden />
+                    <span className="ml-forest-cell__firefly" aria-hidden>✦</span>
+                    <span className="ml-forest-cell__leaf" aria-hidden>◆</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {phase === 'input' ? (
+            <div className="ml-forest-game__controls">
+              <span className="ml-forest-game__selection" aria-live="polite">
+                {picked.length === 0 ? 'עוד לא סימנת מקום' : `סימנת ${picked.length} ${picked.length === 1 ? 'מקום' : 'מקומות'}`}
+              </span>
+              <Button variant="green" onClick={submit} disabled={picked.length === 0} icon="✓">
+                פותחים את השביל
+              </Button>
+            </div>
+          ) : null}
+
+          {phase === 'done' && result !== null ? (
+            <div className={`ml-forest-game__result ${result ? 'is-success' : 'is-guided'}`} role="status">
+              <span aria-hidden>{result ? '🌟' : '🍃'}</span>
+              <strong>{result ? 'מצוין! כל הגחליליות נמצאו' : 'כמעט! האורות מראים את הדרך'}</strong>
+            </div>
+          ) : null}
         </div>
       )}
+    </section>
+  );
+}
 
-      {phase !== 'ready' && (
-        <>
-          {phase === 'input' && <p style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 20 }}>הקש על המקומות שנדלקו</p>}
-          {phase === 'showing' && <p style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 20 }}>זכור...</p>}
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${stim.grid}, 1fr)`, gap: 8, width: '100%', maxWidth: 300 }}>
-            {Array.from({ length: total }).map((_, i) => (
-              <button key={i} disabled={phase !== 'input'} onClick={() => toggle(i)} style={cellStyle(i)} aria-label={`תא ${i + 1}`} />
-            ))}
-          </div>
-          {phase === 'input' && (
-            <Button variant="blue" onClick={submit} disabled={picked.length === 0}>אישור</Button>
-          )}
-          {phase === 'done' && result !== null && <FeedbackBanner correct={result} />}
-        </>
-      )}
+function ForestCanopy() {
+  return (
+    <div className="ml-forest-game__canopy" aria-hidden>
+      <span>●</span><span>●</span><span>●</span><span>●</span><span>●</span>
+      <i>✦</i><i>✦</i><i>✦</i>
+    </div>
+  );
+}
+
+function ForestPortalArt() {
+  return (
+    <div className="ml-forest-portal" aria-hidden>
+      <div className="ml-forest-portal__halo" />
+      <div className="ml-forest-portal__trunk ml-forest-portal__trunk--left" />
+      <div className="ml-forest-portal__trunk ml-forest-portal__trunk--right" />
+      <div className="ml-forest-portal__light">
+        <span>✦</span><span>✦</span><span>✦</span>
+      </div>
+      <div className="ml-forest-portal__ground" />
     </div>
   );
 }
