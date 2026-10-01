@@ -478,12 +478,12 @@
 .ml-session-screen--numbers {
   display: flex;
   flex-direction: column;
-  background: #67c8ff;
+  background: #0b5d59;
 }
 
 .ml-session-screen--numbers > svg {
-  opacity: 1;
-  filter: saturate(1.06) contrast(1.02);
+  opacity: .38;
+  filter: saturate(.9) contrast(1.08) brightness(.68);
 }
 
 .ml-session-screen--numbers .ml-session-hud {
@@ -499,7 +499,7 @@
   height: 44px;
   padding: 0;
   color: #fff;
-  background: rgba(34, 118, 54, 0.78);
+  background: rgba(8, 78, 62, .94);
   border-color: rgba(255, 255, 255, 0.9);
   box-shadow: 0 3px 0 rgba(29, 86, 42, 0.42), 0 7px 14px rgba(44, 112, 46, 0.14);
 }
@@ -514,7 +514,7 @@
 
 .ml-session-screen--numbers .ml-session-hud__progress {
   height: 10px;
-  background: rgba(34, 118, 54, 0.28);
+  background: rgba(3, 51, 40, .58);
   border-color: rgba(255, 255, 255, 0.92);
   box-shadow: inset 0 2px 3px rgba(29, 86, 42, 0.34), 0 0 0 1px rgba(255, 255, 255, 0.13);
 }
@@ -542,7 +542,7 @@
 .ml-session-screen--numbers .ml-session-hud__world {
   padding: 3px 13px;
   color: #fff;
-  background: rgba(49, 168, 68, 0.84) !important;
+  background: rgba(9, 103, 76, .94) !important;
   border-color: #fff;
   box-shadow: 0 2px 0 rgba(29, 86, 42, 0.4);
   font-size: 0.76rem;

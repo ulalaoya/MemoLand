@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import type { MemoRank, Profile } from '../../types';
 import { rankLabel, rankProgress } from '../../state/rewards';
 import { Logo } from '../Logo';
@@ -38,9 +39,7 @@ export function PlayerHUD({
           onSelect={onSwitchProfile}
         />
 
-        <div className="ml-player-hud__logo" aria-label="MemoLand">
-          <Logo variant="compact" width={126} />
-        </div>
+        <ParentAccessLogo onOpenParent={onOpenParent} />
 
         <div className="ml-player-hud__resources" aria-label="משאבים">
           <span className="ml-resource-chip ml-resource-chip--coins">
@@ -67,10 +66,47 @@ export function PlayerHUD({
         <nav className="ml-player-hud__actions" aria-label="פעולות במפה">
           <HudAction label="הישגים" onClick={onOpenAchievements} icon={<TrophyIcon size={20} />} />
           <HudAction label="אוספים" onClick={onOpenCollections} icon={<CollectionGlyph />} />
-          <HudAction label="הורים" onClick={onOpenParent} icon={<ParentGlyph />} />
         </nav>
       </div>
     </section>
+  );
+}
+
+function ParentAccessLogo({ onOpenParent }: { onOpenParent: () => void }) {
+  const timer = useRef<number | null>(null);
+
+  function cancelHold() {
+    if (timer.current !== null) window.clearTimeout(timer.current);
+    timer.current = null;
+  }
+
+  function startHold() {
+    if (timer.current !== null) return;
+    timer.current = window.setTimeout(() => {
+      timer.current = null;
+      onOpenParent();
+    }, 1800);
+  }
+
+  useEffect(() => cancelHold, []);
+
+  return (
+    <button
+      type="button"
+      className="ml-player-hud__logo"
+      aria-label="MemoLand"
+      onPointerDown={startHold}
+      onPointerUp={cancelHold}
+      onPointerLeave={cancelHold}
+      onPointerCancel={cancelHold}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') startHold();
+      }}
+      onKeyUp={cancelHold}
+      onContextMenu={(event) => event.preventDefault()}
+    >
+      <Logo variant="compact" width={126} />
+    </button>
   );
 }
 
@@ -97,16 +133,6 @@ function CollectionGlyph() {
       <path d="M5 8.5h14v11H5z" fill="var(--ml-purple)" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
       <path d="M8 8.5V6.8A4 4 0 0112 3a4 4 0 014 3.8v1.7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
       <path d="M8.5 13h7" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function ParentGlyph() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
-      <circle cx="9" cy="8" r="3" fill="var(--ml-blue)" stroke="currentColor" strokeWidth="1.8" />
-      <circle cx="16.5" cy="9" r="2.4" fill="var(--ml-yellow)" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M3.5 20c.4-4.3 2.3-6.4 5.5-6.4s5.1 2.1 5.5 6.4M13 19.8c.3-3.2 1.5-4.8 3.7-4.8 2.1 0 3.4 1.6 3.8 4.8" fill="var(--ml-surface)" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   );
 }

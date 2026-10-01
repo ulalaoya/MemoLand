@@ -12,6 +12,14 @@ export function DailyJourneyBanner({ todayPoints, dailyGoal, status, currentActi
   const progress = Math.max(0, Math.min(1, todayPoints / dailyGoal));
   const completed = status === 'completed';
   const action = status === 'in-progress' ? 'ממשיכים במסע' : 'יוצאים לדרך';
+  const title = completed
+    ? 'המסע הושלם. לאן בא לך ללכת עכשיו?'
+    : status === 'in-progress'
+      ? `ממשיכים מפעילות ${currentActivity + 1}`
+      : 'המסע של היום מחכה לך!';
+  const description = completed
+    ? 'כל העולמות פתוחים עכשיו למשחק חופשי.'
+    : 'בחרו עולם למשחק חופשי, או צאו למסע שעובר בין כל העולמות.';
 
   return (
     <button
@@ -25,11 +33,13 @@ export function DailyJourneyBanner({ todayPoints, dailyGoal, status, currentActi
         <JourneyCompass />
         <span className="ml-daily-journey__spark ml-daily-journey__spark--one">✦</span>
         <span className="ml-daily-journey__spark ml-daily-journey__spark--two">✦</span>
+        <span className="ml-daily-journey__spark ml-daily-journey__spark--three">✦</span>
       </span>
 
       <span className="ml-daily-journey__copy">
-        <span className="ml-daily-journey__eyebrow">ההרפתקה היומית</span>
-        <strong>{completed ? 'המסע הושלם ✓' : status === 'in-progress' ? `ממשיכים מפעילות ${currentActivity + 1}` : 'המסע של היום'}</strong>
+        <span className="ml-daily-journey__eyebrow">מפת ההרפתקה · המסע היומי</span>
+        <strong>{title}</strong>
+        <span className="ml-daily-journey__description">{description}</span>
         <span className="ml-daily-journey__progress" aria-label={`${todayPoints} מתוך ${dailyGoal} נקודות היום`}>
           <span className="ml-daily-journey__track" aria-hidden>
             <span style={{ width: `${progress * 100}%` }} />
@@ -39,8 +49,8 @@ export function DailyJourneyBanner({ todayPoints, dailyGoal, status, currentActi
       </span>
 
       <span className="ml-daily-journey__button" aria-hidden>
-        <span>{completed ? 'משחק חופשי פתוח' : action}</span>
-        <span className="ml-daily-journey__arrow" aria-hidden>←</span>
+        <span>{completed ? 'בחרו עולם' : action}</span>
+        <span className="ml-daily-journey__arrow" aria-hidden>{completed ? '✓' : '←'}</span>
       </span>
     </button>
   );

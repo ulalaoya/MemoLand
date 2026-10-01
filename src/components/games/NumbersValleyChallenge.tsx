@@ -27,10 +27,18 @@ export function NumbersValleyChallenge({
   return (
     <section className={`ml-numbers-challenge ml-numbers-challenge--${phase}`} aria-label="אתגר בעמק המספרים">
       <div className="ml-numbers-challenge__world" aria-hidden>
+        <span className="ml-numbers-challenge__sky-glow" />
         <span className="ml-numbers-challenge__sunlight" />
+        <span className="ml-numbers-challenge__ridge ml-numbers-challenge__ridge--far" />
+        <span className="ml-numbers-challenge__ridge ml-numbers-challenge__ridge--near" />
+        <span className="ml-numbers-challenge__path" />
         <span className="ml-numbers-challenge__trail-marker ml-numbers-challenge__trail-marker--one">1</span>
         <span className="ml-numbers-challenge__trail-marker ml-numbers-challenge__trail-marker--two">2</span>
         <span className="ml-numbers-challenge__trail-marker ml-numbers-challenge__trail-marker--three">3</span>
+        <span className="ml-numbers-challenge__firefly ml-numbers-challenge__firefly--one">✦</span>
+        <span className="ml-numbers-challenge__firefly ml-numbers-challenge__firefly--two">✦</span>
+        <span className="ml-numbers-challenge__firefly ml-numbers-challenge__firefly--three">✦</span>
+        <span className="ml-numbers-challenge__firefly ml-numbers-challenge__firefly--four">✦</span>
         <span className="ml-numbers-challenge__foreground-grass ml-numbers-challenge__foreground-grass--left" />
         <span className="ml-numbers-challenge__foreground-grass ml-numbers-challenge__foreground-grass--right" />
         <span className="ml-numbers-challenge__flower ml-numbers-challenge__flower--one" />

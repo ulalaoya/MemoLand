@@ -77,7 +77,6 @@ function Gate({ pin, setPin, onSubmit, onCancel, error }: { pin: string; setPin:
         <button onClick={onSubmit} disabled={pin.length < 4} aria-label="כניסה" style={{ padding: 14, fontSize: 22, color: '#fff', borderRadius: 12, border: '2px solid #fff', background: 'var(--btn-green)' }}>✓</button>
       </div>
       <Button variant="red" onClick={onCancel}>ביטול</Button>
-      <p style={{ fontSize: 12, opacity: 0.5 }}>ברירת מחדל: 1234</p>
     </div>
   );
 }

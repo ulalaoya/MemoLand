@@ -1,16 +1,11 @@
 /* מסך הבית — מפת ממו לנד: מסלול הרפתקה אנכי שמחבר בין כל הארצות. */
-import type { CSSProperties } from 'react';
 import { DAILY_GOAL, getActiveProfile, getDailyJourneyProgress, getTodayPoints, useProfiles, useStore } from '../state/store';
 import { LAND_ORDER, LANDS, TRACKS_PER_LAND } from '../config/lands';
 import { playableLands } from '../engines';
-import { HomeBackground } from '../components/svg/Backgrounds';
 import { PlayerHUD } from '../components/world/PlayerHUD';
 import { LandCard } from '../components/world/LandCard';
-import { WorldMapPath } from '../components/world/WorldMapPath';
 import { DailyJourneyBanner } from '../components/world/DailyJourneyBanner';
-import { WorldMapAtmosphere } from '../components/world/WorldMapAtmosphere';
 import { LAND_THEMES } from '../design/themes';
-import { THEME_GRADIENT } from '../config/collectibles';
 import type { LandId } from '../types';
 import '../components/world/world-map.css';
 
@@ -40,19 +35,11 @@ export function MapScreen({
   const playable = playableLands();
   const todayPoints = getTodayPoints();
   const journey = getDailyJourneyProgress();
-  const journeyCompleted = journey.status === 'completed';
-  const themeBg = THEME_GRADIENT[equipped.theme ?? 'theme.day'] ?? THEME_GRADIENT['theme.day'];
-  const useSceneBg = (equipped.theme ?? 'theme.day') === 'theme.day';
   const currentLandIndex = getCurrentLandIndex(playable, lands);
-  const mapStyle = { '--ml-map-theme': useSceneBg ? '#8fd8ff' : themeBg } as CSSProperties;
 
   return (
-    <div className="ml-world-map-screen" style={mapStyle}>
-      <div className="ml-world-map-scene" aria-hidden>
-        {useSceneBg ? <HomeBackground /> : null}
-        <span className="ml-world-map-cloud ml-world-map-cloud--one" />
-        <span className="ml-world-map-cloud ml-world-map-cloud--two" />
-      </div>
+    <div className="ml-world-map-screen">
+      <div className="ml-world-map-scene" aria-hidden />
 
       <header className="ml-map-hud-shell">
         <PlayerHUD
@@ -68,15 +55,18 @@ export function MapScreen({
       </header>
 
       <main className="ml-world-map-main">
-        <div className="ml-world-map-intro">
-          <span className="ml-world-map-intro__kicker">מפת ההרפתקה</span>
-          <h1>{journeyCompleted ? 'המסע הושלם. לאן בא לך ללכת עכשיו?' : 'המסע של היום מחכה לך!'}</h1>
-          <p>{journeyCompleted ? 'כל העולמות פתוחים עכשיו למשחק חופשי.' : 'לחצו על עולם למשחק חופשי, או המשיכו במסע היומי מהכפתור הסגול.'}</p>
-        </div>
+        <section className="ml-world-map-hero" aria-label="המסע היומי">
+          <DailyJourneyBanner
+            todayPoints={todayPoints}
+            dailyGoal={DAILY_GOAL}
+            status={journey.status}
+            currentActivity={journey.currentActivity}
+            onStart={onStartJourney}
+          />
+        </section>
 
         <section className="ml-world-map-route" aria-label="עולמות ממו לנד">
-          <WorldMapAtmosphere />
-          <WorldMapPath total={LAND_ORDER.length} currentIndex={currentLandIndex} />
+          <div className="ml-world-map-route__light" aria-hidden />
           <div className="ml-world-map-route__cards">
             {LAND_ORDER.map((id, index) => {
               const meta = LANDS[id];
@@ -104,15 +94,6 @@ export function MapScreen({
         </section>
       </main>
 
-      <div className="ml-daily-journey-slot">
-        <DailyJourneyBanner
-          todayPoints={todayPoints}
-          dailyGoal={DAILY_GOAL}
-          status={journey.status}
-          currentActivity={journey.currentActivity}
-          onStart={onStartJourney}
-        />
-      </div>
     </div>
   );
 }

@@ -4,7 +4,10 @@
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  color: var(--ml-navy);
+  color: #f4fff1;
+  background:
+    radial-gradient(circle at 50% 22%, rgba(255, 237, 124, .13), transparent 27%),
+    linear-gradient(180deg, #0b5d59 0%, #0d6c52 42%, #073e34 100%);
   isolation: isolate;
 }
 
@@ -16,15 +19,51 @@
   pointer-events: none;
 }
 
+.ml-numbers-challenge__sky-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 9% 18%, #fff3a0 0 2px, transparent 3px),
+    radial-gradient(circle at 31% 10%, #fff3a0 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 76% 17%, #fff3a0 0 2px, transparent 3px),
+    radial-gradient(circle at 91% 33%, #fff3a0 0 1.5px, transparent 2.5px);
+  opacity: .62;
+}
+
 .ml-numbers-challenge__sunlight {
   position: absolute;
   top: -8%;
   right: -12%;
   width: 76%;
   aspect-ratio: 1;
-  background: radial-gradient(circle, rgba(255, 246, 200, 0.62), rgba(255, 201, 40, 0.12) 37%, transparent 68%);
+  background: radial-gradient(circle, rgba(255, 246, 172, 0.54), rgba(255, 201, 40, 0.11) 38%, transparent 68%);
   border-radius: 50%;
   opacity: 0.72;
+}
+
+.ml-numbers-challenge__ridge {
+  position: absolute;
+  inset-inline: -8%;
+  bottom: 23%;
+  height: 44%;
+  clip-path: polygon(0 47%, 13% 20%, 25% 43%, 39% 8%, 54% 46%, 69% 17%, 81% 42%, 92% 10%, 100% 35%, 100% 100%, 0 100%);
+}
+
+.ml-numbers-challenge__ridge--far { background: #19755a; opacity: .72; }
+.ml-numbers-challenge__ridge--near { bottom: 5%; height: 48%; background: #0a503d; transform: scaleX(-1); }
+
+.ml-numbers-challenge__path {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: -5%;
+  width: 42%;
+  height: 57%;
+  background: linear-gradient(90deg, #9a673b, #e7bd78 42%, #ffe7a4 55%, #a46c3d);
+  clip-path: polygon(39% 0, 57% 0, 70% 17%, 43% 33%, 75% 51%, 59% 70%, 81% 100%, 16% 100%, 35% 72%, 51% 54%, 25% 34%, 50% 17%);
+  opacity: .92;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 0 12px rgba(255, 224, 128, .2));
 }
 
 .ml-numbers-challenge__trail-marker {
@@ -34,21 +73,33 @@
   height: 39px;
   display: grid;
   place-items: center;
-  color: rgba(36, 50, 71, 0.58);
-  background: linear-gradient(155deg, #fff2b6, #d2a45d);
-  border: 2px solid rgba(141, 91, 54, 0.48);
-  border-radius: 46% 46% 35% 38%;
-  box-shadow: inset 0 4px rgba(255, 255, 255, 0.34), 0 4px 0 rgba(106, 65, 38, 0.28);
+  color: #fff;
+  background: linear-gradient(155deg, #3ebcc3, #167b88);
+  border: 3px solid rgba(255, 255, 255, .92);
+  border-radius: 12px;
+  box-shadow: inset 0 3px rgba(255, 255, 255, .24), 0 4px 0 #0a5260, 0 0 14px rgba(113, 239, 212, .24);
   font-family: var(--ml-font-display);
   font-size: 1.25rem;
   font-weight: 800;
-  opacity: 0.72;
-  transform: rotate(var(--marker-rotate));
+  opacity: .88;
 }
 
-.ml-numbers-challenge__trail-marker--one { left: 9%; bottom: 33%; --marker-rotate: -8deg; }
-.ml-numbers-challenge__trail-marker--two { right: 10%; bottom: 25%; --marker-rotate: 7deg; }
-.ml-numbers-challenge__trail-marker--three { right: 20%; bottom: 8%; --marker-rotate: -5deg; }
+.ml-numbers-challenge__trail-marker--one { left: 9%; bottom: 31%; }
+.ml-numbers-challenge__trail-marker--two { right: 10%; bottom: 23%; }
+.ml-numbers-challenge__trail-marker--three { right: 20%; bottom: 7%; }
+
+.ml-numbers-challenge__firefly {
+  position: absolute;
+  z-index: 4;
+  color: #fff59a;
+  font-size: 13px;
+  text-shadow: 0 0 8px #fff, 0 0 15px #f7ec69;
+  animation: ml-valley-firefly 2.3s ease-in-out infinite;
+}
+.ml-numbers-challenge__firefly--one { left: 15%; top: 22%; }
+.ml-numbers-challenge__firefly--two { right: 18%; top: 31%; animation-delay: -.6s; }
+.ml-numbers-challenge__firefly--three { left: 27%; bottom: 24%; animation-delay: -1.2s; }
+.ml-numbers-challenge__firefly--four { right: 28%; bottom: 15%; animation-delay: -1.7s; }
 
 .ml-numbers-challenge__foreground-grass {
   position: absolute;
@@ -56,7 +107,7 @@
   bottom: -3%;
   width: 32%;
   height: 18%;
-  background: linear-gradient(180deg, #58c548, #2c9137);
+  background: linear-gradient(180deg, #1b7950, #083d32);
   clip-path: polygon(0 48%, 8% 23%, 14% 52%, 23% 8%, 31% 50%, 43% 18%, 51% 54%, 62% 5%, 69% 48%, 81% 22%, 88% 53%, 100% 32%, 100% 100%, 0 100%);
   filter: drop-shadow(0 -4px 6px rgba(44, 112, 46, 0.14));
 }
@@ -133,19 +184,22 @@
   gap: 10px;
   padding: 15px 18px 17px;
   background:
-    radial-gradient(circle at 11% 22%, rgba(141, 91, 54, 0.2) 0 3px, transparent 4px),
-    radial-gradient(circle at 88% 74%, rgba(141, 91, 54, 0.16) 0 4px, transparent 5px),
-    repeating-linear-gradient(175deg, rgba(255, 255, 255, 0.12) 0 5px, rgba(141, 91, 54, 0.05) 6px 8px),
-    linear-gradient(180deg, rgba(255, 242, 181, 0.96), rgba(230, 187, 105, 0.95));
-  border: 3px solid #fff8dc;
-  border-radius: 20px 17px 22px 18px;
-  box-shadow: 0 7px 0 #8d5b36, 0 14px 25px rgba(68, 84, 50, 0.2), inset 0 -3px rgba(141, 91, 54, 0.22);
+    radial-gradient(circle at 18% 12%, rgba(255, 244, 149, .16), transparent 28%),
+    linear-gradient(155deg, rgba(5, 65, 53, .94), rgba(10, 102, 73, .94));
+  border: 3px solid rgba(239, 255, 229, .94);
+  border-radius: 26px;
+  box-shadow: 0 7px 0 #063c31, 0 16px 28px rgba(3, 44, 34, .3), inset 0 1px rgba(255, 255, 255, .24);
   transform: none;
 }
 
 .ml-valley-ready__eyebrow,
 .ml-valley-recall__eyebrow {
-  color: #278542;
+  padding: 4px 12px;
+  color: #17432f;
+  background: #f3de68;
+  border: 2px solid rgba(255, 255, 255, .82);
+  border-radius: 999px;
+  box-shadow: 0 3px 0 rgba(5, 48, 34, .28);
   font-family: var(--ml-font-heading);
   font-size: 0.78rem;
   font-weight: 800;
@@ -158,13 +212,14 @@
   font-size: clamp(1.24rem, 5.5vw, 1.62rem);
   font-weight: 800;
   line-height: 1.25;
-  text-shadow: 0 2px rgba(255, 255, 255, 0.74);
+  color: #fff;
+  text-shadow: 0 3px rgba(4, 48, 35, .4);
 }
 
 .ml-valley-ready__hint {
   max-width: 310px;
   margin: 0;
-  color: #4f603f;
+  color: #e9ffe3;
   font-family: var(--ml-font-body);
   font-size: 1rem;
   font-weight: 650;
@@ -182,10 +237,10 @@
   color: #fff;
   background:
     radial-gradient(circle at 72% 15%, rgba(255, 255, 255, 0.3), transparent 28%),
-    linear-gradient(155deg, #6bd256, #31a844);
+    linear-gradient(155deg, #75d85e, #2f9d52);
   border: 3px solid #fff;
   border-radius: 21px;
-  box-shadow: 0 6px 0 #247d36, 0 12px 20px rgba(44, 112, 46, 0.25);
+  box-shadow: 0 6px 0 #1d6b3d, 0 12px 20px rgba(3, 45, 33, .28);
   font-family: var(--ml-font-heading);
   cursor: pointer;
 }
@@ -262,10 +317,10 @@
   color: #fff;
   background:
     radial-gradient(circle at 34% 18%, rgba(255, 255, 255, 0.6), transparent 22%),
-    linear-gradient(155deg, #2e8df6, #5267d9 76%);
+    linear-gradient(155deg, #46cbd2, #167e96 76%);
   border: 5px solid #fff;
-  border-radius: 45% 48% 42% 46%;
-  box-shadow: 0 10px 0 #2b4ca8, 0 18px 30px rgba(36, 50, 71, 0.25), inset 0 -8px rgba(30, 77, 166, 0.25);
+  border-radius: 27px;
+  box-shadow: 0 10px 0 #075b70, 0 18px 30px rgba(3, 45, 44, .3), inset 0 -8px rgba(5, 91, 112, .25), 0 0 28px rgba(255, 239, 112, .23);
   font-family: var(--ml-font-display);
   font-size: clamp(6.4rem, 28vw, 8.6rem);
   font-weight: 900;
@@ -303,11 +358,11 @@
 .ml-valley-recall__header {
   width: min(100%, 344px);
   padding: 10px 16px;
-  background: rgba(255, 250, 220, 0.87);
-  border: 2px solid #fff;
-  border-radius: 19px;
-  box-shadow: 0 4px 0 rgba(106, 65, 38, 0.26), 0 10px 18px rgba(68, 112, 54, 0.14);
-  backdrop-filter: blur(5px);
+  background: linear-gradient(150deg, rgba(5, 70, 57, .94), rgba(13, 111, 76, .92));
+  border: 2px solid rgba(255, 255, 255, .9);
+  border-radius: 21px;
+  box-shadow: 0 5px 0 rgba(3, 52, 40, .56), 0 12px 20px rgba(3, 44, 34, .2);
+  backdrop-filter: blur(7px);
 }
 
 .ml-valley-entered {
@@ -318,7 +373,7 @@
   gap: 7px;
 }
 
-.ml-valley-entered__empty { color: rgba(36, 50, 71, 0.42); font-size: 1.8rem; letter-spacing: 0.14em; }
+.ml-valley-entered__empty { color: rgba(238, 255, 229, .72); font-size: 1.8rem; letter-spacing: 0.14em; }
 
 .ml-valley-entered__stone {
   width: 42px;
@@ -326,10 +381,10 @@
   display: grid;
   place-items: center;
   color: #fff;
-  background: linear-gradient(155deg, #2e8df6, #5267d9);
+  background: linear-gradient(155deg, #45cbd0, #147d91);
   border: 2px solid #fff;
-  border-radius: 43% 47% 39% 45%;
-  box-shadow: 0 4px 0 #2b4ca8;
+  border-radius: 12px;
+  box-shadow: 0 4px 0 #075b70;
   font-family: var(--ml-font-display);
   font-size: 1.55rem;
   font-weight: 900;
@@ -340,10 +395,10 @@
   position: relative;
   width: min(100%, 300px);
   padding: 10px;
-  border: 3px solid rgba(255, 255, 255, 0.88);
+  border: 3px solid rgba(239, 255, 229, .92);
   border-radius: 22px;
-  background: linear-gradient(170deg, rgba(246, 220, 139, 0.88), rgba(184, 127, 70, 0.86));
-  box-shadow: 0 6px 0 rgba(106, 65, 38, 0.34), 0 12px 22px rgba(68, 84, 50, 0.2);
+  background: linear-gradient(155deg, rgba(6, 71, 57, .96), rgba(15, 112, 76, .94));
+  box-shadow: 0 6px 0 rgba(3, 48, 38, .7), 0 14px 24px rgba(3, 44, 34, .24);
 }
 
 .ml-valley-number-pad__grid {
@@ -353,9 +408,9 @@
 }
 
 .ml-valley-key {
-  --stone-top: #67c8ff;
-  --stone-bottom: #2e8df6;
-  --stone-shadow: #176bc6;
+  --stone-top: #4bd4d5;
+  --stone-bottom: #168ca0;
+  --stone-shadow: #075d70;
   min-width: 0;
   min-height: 50px;
   padding: 3px;
@@ -373,8 +428,8 @@
   cursor: pointer;
 }
 
-.ml-valley-key:nth-child(3n + 2) { --stone-top: #b58aef; --stone-bottom: #8c52d9; --stone-shadow: #6231ad; }
-.ml-valley-key:nth-child(3n) { --stone-top: #91e35d; --stone-bottom: #58c548; --stone-shadow: #32983a; }
+.ml-valley-key:nth-child(3n + 2) { --stone-top: #75d85e; --stone-bottom: #329c52; --stone-shadow: #1b6a3a; }
+.ml-valley-key:nth-child(3n) { --stone-top: #ffe783; --stone-bottom: #e6ac31; --stone-shadow: #9b6817; color: #294034; }
 .ml-valley-key:active { transform: translateY(4px) scale(0.98); box-shadow: 0 1px 0 var(--stone-shadow); }
 .ml-valley-key:focus-visible { outline: none; box-shadow: 0 5px 0 var(--stone-shadow), var(--ml-focus-ring); }
 
@@ -394,7 +449,7 @@
   cursor: pointer;
 }
 
-.ml-valley-action--erase { color: #7d4528; background: linear-gradient(180deg, #fff4df, #e8c49d); box-shadow: 0 4px 0 #aa7652; }
+.ml-valley-action--erase { color: #673d2c; background: linear-gradient(180deg, #fff6e3, #e7c89d); box-shadow: 0 4px 0 #a67951; }
 .ml-valley-action--submit { color: #fff; background: linear-gradient(155deg, #6bd256, #31a844); box-shadow: 0 4px 0 #247d36; }
 .ml-valley-action--submit:disabled { opacity: 0.5; cursor: default; }
 .ml-valley-action:not(:disabled):active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(36, 50, 71, 0.45); }
@@ -403,10 +458,10 @@
 .ml-valley-replay .ml-btn {
   min-height: 44px;
   padding: 8px 14px !important;
-  background: rgba(255, 250, 220, 0.88) !important;
+  background: rgba(239, 255, 229, .94) !important;
   border-color: #fff !important;
   box-shadow: 0 4px 0 rgba(106, 65, 38, 0.32) !important;
-  color: #6a4126 !important;
+  color: #17432f !important;
   font-family: var(--ml-font-heading);
   font-size: 0.82rem !important;
 }
@@ -426,7 +481,8 @@
 .ml-valley-result__answer {
   margin: 0;
   padding: 10px 15px;
-  background: rgba(255, 250, 220, 0.9);
+  color: #17432f;
+  background: rgba(239, 255, 229, .94);
   border: 2px solid #fff;
   border-radius: 16px;
   box-shadow: 0 4px 0 rgba(106, 65, 38, 0.28);
@@ -453,6 +509,11 @@
 }
 
 .ml-numbers-challenge--success .ml-numbers-challenge__flower--two { animation: ml-valley-flower-open 560ms var(--ml-ease-spring) both; }
+
+@keyframes ml-valley-firefly {
+  0%, 100% { opacity: .48; transform: translateY(2px) scale(.88); }
+  50% { opacity: 1; transform: translateY(-3px) scale(1.1); }
+}
 
 @keyframes ml-valley-number-arrive {
   0% { opacity: 0; transform: translateY(-14px) scale(0.9); }
@@ -528,4 +589,166 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* Numbers Valley adventure art direction. */
+.ml-numbers-challenge {
+  color: #f8fbff;
+  background:
+    linear-gradient(180deg, rgba(6, 18, 40, .02) 0%, rgba(6, 18, 40, .06) 35%, rgba(6, 18, 40, .42) 100%),
+    url('/worlds/numbers-valley-adventure.webp') center / cover no-repeat;
+}
+
+.ml-numbers-challenge__world::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 42%, transparent 0 25%, rgba(6, 18, 40, .08) 60%, rgba(6, 18, 40, .3) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(5, 15, 34, .34));
+}
+
+.ml-numbers-challenge__sky-glow,
+.ml-numbers-challenge__sunlight,
+.ml-numbers-challenge__ridge,
+.ml-numbers-challenge__path,
+.ml-numbers-challenge__trail-marker,
+.ml-numbers-challenge__foreground-grass,
+.ml-numbers-challenge__flower {
+  display: none;
+}
+
+.ml-numbers-challenge__firefly {
+  z-index: 3;
+  color: #9ff3ff;
+  text-shadow: 0 0 8px #fff, 0 0 18px #48dfff;
+}
+
+.ml-numbers-challenge__memo {
+  left: 1%;
+  bottom: 1%;
+  --ml-memo-size: clamp(100px, 31vw, 138px);
+  filter: drop-shadow(0 8px 5px rgba(4, 12, 28, .42));
+}
+
+.ml-numbers-challenge__surface {
+  width: min(100% - 22px, 460px);
+  padding: clamp(10px, 2.4vh, 22px) 0 132px;
+}
+
+.ml-valley-ready {
+  max-width: 350px;
+  padding: 16px 18px 18px;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(92, 221, 255, .2), transparent 30%),
+    linear-gradient(145deg, rgba(22, 44, 79, .96), rgba(9, 24, 54, .96));
+  border-color: rgba(224, 245, 255, .92);
+  box-shadow: 0 7px 0 rgba(4, 13, 34, .82), 0 18px 32px rgba(4, 13, 34, .38), inset 0 1px rgba(255, 255, 255, .22);
+  backdrop-filter: blur(10px);
+}
+
+.ml-valley-ready__eyebrow,
+.ml-valley-recall__eyebrow {
+  color: #26334a;
+  background: linear-gradient(180deg, #fff3aa, #ffc84d);
+  border-color: #fff8d2;
+  box-shadow: 0 3px 0 #a96b12;
+}
+
+.ml-valley-ready__prompt,
+.ml-valley-recall__prompt {
+  color: #fff;
+  text-shadow: 0 3px 0 rgba(3, 11, 29, .62);
+}
+
+.ml-valley-ready__hint { color: #d8f3ff; }
+
+.ml-valley-ready-button {
+  color: #fff;
+  background:
+    radial-gradient(circle at 72% 15%, rgba(255, 255, 255, .28), transparent 28%),
+    linear-gradient(155deg, #36c9e6, #1978bb);
+  border-color: #eafaff;
+  box-shadow: 0 6px 0 #0a4c83, 0 13px 22px rgba(3, 14, 35, .38);
+}
+
+.ml-valley-ready-button__play {
+  background: rgba(4, 61, 112, .48);
+}
+
+.ml-valley-number-stage,
+.ml-valley-focus-breath {
+  filter: drop-shadow(0 15px 18px rgba(2, 10, 27, .34));
+}
+
+.ml-valley-number-token {
+  color: #fff;
+  background:
+    radial-gradient(circle at 38% 18%, rgba(255, 255, 255, .72), transparent 20%),
+    linear-gradient(155deg, rgba(68, 228, 255, .98), rgba(25, 102, 190, .98));
+  border-color: #eefcff;
+  box-shadow: inset 0 4px rgba(255, 255, 255, .28), 0 7px 0 #0d4c91, 0 0 36px rgba(76, 224, 255, .58);
+}
+
+.ml-valley-recall__header {
+  background:
+    radial-gradient(circle at 16% 8%, rgba(93, 224, 255, .18), transparent 30%),
+    linear-gradient(145deg, rgba(22, 44, 79, .96), rgba(9, 24, 54, .96));
+  border-color: rgba(224, 245, 255, .92);
+  box-shadow: 0 5px 0 rgba(4, 13, 34, .8), 0 14px 25px rgba(4, 13, 34, .34);
+}
+
+.ml-valley-entered__empty { color: rgba(216, 243, 255, .76); }
+
+.ml-valley-entered__stone {
+  background: linear-gradient(155deg, #4bdcf2, #1978bb);
+  box-shadow: 0 4px 0 #0a4c83, 0 0 14px rgba(76, 224, 255, .28);
+}
+
+.ml-valley-number-pad {
+  background:
+    radial-gradient(circle at 20% 0, rgba(87, 218, 255, .18), transparent 32%),
+    linear-gradient(155deg, rgba(17, 38, 75, .97), rgba(8, 20, 48, .97));
+  border-color: rgba(225, 246, 255, .94);
+  box-shadow: 0 6px 0 rgba(3, 12, 32, .84), 0 16px 28px rgba(3, 12, 32, .36);
+}
+
+.ml-valley-key {
+  --stone-top: #55dcf0;
+  --stone-bottom: #1e7fc0;
+  --stone-shadow: #0b4f87;
+}
+
+.ml-valley-key:nth-child(3n + 2) {
+  --stone-top: #9a8af1;
+  --stone-bottom: #5d4ebd;
+  --stone-shadow: #362b86;
+}
+
+.ml-valley-key:nth-child(3n) {
+  --stone-top: #ffe68a;
+  --stone-bottom: #e9aa32;
+  --stone-shadow: #956415;
+  color: #27334a;
+}
+
+.ml-valley-action--erase {
+  color: #533825;
+  background: linear-gradient(180deg, #fff4dc, #dcb989);
+}
+
+.ml-valley-action--submit {
+  background: linear-gradient(155deg, #69da73, #2da95c);
+}
+
+.ml-valley-result__answer,
+.ml-valley-replay .ml-btn {
+  color: #20324d !important;
+  background: rgba(245, 251, 255, .96) !important;
+  border-color: #fff !important;
+}
+
+@media (max-width: 359px) {
+  .ml-numbers-challenge__surface { width: calc(100% - 14px); }
+  .ml-numbers-challenge__memo { --ml-memo-size: 86px; }
 }
