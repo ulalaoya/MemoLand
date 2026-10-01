@@ -534,3 +534,95 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Illustrated Echo Cave: keep the distinctive cave view open above the activity tray. */
+.ml-echo-challenge {
+  background:
+    linear-gradient(180deg, rgba(5, 13, 33, .02), rgba(5, 13, 33, .1) 52%, rgba(5, 13, 33, .42)),
+    url('/worlds/echo-cave-adventure.webp') center / cover no-repeat;
+}
+
+.ml-echo-challenge__world::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0 46%, rgba(3, 10, 27, .08) 64%, rgba(3, 10, 27, .3));
+}
+
+.ml-echo-challenge__vault,
+.ml-echo-challenge__crystal,
+.ml-echo-challenge__mist,
+.ml-echo-challenge__tunnel,
+.ml-echo-challenge__floor,
+.ml-echo-challenge__water,
+.ml-echo-challenge__reflection,
+.ml-echo-challenge__rocks {
+  display: none;
+}
+
+.ml-echo-challenge__halo {
+  top: 25%;
+  opacity: .36;
+  filter: blur(9px);
+}
+
+.ml-echo-challenge__ring {
+  top: 34%;
+  border-color: rgba(151, 226, 255, .48);
+}
+
+.ml-echo-challenge__memo {
+  top: 17%;
+  bottom: auto;
+  left: 2%;
+  --ml-memo-size: clamp(86px, 26vw, 112px);
+  filter: drop-shadow(0 8px 5px rgba(3, 9, 24, .46));
+}
+
+.ml-echo-challenge__surface {
+  width: min(100% - 22px, 450px);
+  padding: 16px 0 calc(18px + var(--ml-safe-bottom));
+  align-items: flex-end;
+}
+
+.ml-echo-ready,
+.ml-echo-response,
+.ml-echo-result {
+  max-height: min(53vh, 430px);
+  padding: 14px;
+  overflow-y: auto;
+  background:
+    radial-gradient(circle at 18% 8%, rgba(89, 211, 255, .17), transparent 31%),
+    linear-gradient(145deg, rgba(20, 35, 72, .95), rgba(8, 18, 46, .96));
+  border: 2px solid rgba(217, 242, 255, .9);
+  border-radius: 25px;
+  box-shadow: 0 7px 0 rgba(3, 9, 26, .78), 0 18px 32px rgba(3, 9, 26, .36), inset 0 1px rgba(255, 255, 255, .18);
+  backdrop-filter: blur(10px);
+}
+
+.ml-echo-ready { padding-top: 14px; }
+
+.ml-echo-ready__eyebrow,
+.ml-echo-response__eyebrow {
+  padding: 4px 12px;
+  color: #26334a;
+  background: linear-gradient(180deg, #fff1a4, #ffc54b);
+  border: 2px solid #fff8d4;
+  border-radius: 999px;
+  box-shadow: 0 3px 0 #9b6514;
+}
+
+.ml-echo-word-bank { background: rgba(5, 13, 35, .62); }
+.ml-echo-replay-button { background: rgba(10, 25, 57, .9); }
+
+@media (max-width: 359px), (max-height: 680px) {
+  .ml-echo-challenge__surface {
+    width: calc(100% - 14px);
+    padding-top: 8px;
+    padding-bottom: calc(10px + var(--ml-safe-bottom));
+  }
+  .ml-echo-ready,
+  .ml-echo-response,
+  .ml-echo-result { max-height: 56vh; padding: 10px; }
+  .ml-echo-challenge__memo { top: 14%; --ml-memo-size: 76px; }
+}

@@ -4,6 +4,7 @@ import type { PatternStimulus, Shape, Token } from '../../engines/patterns';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import { FeedbackBanner } from './common';
 import type { GameProps } from './common';
+import { MemoCompanion } from './MemoCompanion';
 
 const INK = 'var(--ink)';
 
@@ -46,7 +47,8 @@ export function PatternGame({
 
   return (
     <div data-pattern-game style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center' }}>
-      <p style={{ fontSize: 25, fontFamily: 'var(--font-head)', fontWeight: 700 }}>{challenge.prompt}</p>
+      <MemoCompanion behavior={chosen === null ? 'thinking' : chosen === challenge.answer ? 'success' : 'idle'} className="ml-pattern-memo" />
+      <p className="ml-pattern-prompt" style={{ fontSize: 25, fontFamily: 'var(--font-head)', fontWeight: 700 }}>{challenge.prompt}</p>
 
       {/* הרצף */}
       <div className="ml-pattern-sequence" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
@@ -55,7 +57,7 @@ export function PatternGame({
       </div>
 
       {/* אפשרויות */}
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div className="ml-pattern-options" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
         {stim.options.map((t: Token, i) => {
           const isChosen = chosen === i;
           const isAnswer = i === challenge.answer;

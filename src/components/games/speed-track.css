@@ -1,0 +1,256 @@
+.ml-speed-race,
+.ml-speed-finish {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  color: #fff;
+  isolation: isolate;
+  background:
+    linear-gradient(180deg, rgba(8, 24, 45, .02), rgba(8, 24, 45, .12) 45%, rgba(8, 24, 45, .68)),
+    url('/worlds/speed-track-adventure.webp') center / cover no-repeat;
+}
+
+.ml-speed-race::before,
+.ml-speed-finish::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(7, 22, 43, .08), transparent 38%, rgba(7, 22, 43, .35) 63%, rgba(7, 22, 43, .78));
+}
+
+.ml-speed-race {
+  padding: 14px 12px calc(14px + var(--safe-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ml-speed-race__scorebar {
+  position: absolute;
+  z-index: 4;
+  top: 12px;
+  right: 12px;
+  left: 12px;
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, .88);
+  border-radius: 18px;
+  background: rgba(10, 40, 67, .86);
+  box-shadow: 0 5px 0 rgba(5, 21, 38, .62);
+  backdrop-filter: blur(7px);
+}
+
+.ml-speed-race__scorebar .ml-number-text { color: #ffd35a !important; }
+
+.ml-speed-race__timer {
+  min-width: 72px;
+  padding: 4px 12px;
+  direction: ltr;
+  color: #15334d;
+  background: #fff7d8;
+  border: 3px solid #f3a52b;
+  border-radius: 999px;
+  box-shadow: 0 3px 0 #a85f16;
+  font-family: var(--font-display);
+  font-size: 25px;
+  text-align: center;
+}
+
+.ml-speed-race__timer.is-urgent {
+  color: #8e1713;
+  background: #ffe1dd;
+  border-color: #e0473e;
+  box-shadow: 0 3px 0 #9c251f;
+}
+
+.ml-speed-race__prompt {
+  width: min(100%, 350px);
+  margin: 0;
+  padding: 7px 12px;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, .86);
+  border-radius: 17px;
+  background: rgba(9, 39, 65, .9);
+  box-shadow: 0 4px 0 rgba(5, 21, 38, .7);
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.ml-speed-race__target {
+  width: min(100%, 212px);
+  min-height: 104px;
+  padding: 9px 16px 6px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #ffd056;
+  border-radius: 24px;
+  background: rgba(8, 29, 50, .82);
+  box-shadow: 0 6px 0 rgba(5, 20, 36, .72), 0 14px 24px rgba(4, 18, 32, .32);
+  backdrop-filter: blur(7px);
+}
+
+.ml-speed-race__options {
+  width: min(100%, 350px);
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  border: 2px solid rgba(255, 255, 255, .66);
+  border-radius: 22px;
+  background: rgba(8, 30, 51, .8);
+  box-shadow: 0 6px 0 rgba(4, 19, 34, .72);
+  backdrop-filter: blur(7px);
+}
+
+.ml-speed-race__option {
+  min-width: 0;
+  min-height: 70px;
+  padding: 5px 3px 3px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 2px solid rgba(231, 244, 255, .82);
+  border-radius: 15px;
+  background: linear-gradient(180deg, rgba(230, 246, 255, .98), rgba(182, 218, 239, .96));
+  box-shadow: 0 4px 0 rgba(4, 20, 35, .62);
+  transition: background 80ms ease, transform 80ms ease;
+}
+
+.ml-speed-race__option.is-correct { background: #34b767; }
+.ml-speed-race__option.is-wrong { background: #df493f; }
+
+.ml-speed-car {
+  --car-main: #ec5a45;
+  --car-dark: #9f2925;
+  position: relative;
+  width: 92px;
+  height: 55px;
+  display: block;
+  border: 2px solid rgba(20, 37, 54, .72);
+  border-radius: 30px 30px 14px 14px;
+  background: linear-gradient(155deg, color-mix(in srgb, var(--car-main) 76%, white), var(--car-main) 52%, var(--car-dark));
+  box-shadow: inset 0 5px rgba(255, 255, 255, .24), 0 4px 0 rgba(4, 18, 31, .4);
+}
+
+.ml-speed-car.is-hero { width: 148px; height: 83px; border-width: 3px; border-radius: 42px 42px 18px 18px; }
+.ml-speed-car--tone-1 { --car-main: #347fd7; --car-dark: #174b8f; }
+.ml-speed-car--tone-2 { --car-main: #f1b32f; --car-dark: #a36314; }
+.ml-speed-car--tone-3 { --car-main: #42a565; --car-dark: #1f6840; }
+.ml-speed-car--tone-4 { --car-main: #8a62d1; --car-dark: #523694; }
+
+.ml-speed-car::before,
+.ml-speed-car::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  bottom: -5px;
+  width: 14px;
+  height: 22px;
+  border-radius: 6px;
+  background: #1c2937;
+}
+.ml-speed-car::before { left: 6px; }
+.ml-speed-car::after { right: 6px; }
+.ml-speed-car.is-hero::before,
+.ml-speed-car.is-hero::after { bottom: -7px; width: 19px; height: 30px; }
+
+.ml-speed-car__window {
+  position: absolute;
+  top: 5px;
+  right: 21%;
+  left: 21%;
+  height: 19px;
+  border: 2px solid rgba(231, 246, 255, .85);
+  border-radius: 18px 18px 5px 5px;
+  background: linear-gradient(145deg, #8bd7ef, #315e80);
+}
+.ml-speed-car.is-hero .ml-speed-car__window { top: 8px; height: 28px; }
+
+.ml-speed-car__light {
+  position: absolute;
+  top: 30px;
+  width: 18px;
+  height: 10px;
+  border: 2px solid #fff0bd;
+  border-radius: 6px;
+  background: #f14539;
+  box-shadow: 0 0 5px rgba(241, 69, 57, .55);
+}
+.ml-speed-car__light--left { left: 7px; }
+.ml-speed-car__light--right { right: 7px; }
+.ml-speed-car.is-hero .ml-speed-car__light { top: 47px; width: 25px; height: 14px; }
+.ml-speed-car.is-hero .ml-speed-car__light--left { left: 11px; }
+.ml-speed-car.is-hero .ml-speed-car__light--right { right: 11px; }
+
+.ml-speed-car__plate {
+  position: absolute;
+  z-index: 3;
+  right: 50%;
+  bottom: 5px;
+  width: 36px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #172d42;
+  border: 2px solid #d9a92e;
+  border-radius: 5px;
+  background: #fffdf2;
+  box-shadow: inset 0 0 0 1px #fff;
+  transform: translateX(50%);
+}
+.ml-speed-car.is-hero .ml-speed-car__plate { bottom: 7px; width: 52px; height: 34px; border-width: 3px; }
+.ml-speed-car__plate svg { width: 25px; height: 25px; }
+.ml-speed-car.is-hero .ml-speed-car__plate svg { width: 34px; height: 34px; }
+
+.ml-speed-car__bumper {
+  position: absolute;
+  right: 9px;
+  bottom: -1px;
+  left: 9px;
+  height: 6px;
+  border-radius: 5px;
+  background: #263747;
+}
+
+.ml-speed-finish {
+  display: grid;
+  place-items: end center;
+  padding: 18px 14px calc(24px + var(--safe-bottom));
+  text-align: center;
+}
+
+.ml-speed-finish__card {
+  width: min(100%, 346px);
+  padding: 22px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #fff;
+  border: 3px solid #fff;
+  border-radius: 26px;
+  background: rgba(9, 39, 65, .92);
+  box-shadow: 0 7px 0 rgba(5, 21, 38, .7);
+}
+
+@media (max-height: 700px) {
+  .ml-speed-race { gap: 6px; padding-bottom: calc(8px + var(--safe-bottom)); }
+  .ml-speed-race__target { min-height: 91px; padding-block: 6px; }
+  .ml-speed-car.is-hero { width: 128px; height: 72px; }
+  .ml-speed-race__option { min-height: 62px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ml-speed-race__option { transition: none; }
+}

@@ -373,3 +373,72 @@
     animation: none;
   }
 }
+
+/* Illustrated Firefly Path: preserve the forest vista and keep play in the lower clearing. */
+.ml-forest-game {
+  min-height: 100%;
+  padding: 18px 12px calc(14px + var(--safe-bottom));
+  justify-content: flex-end;
+  gap: 10px;
+  border: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, rgba(4, 19, 18, .02), rgba(4, 19, 18, .08) 47%, rgba(4, 19, 18, .58)),
+    url('/worlds/image-forest-adventure.webp') center / cover no-repeat;
+  box-shadow: none;
+}
+
+.ml-forest-game::before {
+  inset: 0;
+  opacity: 1;
+  background: linear-gradient(180deg, transparent 0 43%, rgba(3, 19, 17, .1) 60%, rgba(3, 19, 17, .48));
+}
+
+.ml-forest-game::after { display: none; }
+.ml-forest-game__canopy,
+.ml-forest-portal { display: none; }
+
+.ml-forest-game__header {
+  width: min(100%, 342px);
+  max-width: 342px;
+  padding: 11px 13px 12px;
+  gap: 4px;
+  border: 2px solid rgba(238, 255, 232, .9);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 18% 0, rgba(246, 224, 104, .14), transparent 30%),
+    linear-gradient(145deg, rgba(12, 62, 48, .94), rgba(5, 35, 31, .95));
+  box-shadow: 0 6px 0 rgba(3, 22, 19, .68), 0 14px 28px rgba(3, 20, 18, .34);
+  backdrop-filter: blur(8px);
+}
+
+.ml-forest-game__header h2 { font-size: clamp(23px, 6.8vw, 29px); }
+.ml-forest-game__header p { color: #f0ffe8; font-size: 14px; }
+
+.ml-forest-game__ready,
+.ml-forest-game__challenge {
+  width: min(100%, 342px);
+  gap: 9px;
+}
+
+.ml-forest-game__ready > button {
+  width: 100%;
+  min-height: 62px;
+  border: 3px solid #fff;
+  box-shadow: 0 6px 0 #1d6a38, 0 13px 24px rgba(3, 24, 20, .34);
+}
+
+.ml-forest-board {
+  width: min(100%, 324px);
+  padding: 12px;
+  border-color: rgba(238, 255, 232, .95);
+  background: linear-gradient(145deg, rgba(224, 250, 207, .96), rgba(139, 194, 121, .95));
+  box-shadow: 0 7px 0 rgba(7, 48, 34, .78), 0 15px 28px rgba(3, 24, 20, .38), inset 0 2px #fff;
+}
+
+@media (max-height: 700px) {
+  .ml-forest-game { padding-top: 8px; padding-bottom: calc(8px + var(--safe-bottom)); gap: 7px; }
+  .ml-forest-game__header { padding-block: 8px; }
+  .ml-forest-game__header p { font-size: 13px; }
+  .ml-forest-game__ready > button { min-height: 54px; }
+}

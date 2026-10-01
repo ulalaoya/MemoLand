@@ -721,3 +721,93 @@
   .ml-city-game__scene.is-district-complete::after,
   .ml-city-game__scene.is-district-complete .ml-city-game__window { animation: none; }
 }
+
+/* Illustrated City of Connections: the city is the stage, the worksheet stays below it. */
+.ml-city-game {
+  grid-template-rows: clamp(205px, 31dvh, 238px) minmax(0, 1fr);
+  background: #153b42;
+}
+
+.ml-city-game.is-hint-open {
+  grid-template-rows: clamp(172px, 25dvh, 194px) minmax(0, 1fr);
+}
+
+.ml-city-game[data-city-project] .ml-city-game__scene {
+  background:
+    linear-gradient(180deg, rgba(7, 28, 37, .02), rgba(7, 28, 37, .1) 52%, rgba(7, 28, 37, .52)),
+    url('/worlds/city-connections-adventure.webp') center 51% / cover no-repeat;
+}
+
+.ml-city-game__scene::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(8, 32, 42, .2), transparent 25% 78%, rgba(8, 32, 42, .16));
+}
+
+.ml-city-game__sun,
+.ml-city-game__district-row,
+.ml-city-game__road,
+.ml-city-game__assembly {
+  display: none;
+}
+
+.ml-city-game__district-label {
+  color: #fff5ce;
+  background: rgba(9, 47, 54, .82);
+  border: 1px solid rgba(255, 255, 255, .72);
+  box-shadow: 0 3px 0 rgba(5, 24, 31, .52);
+  backdrop-filter: blur(8px);
+}
+
+.ml-city-game__puzzle {
+  z-index: 3;
+  inset: auto 43px 10px 12px;
+  width: calc(100% - 55px);
+  height: 148px;
+  padding: 5px;
+  border: 2px solid rgba(255, 255, 255, .72);
+  border-radius: 22px;
+  background: rgba(7, 31, 42, .68);
+  box-shadow: 0 7px 0 rgba(4, 20, 27, .66), 0 12px 24px rgba(3, 18, 24, .32);
+  backdrop-filter: blur(6px);
+}
+
+.ml-city-game__puzzle-board {
+  fill: rgba(255, 255, 255, .17);
+  stroke: rgba(255, 255, 255, .68);
+}
+
+.ml-city-game__puzzle-slot {
+  fill: rgba(255, 255, 255, .16);
+  stroke: rgba(255, 255, 255, .52);
+}
+
+.ml-city-game__puzzle-outline { stroke: rgba(255, 255, 255, .54); }
+
+.ml-city-game__memo {
+  z-index: 6;
+  top: 33px;
+  right: auto;
+  bottom: auto;
+  left: 3px;
+  --ml-memo-size: 70px;
+  filter: drop-shadow(0 7px 4px rgba(4, 20, 27, .52));
+}
+
+.ml-city-game__worksite {
+  border-top-color: #f6c858;
+  background:
+    radial-gradient(circle at 12% 3%, rgba(98, 211, 203, .18), transparent 26%),
+    linear-gradient(180deg, rgba(249, 255, 252, .98), rgba(255, 250, 237, .99));
+  box-shadow: 0 -7px 22px rgba(5, 39, 46, .28);
+}
+
+@media (max-width: 359px), (max-height: 700px) {
+  .ml-city-game { grid-template-rows: 184px minmax(0, 1fr); }
+  .ml-city-game.is-hint-open { grid-template-rows: 158px minmax(0, 1fr); }
+  .ml-city-game__puzzle { inset: auto 39px 8px 9px; width: calc(100% - 48px); height: 130px; }
+  .ml-city-game__memo { top: 27px; --ml-memo-size: 62px; }
+}

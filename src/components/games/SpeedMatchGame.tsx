@@ -1,15 +1,28 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { speedMatch } from '../../engines/speed';
 import { challengeFingerprint, generateVariedChallenge } from '../../engines/variety';
 import { clampLevel } from '../../config/curriculum';
 import { TapGlyph } from '../svg/TapIcon';
 import { sfxCoin, sfxSoft } from '../../audio/sfx';
+import './speed-track.css';
 
 type ChoiceFlash = { index: number; correct: boolean } | null;
 
 export const SPEED_RACE_SECONDS = 60;
 export const SPEED_RACE_FINISH_TITLE = 'סיימת את המרוץ!';
 export const speedRaceSummary = (score: number) => `${score} הצלחות בדקה`;
+
+function RearRaceCar({ id, tone = 0, hero = false }: { id: string; tone?: number; hero?: boolean }) {
+  return (
+    <span className={`ml-speed-car ml-speed-car--tone-${tone % 5}${hero ? ' is-hero' : ''}`} aria-hidden>
+      <span className="ml-speed-car__window" />
+      <span className="ml-speed-car__light ml-speed-car__light--left" />
+      <span className="ml-speed-car__light ml-speed-car__light--right" />
+      <span className="ml-speed-car__plate"><TapGlyph id={id} size={hero ? 34 : 25} /></span>
+      <span className="ml-speed-car__bumper" />
+    </span>
+  );
+}
 
 /** The one shared, continuous 60-second race used by Daily Journey and Free Play. */
 export function SpeedMatchGame({
@@ -104,9 +117,9 @@ export function SpeedMatchGame({
     return (
       <div
         data-speed-race-finished
-        style={{ minHeight: 330, display: 'grid', placeItems: 'center', textAlign: 'center' }}
+        className="ml-speed-finish"
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, color: 'var(--ink)' }}>
+        <div className="ml-speed-finish__card">
           <span aria-hidden style={{ fontSize: 64 }}>🏁</span>
           <h2 style={{ margin: 0, fontFamily: 'var(--font-head)', fontSize: 30 }}>{SPEED_RACE_FINISH_TITLE}</h2>
           <strong className="ml-number-text" style={{ fontSize: 24 }}>{speedRaceSummary(score)}</strong>
@@ -119,42 +132,32 @@ export function SpeedMatchGame({
     <div
       data-speed-race
       data-option-count={challenge.stimulus.options.length}
-      style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center', color: 'var(--ink)' }}
+      className="ml-speed-race"
+      style={{ '--ml-speed-accent': color } as CSSProperties}
     >
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center' }}>
+      <div className="ml-speed-race__scorebar">
         <div aria-label={`${score} הצלחות`} style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 19 }}>
           הצלחות: <span className="ml-number-text" style={{ color }}>{score}</span>
         </div>
         <div
           aria-label={`${left} שניות נותרו`}
-          style={{
-            minWidth: 78,
-            padding: '7px 12px',
-            borderRadius: 999,
-            background: left <= 10 ? '#ffe2df' : 'var(--panel)',
-            border: `3px solid ${left <= 10 ? '#d92d20' : color}`,
-            color: left <= 10 ? '#9f1b14' : 'var(--ink)',
-            fontFamily: 'var(--font-display)',
-            fontSize: 25,
-            direction: 'ltr',
-          }}
+          className={`ml-speed-race__timer${left <= 10 ? ' is-urgent' : ''}`}
         >
           {left}
         </div>
       </div>
 
-      <p style={{ margin: 0, fontFamily: 'var(--font-head)', fontWeight: 700 }}>מצא את הסמל הזהה</p>
+      <p className="ml-speed-race__prompt">מצא את המכונית עם לוחית הרישוי הזהה</p>
       <div
         data-speed-target={challenge.stimulus.target}
-        style={{ padding: 14, borderRadius: 18, background: 'var(--panel)', border: `3px solid ${color}` }}
+        className="ml-speed-race__target"
       >
-        <TapGlyph id={challenge.stimulus.target} size={72} />
+        <RearRaceCar id={challenge.stimulus.target} tone={round} hero />
       </div>
 
-      <div style={{ width: '100%', display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div className="ml-speed-race__options">
         {challenge.stimulus.options.map((id, index) => {
           const selected = flash?.index === index;
-          const background = selected ? (flash.correct ? '#20a35a' : '#d92d20') : 'var(--panel)';
           return (
             <button
               key={`${round}-${id}`}
@@ -162,16 +165,9 @@ export function SpeedMatchGame({
               data-speed-option={id}
               onClick={() => pick(index)}
               aria-label={`אפשרות ${index + 1}`}
-              style={{
-                padding: 11,
-                background,
-                border: `3px solid ${selected ? '#fff' : 'var(--gray-300)'}`,
-                borderRadius: 16,
-                boxShadow: '0 3px 0 rgba(36,50,71,.15)',
-                transition: 'background 80ms ease',
-              }}
+              className={`ml-speed-race__option${selected ? flash.correct ? ' is-correct' : ' is-wrong' : ''}`}
             >
-              <TapGlyph id={id} size={50} />
+              <RearRaceCar id={id} tone={index + round + 1} />
             </button>
           );
         })}

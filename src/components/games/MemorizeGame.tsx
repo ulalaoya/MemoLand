@@ -5,6 +5,8 @@ import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import { Button } from '../Button';
 import { FeedbackBanner } from './common';
 import type { GameProps } from './common';
+import { MemoCompanion } from './MemoCompanion';
+import './treasure-castle.css';
 
 type Phase = 'ready' | 'showing' | 'input' | 'done';
 
@@ -66,6 +68,7 @@ export function MemorizeGame({
       <button
         key={key}
         type="button"
+        className={`ml-castle-treasure${selected ? ' is-selected' : ''}`}
         onClick={onClick}
         disabled={!onClick}
         style={{
@@ -90,8 +93,9 @@ export function MemorizeGame({
 
   return (
     <div data-treasure-castle-game style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center', color: '#243247' }}>
+      <MemoCompanion behavior={result === true ? 'success' : phase === 'input' ? 'thinking' : 'idle'} className="ml-castle-memo" />
       {phase === 'ready' && (
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 15, alignItems: 'center' }}>
+        <div className="ml-castle-card ml-castle-card--ready" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 15, alignItems: 'center' }}>
           <CastleChest open={false} />
           <p style={{ margin: 0, fontSize: 26, fontFamily: 'var(--font-head)', fontWeight: 800, lineHeight: 1.25 }}>
             זכור את האוצרות לפי הסדר
@@ -102,12 +106,13 @@ export function MemorizeGame({
       )}
 
       {phase === 'showing' && (
-        <div data-castle-treasure-preview style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+        <div className="ml-castle-card ml-castle-card--showing" data-castle-treasure-preview style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
           <p style={{ margin: 0, fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 21 }}>זכור את האוצרות לפי הסדר</p>
           <div style={{ display: 'flex', gap: 9, flexWrap: 'wrap', justifyContent: 'center' }}>
             {stim.items.map((word, index) => (
               <div
                 key={`${word}-${index}`}
+                className="ml-castle-preview-treasure"
                 style={{
                   width: 92,
                   minHeight: 82,
@@ -130,7 +135,7 @@ export function MemorizeGame({
       )}
 
       {phase === 'input' && (
-        <>
+        <div className="ml-castle-card ml-castle-card--input">
           <p style={{ margin: 0, textAlign: 'center', fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 22 }}>
             סדר את האוצרות כדי לפתוח את התיבה
           </p>
@@ -152,11 +157,11 @@ export function MemorizeGame({
               `treasure-${index}`,
             ))}
           </div>
-        </>
+        </div>
       )}
 
       {phase === 'done' && result !== null && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center', textAlign: 'center' }}>
+        <div className="ml-castle-card ml-castle-card--done" style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center', textAlign: 'center' }}>
           {result ? (
             <>
               <CastleChest open />
@@ -180,7 +185,7 @@ export function MemorizeGame({
 
 function CastleChest({ open }: { open: boolean }) {
   return (
-    <svg width="132" height="112" viewBox="0 0 132 112" role="img" aria-label={open ? 'תיבת אוצר פתוחה' : 'תיבת אוצר סגורה'}>
+    <svg className={`ml-castle-chest${open ? ' is-open' : ''}`} width="132" height="112" viewBox="0 0 132 112" role="img" aria-label={open ? 'תיבת אוצר פתוחה' : 'תיבת אוצר סגורה'}>
       {open ? <path d="M29 42L20 15M66 36V7M101 42l12-25" stroke="#d6a51d" strokeWidth="5" strokeLinecap="round" /> : null}
       <rect x="24" y="59" width="84" height="43" rx="8" fill="#8a4f2a" stroke="#243247" strokeWidth="4" />
       <rect x="24" y="68" width="84" height="11" fill="#d6a51d" stroke="#243247" strokeWidth="3" />

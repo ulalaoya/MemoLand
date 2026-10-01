@@ -1,0 +1,115 @@
+[data-treasure-castle-game] {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  justify-content: flex-end;
+  padding: 16px 12px calc(16px + var(--safe-bottom));
+  isolation: isolate;
+  background:
+    linear-gradient(180deg, rgba(10, 14, 39, .03), rgba(10, 14, 39, .12) 47%, rgba(10, 14, 39, .68)),
+    url('/worlds/treasure-castle-adventure.webp') center / cover no-repeat;
+}
+
+[data-treasure-castle-game]::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 14, 39, .08), transparent 38%, rgba(10, 14, 39, .34) 64%, rgba(10, 14, 39, .72));
+}
+
+.ml-castle-memo {
+  position: absolute;
+  z-index: 3;
+  top: 17%;
+  left: 2%;
+  --ml-memo-size: clamp(76px, 22vw, 96px);
+  filter: drop-shadow(0 8px 5px rgba(7, 9, 28, .58));
+}
+
+.ml-castle-card {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 352px);
+  max-height: min(56vh, 440px);
+  padding: 13px;
+  overflow-y: auto;
+  color: #243247;
+  border: 3px solid #f7f0df;
+  border-radius: 25px;
+  background:
+    radial-gradient(circle at 16% 2%, rgba(143, 101, 212, .1), transparent 28%),
+    linear-gradient(150deg, rgba(255, 253, 246, .98), rgba(239, 238, 248, .97));
+  box-shadow: 0 7px 0 rgba(10, 12, 38, .72), 0 18px 32px rgba(7, 8, 28, .36);
+  backdrop-filter: blur(8px);
+}
+
+.ml-castle-card--ready { gap: 8px !important; }
+.ml-castle-card--ready p:first-of-type { color: #202f46; }
+.ml-castle-card--ready p:nth-of-type(2) { color: #445267; }
+.ml-castle-card--ready button {
+  width: 100%;
+  min-height: 58px;
+  border: 3px solid #fff !important;
+  box-shadow: 0 5px 0 #20733b !important;
+}
+
+.ml-castle-card--showing,
+.ml-castle-card--input,
+.ml-castle-card--done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.ml-castle-card--showing > p,
+.ml-castle-card--input > p {
+  width: 100%;
+  padding: 7px 10px;
+  color: #fff;
+  border-radius: 15px;
+  background: #28314f;
+}
+
+.ml-castle-preview-treasure {
+  color: #243247 !important;
+  border-color: #7d5a2f !important;
+  background: #fffdf6 !important;
+}
+
+.ml-castle-treasure {
+  border-color: #7d5a2f !important;
+  color: #243247 !important;
+}
+.ml-castle-treasure.is-selected {
+  color: #fff !important;
+  border-color: #fff !important;
+  background: #28314f !important;
+}
+
+.ml-castle-chest {
+  flex: 0 0 auto;
+  filter: drop-shadow(0 7px 4px rgba(27, 23, 45, .28));
+}
+.ml-castle-chest.is-open { animation: ml-castle-open 620ms var(--ml-ease-spring) both; }
+
+@keyframes ml-castle-open {
+  0% { transform: translateY(5px) scale(.9); }
+  64% { transform: translateY(-4px) scale(1.08); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@media (max-height: 700px) {
+  [data-treasure-castle-game] { padding-bottom: calc(9px + var(--safe-bottom)); }
+  .ml-castle-card { max-height: 59vh; padding: 10px; }
+  .ml-castle-memo { top: 14%; --ml-memo-size: 68px; }
+  .ml-castle-chest { width: 104px; height: 88px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ml-castle-chest.is-open { animation: none; }
+}
