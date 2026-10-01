@@ -208,6 +208,7 @@
 .ml-session-screen--forest { background: #8fe0a0; }
 .ml-session-screen--patterns { background: #7a54c8; }
 .ml-session-screen--speed { background: #59b9f7; }
+.ml-session-screen--cars { background: #375b78; }
 .ml-session-screen--castle { background: #241b4a; }
 
 .ml-session-board--forest {
@@ -236,7 +237,8 @@
 
 .ml-session-board--patterns .ml-session-board__activity { height: 100%; }
 
-.ml-session-board--speed {
+.ml-session-board--speed,
+.ml-session-board--cars {
   flex: 1 1 auto;
   min-height: 0;
   margin: 0;
@@ -249,7 +251,8 @@
   box-shadow: none;
 }
 
-.ml-session-board--speed .ml-session-board__activity { height: 100%; }
+.ml-session-board--speed .ml-session-board__activity,
+.ml-session-board--cars .ml-session-board__activity { height: 100%; }
 
 .ml-session-board--castle {
   flex: 1 1 auto;
@@ -270,6 +273,7 @@
 .ml-session-screen--forest .ml-session-hud__progress > span { background: linear-gradient(90deg, #3f9e47, #9ee36f) !important; }
 .ml-session-screen--patterns .ml-session-hud__progress > span { background: linear-gradient(90deg, #6c42bc, #db74e8) !important; }
 .ml-session-screen--speed .ml-session-hud__progress > span { background: linear-gradient(90deg, #ef8e22, #ffd45f) !important; }
+.ml-session-screen--cars .ml-session-hud__progress > span { background: linear-gradient(90deg, #167f91, #ffd35a) !important; }
 .ml-session-screen--castle .ml-session-hud__progress > span { background: linear-gradient(90deg, #8c65d4, #ffd45f) !important; }
 
 .ml-session-board--echoes::before,

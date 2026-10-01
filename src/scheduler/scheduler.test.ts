@@ -21,7 +21,7 @@ import { createJourneySecret } from './journeySecret';
 
 describe('world registry order', () => {
   it('inserts City as world 3 without renaming persisted land ids', () => {
-    expect(LAND_ORDER).toEqual(['numbers', 'echoes', 'connections', 'forest', 'patterns', 'speed', 'castle']);
+    expect(LAND_ORDER).toEqual(['numbers', 'echoes', 'connections', 'forest', 'patterns', 'speed', 'cars', 'castle']);
   });
 });
 
@@ -215,7 +215,7 @@ describe('בניית המסע היומי', () => {
       expect(cityIndexes[10] - cityIndexes[9]).toBeGreaterThan(1);
 
       const rotations = session.steps.filter((step) => step.kind === 'rotation');
-      expect(rotations).toHaveLength(minutes <= 10 ? 4 : minutes <= 15 ? 6 : minutes <= 20 ? 8 : 10);
+      expect(rotations).toHaveLength(minutes <= 10 ? 5 : minutes <= 15 ? 6 : minutes <= 20 ? 8 : 10);
       expect(rotations.every((step) => step.landId !== 'connections' && step.landId !== 'speed')).toBe(true);
       expect(new Set(session.steps.map((step) => step.landId).filter(Boolean))).toEqual(new Set(LAND_ORDER));
       expect(session.steps.find((step) => step.kind === 'speed')?.landId).toBe('speed');
@@ -234,6 +234,9 @@ describe('בניית המסע היומי', () => {
     expect(buildFreePlayActivities('speed')).toEqual([
       { kind: 'speed', landId: 'speed', seconds: 60, label: 'מסלול הזריזות' },
     ]);
+    expect(buildFreePlayActivities('cars')).toHaveLength(FREE_PLAY_ACTIVITY_COUNT);
+    expect(buildFreePlayActivities('cars').every((activity) => activity.kind === 'game'
+      && activity.exerciseId === 'cars.plates')).toBe(true);
 
     for (let index = 0; index < 30; index += 1) {
       const extra = buildDailySupplementalActivity(index);

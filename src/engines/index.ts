@@ -5,6 +5,7 @@ import { listenRepeat, multiStep } from './echoes';
 import { forestGrid } from './forest';
 import { patternComplete } from './patterns';
 import { speedMatch } from './speed';
+import { carPlateMemory } from './cars';
 import { castleMemorize } from './castle';
 import { connectionsDirect, connectionsPractice, connectionsDerived, connectionsLink } from './connections';
 
@@ -28,6 +29,8 @@ export const ENGINES: ExerciseEngine[] = [
   patternComplete,
   // ארץ 5 — מסלול הזריזות
   speedMatch,
+  // ארץ 7 — עיר המכוניות
+  carPlateMemory,
   // ארץ 6 — טירת האוצר
   castleMemorize,
 ];
@@ -73,5 +76,6 @@ export {
   forestGrid,
   patternComplete,
   speedMatch,
+  carPlateMemory,
   castleMemorize,
 };

@@ -1,0 +1,91 @@
+.ml-car-city {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  color: #fff;
+  isolation: isolate;
+}
+
+.ml-car-city__scene {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: url('/worlds/car-city-adventure.webp') center / cover no-repeat;
+}
+
+.ml-car-city::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(7, 20, 39, .06), rgba(7, 20, 39, .22) 50%, rgba(7, 20, 39, .7));
+}
+
+.ml-car-city__content {
+  height: 100%;
+  padding: 16px 12px calc(12px + var(--ml-safe-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.ml-car-city__story {
+  width: min(92%, 350px);
+  padding: 8px 14px;
+  display: grid;
+  gap: 2px;
+  text-align: center;
+  background: rgba(8, 29, 55, .91);
+  border: 2px solid rgba(230, 248, 255, .92);
+  border-radius: 20px;
+  box-shadow: 0 5px 0 rgba(3, 13, 30, .76), 0 12px 24px rgba(3, 13, 30, .3);
+}
+.ml-car-city__story span { color: #ffd35a; font-size: .72rem; font-weight: 800; }
+.ml-car-city__story strong { font-family: var(--ml-font-display); font-size: 1.32rem; }
+
+.ml-car-city__car {
+  position: relative;
+  width: min(78%, 290px);
+  height: 132px;
+  flex: 0 0 auto;
+  background: linear-gradient(155deg, #ef9b32, #c85e27);
+  border: 4px solid #fff;
+  border-radius: 64px 64px 24px 24px;
+  box-shadow: inset 0 7px rgba(255,255,255,.2), 0 8px 0 #71381f, 0 18px 32px rgba(3,13,30,.35);
+}
+.ml-car-city__window { position:absolute; top:10px; left:22%; right:22%; height:40px; border:3px solid #102d4a; border-radius:30px 30px 10px 10px; background:linear-gradient(160deg,#bfefff,#3978a2); }
+.ml-car-city__light { position:absolute; top:68px; width:34px; height:20px; border:3px solid #71381f; border-radius:50%; background:#ffe98b; box-shadow:0 0 12px rgba(255,231,118,.8); }
+.ml-car-city__light--left { left:16px; }
+.ml-car-city__light--right { right:16px; }
+.ml-car-city__plate { position:absolute; left:50%; bottom:14px; width:58%; min-height:43px; transform:translateX(-50%); display:grid; place-items:center; direction:ltr; color:#112a47; background:#fff9d8; border:3px solid #18324f; border-radius:8px; font-size:clamp(1.6rem,8vw,2.2rem); font-weight:900; letter-spacing:.13em; box-shadow:inset 0 0 0 2px #ffd35a; }
+.ml-car-city__wheel { position:absolute; bottom:-13px; width:34px; height:30px; background:#182235; border:4px solid #080d16; border-radius:8px 8px 15px 15px; }
+.ml-car-city__wheel--left { left:25px; }
+.ml-car-city__wheel--right { right:25px; }
+
+.ml-car-city__console { width:min(94%,350px); padding:9px; display:grid; gap:8px; background:rgba(8,24,49,.94); border:2px solid #e8f7ff; border-radius:22px; box-shadow:0 6px 0 rgba(3,13,30,.78); }
+.ml-car-city__entered { min-height:38px; display:grid; place-items:center; direction:ltr; color:#fff; background:#102d51; border:2px solid #5bd7ec; border-radius:12px; font-size:1.55rem; font-weight:900; letter-spacing:.14em; }
+.ml-car-city__entered span { color:rgba(255,255,255,.48); }
+.ml-car-city__keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+.ml-car-city__keypad button { min-height:43px; color:#fff; background:linear-gradient(180deg,#3e9ddd,#2165a5); border:2px solid #eafaff; border-radius:12px; box-shadow:0 3px 0 #123f72; font-family:var(--ml-font-display); font-size:1.32rem; font-weight:900; }
+.ml-car-city__keypad button:active { transform:translateY(2px); box-shadow:0 1px 0 #123f72; }
+.ml-car-city__keypad .is-erase { color:#51351e; background:linear-gradient(180deg,#fff4d9,#e6bd82); box-shadow:0 3px 0 #986226; }
+.ml-car-city__keypad .is-submit { background:linear-gradient(180deg,#55cf79,#248f50); box-shadow:0 3px 0 #176338; }
+.ml-car-city__keypad .is-submit:disabled { opacity:.42; }
+.ml-car-city__watch { padding:8px 16px; color:#19324e; background:#fff3aa; border:2px solid #fff; border-radius:999px; font-weight:900; box-shadow:0 4px 0 #a96b12; }
+.ml-car-city.is-correct .ml-car-city__plate { background:#d7ffe4; box-shadow:inset 0 0 0 3px #32b765; }
+.ml-car-city.is-wrong .ml-car-city__plate { background:#ffe0dc; box-shadow:inset 0 0 0 3px #df493f; }
+
+@media (max-height: 690px) {
+  .ml-car-city__content { gap:7px; padding-top:8px; }
+  .ml-car-city__story { padding-block:6px; }
+  .ml-car-city__story strong { font-size:1.12rem; }
+  .ml-car-city__car { height:108px; width:min(72%,250px); }
+  .ml-car-city__window { height:31px; }
+  .ml-car-city__light { top:55px; }
+  .ml-car-city__plate { min-height:36px; bottom:10px; font-size:1.55rem; }
+  .ml-car-city__keypad button { min-height:39px; }
+}

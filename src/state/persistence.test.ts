@@ -176,7 +176,8 @@ describe('SaveState migration', () => {
       }],
     });
 
-    expect(migrated.dailyJourney.plan.map((activity) => activity.kind)).toEqual(['game', 'game', 'game']);
+    expect(migrated.dailyJourney.plan.map((activity) => activity.kind)).toEqual(['game', 'game', 'game', 'game']);
+    expect(migrated.dailyJourney.plan.at(-1)).toMatchObject({ landId: 'cars', exerciseId: 'cars.plates' });
     expect(migrated.dailyJourney.currentActivity).toBe(2);
     expect(migrated.dailyJourney.secret).toBeNull();
     expect(migrated.spaced).toEqual([]);
@@ -200,6 +201,7 @@ describe('SaveState migration', () => {
       'numbers.backward',
       'numbers.sort',
       'numbers.forward',
+      'cars.plates',
     ]);
     expect(migratedAgain.dailyJourney.plan).toEqual(migrated.dailyJourney.plan);
   });

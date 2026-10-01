@@ -12,18 +12,6 @@ export const SPEED_RACE_SECONDS = 60;
 export const SPEED_RACE_FINISH_TITLE = 'סיימת את המרוץ!';
 export const speedRaceSummary = (score: number) => `${score} הצלחות בדקה`;
 
-function RearRaceCar({ id, tone = 0, hero = false }: { id: string; tone?: number; hero?: boolean }) {
-  return (
-    <span className={`ml-speed-car ml-speed-car--tone-${tone % 5}${hero ? ' is-hero' : ''}`} aria-hidden>
-      <span className="ml-speed-car__window" />
-      <span className="ml-speed-car__light ml-speed-car__light--left" />
-      <span className="ml-speed-car__light ml-speed-car__light--right" />
-      <span className="ml-speed-car__plate"><TapGlyph id={id} size={hero ? 34 : 25} /></span>
-      <span className="ml-speed-car__bumper" />
-    </span>
-  );
-}
-
 /** The one shared, continuous 60-second race used by Daily Journey and Free Play. */
 export function SpeedMatchGame({
   seconds = SPEED_RACE_SECONDS,
@@ -147,12 +135,14 @@ export function SpeedMatchGame({
         </div>
       </div>
 
-      <p className="ml-speed-race__prompt">מצא את המכונית עם לוחית הרישוי הזהה</p>
+      <p className="ml-speed-race__prompt">בחר את הצורה הזהה במהירות</p>
       <div
         data-speed-target={challenge.stimulus.target}
         className="ml-speed-race__target"
       >
-        <RearRaceCar id={challenge.stimulus.target} tone={round} hero />
+        <span className="ml-speed-race__glyph ml-speed-race__glyph--target" aria-hidden>
+          <TapGlyph id={challenge.stimulus.target} size={82} />
+        </span>
       </div>
 
       <div className="ml-speed-race__options">
@@ -167,7 +157,7 @@ export function SpeedMatchGame({
               aria-label={`אפשרות ${index + 1}`}
               className={`ml-speed-race__option${selected ? flash.correct ? ' is-correct' : ' is-wrong' : ''}`}
             >
-              <RearRaceCar id={id} tone={index + round + 1} />
+              <span className="ml-speed-race__glyph" aria-hidden><TapGlyph id={id} size={54} /></span>
             </button>
           );
         })}

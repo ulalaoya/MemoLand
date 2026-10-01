@@ -79,6 +79,7 @@ const WORLD_ICONS: Record<LandId, string> = {
   forest: '🌳',
   patterns: '🔮',
   speed: '🏁',
+  cars: '🚘',
   castle: '🏰',
 };
 
@@ -454,7 +455,8 @@ export function SessionScreen({
   const isEchoChallenge = activity.kind === 'game' && activityLand === 'echoes';
   const isNumbersChallenge = activity.kind === 'game' && activityLand === 'numbers';
   const isConnectionsChallenge = activity.kind === 'game' && activityLand === 'connections';
-  const isImmersiveChallenge = isEchoChallenge || isNumbersChallenge || isConnectionsChallenge;
+  const isCarsChallenge = activity.kind === 'game' && activityLand === 'cars';
+  const isImmersiveChallenge = isEchoChallenge || isNumbersChallenge || isConnectionsChallenge || isCarsChallenge;
 
   return (
     <div className={`ml-session-screen ml-session-screen--${activityLand}${practiceMode ? ' ml-session-screen--multiplication-practice' : ''}`}>

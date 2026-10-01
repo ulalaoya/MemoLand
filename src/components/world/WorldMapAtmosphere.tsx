@@ -7,6 +7,7 @@ const ZONES: { land: LandId; className: string }[] = [
   { land: 'forest', className: 'forest' },
   { land: 'patterns', className: 'patterns' },
   { land: 'speed', className: 'speed' },
+  { land: 'cars', className: 'speed' },
   { land: 'castle', className: 'castle' },
 ];
 
