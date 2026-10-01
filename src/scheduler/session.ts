@@ -9,7 +9,7 @@ import { accuracy } from './leveling';
 
 /** מספר הסבבים בשלב הרוטציה מותאם לאורך הסשן. */
 function rotationRounds(minutes: number): number {
-  if (minutes <= 10) return 4;
+  if (minutes <= 10) return 5;
   if (minutes <= 15) return 6;
   if (minutes <= 20) return 8;
   return 10;
@@ -53,9 +53,9 @@ export function buildDailySession(
   // City has its two fixed blocks and Speed has its single continuous race.
   const regularWeak = weak.filter((land) => land !== 'connections' && land !== 'speed');
 
-  // Every journey visits all seven worlds. Numbers opens the route; the four
+  // Every journey visits all eight worlds. Numbers opens the route; the five
   // regular worlds below are guaranteed once before adaptive repeats begin.
-  const requiredRotationLands: LandId[] = ['echoes', 'forest', 'patterns', 'castle'];
+  const requiredRotationLands: LandId[] = ['echoes', 'forest', 'patterns', 'cars', 'castle'];
   const adaptiveOrder = regularWeak.length > 0 ? regularWeak : requiredRotationLands;
   const rotationLands = [...requiredRotationLands];
   while (rotationLands.length < rounds) {
@@ -93,7 +93,7 @@ export function buildDailySession(
     steps.push({ kind: 'yesterday', label: 'מה שזכרת אתמול', rounds: 1 });
   }
 
-  // 4. רוטציה — ביקור מובטח במערה, ביער, בהרים ובטירה; אחר כך התאמה לחולשות.
+  // 4. רוטציה — ביקור מובטח במערה, ביער, בהרים, בעיר המכוניות ובטירה.
   for (let i = 0; i < rounds; i++) {
     const land: LandId = rotationLands[i % rotationLands.length];
     steps.push({

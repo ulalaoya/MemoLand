@@ -22,6 +22,7 @@ export function LandIcon({ land, size = 60 }: { land: LandId; size?: number }) {
         {land === 'forest' && <Forest />}
         {land === 'patterns' && <Patterns />}
         {land === 'speed' && <Speed />}
+        {land === 'cars' && <Cars />}
         {land === 'castle' && <Castle />}
       </svg>
     </div>
@@ -104,6 +105,20 @@ function Speed() {
       <rect x="40" y="14" width="12" height="10" fill="#fff" stroke={INK} strokeWidth="1.5" />
       <path d="M40 14h3v3h3v-3h3v3h-3v3h3v-3h-3v3h-3v-3h-3z" fill={INK} />
       <line x1="40" y1="14" x2="40" y2="30" stroke={INK} strokeWidth="2" />
+    </>
+  );
+}
+
+function Cars() {
+  return (
+    <>
+      <rect width="60" height="60" fill="#8fd8ff" />
+      <path d="M0 42Q30 34 60 42V60H0Z" fill="#425776" />
+      <rect x="9" y="27" width="42" height="22" rx="9" fill="#e88b2a" stroke={INK} strokeWidth="2" />
+      <path d="M17 27l7-9h14l7 9" fill="#bfeaff" stroke={INK} strokeWidth="2" />
+      <rect x="22" y="35" width="16" height="8" rx="2" fill="#fff7d7" stroke={INK} strokeWidth="1.5" />
+      <circle cx="17" cy="49" r="5" fill="#243247" />
+      <circle cx="43" cy="49" r="5" fill="#243247" />
     </>
   );
 }

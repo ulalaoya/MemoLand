@@ -2,7 +2,17 @@ import type { CSSProperties } from 'react';
 import type { LandId } from '../../types';
 import type { LandVisualTheme } from '../../design/themes';
 import { FlagIcon } from '../svg/Icons';
-import { WorldIllustration } from './WorldIllustrations';
+
+const WORLD_PREVIEWS: Record<LandId, string> = {
+  numbers: './worlds/numbers-valley-adventure.webp',
+  echoes: './worlds/echo-cave-adventure.webp',
+  connections: './worlds/city-connections-adventure.webp',
+  forest: './worlds/image-forest-adventure.webp',
+  patterns: './worlds/pattern-mountains-adventure.webp',
+  speed: './worlds/speed-track-shapes-adventure.png',
+  cars: './worlds/car-city-adventure.webp',
+  castle: './worlds/treasure-castle-adventure.webp',
+};
 
 interface LandCardProps {
   landId: LandId;
@@ -44,7 +54,7 @@ export function LandCard({
   } as CSSProperties;
 
   return (
-    <article className={`ml-land-row ml-land-row--${side}`} style={style}>
+    <article className={`ml-land-row ml-land-row--${side}`} data-land={landId} style={style}>
       <button
         type="button"
         className={`ml-land-card ml-pressable${current ? ' ml-land-card--current' : ''}`}
@@ -53,13 +63,12 @@ export function LandCard({
         aria-label={`${name}, עולם ${worldNumber}, משחק חופשי, ${completedTracks} מתוך ${totalTracks} מסלולים${available ? '' : ', לא זמין'}`}
       >
         <span className="ml-land-card__art" aria-hidden>
-          <WorldIllustration land={landId} />
-          <span className="ml-land-card__world-number ml-display-text">{worldNumber}</span>
-          {current ? (
-            <span className="ml-land-card__memo-scout">
-              <img src="./characters/memo.png" alt="" draggable={false} />
+          <span className="ml-land-card__pin">
+            <span className="ml-land-card__pin-photo">
+              <img className="ml-land-card__world-image" src={WORLD_PREVIEWS[landId]} alt="" draggable={false} />
             </span>
-          ) : null}
+          </span>
+          <span className="ml-land-card__world-number ml-display-text">{worldNumber}</span>
         </span>
 
         <span className="ml-land-card__content">

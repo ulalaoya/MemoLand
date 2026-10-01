@@ -11,7 +11,7 @@ import { normalizeCityGrowthMilestones } from './cityGrowth';
 const LEGACY_KEY = 'memoland.save.v1';
 const REGISTRY_KEY = 'memoland.profiles.v1';
 const savePrefix = (id: string) => `memoland.save.v1.${id}`;
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 const NUMBER_RECALL_EXERCISES = ['numbers.forward', 'numbers.backward', 'numbers.sort'] as const;
 
 function emptyDailyJourney(): SaveState['dailyJourney'] {
@@ -73,8 +73,17 @@ function normalizeJourneyPlan(plan: unknown[], currentActivity: number) {
     numberActivityOffset += 1;
     return activity.exerciseId === exerciseId ? activity : { ...activity, exerciseId };
   });
+  const withCarCity = varied.length > 0 && !varied.some((activity) => activity.landId === 'cars')
+    ? [...varied, {
+        kind: 'game' as const,
+        exerciseId: 'cars.plates',
+        landId: 'cars' as const,
+        levelDelta: 0,
+        label: 'עצירה בעיר המכוניות',
+      }]
+    : varied;
   return {
-    plan: varied,
+    plan: withCarCity,
     currentActivity: Math.max(0, currentActivity - removedBeforeCurrent),
   };
 }

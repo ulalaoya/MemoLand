@@ -752,3 +752,78 @@
   .ml-numbers-challenge__surface { width: calc(100% - 14px); }
   .ml-numbers-challenge__memo { --ml-memo-size: 86px; }
 }
+
+/* The challenge belongs on the stone clearing, with Memo acting beside it. */
+.ml-numbers-challenge__surface {
+  width: min(100% - 18px, 460px);
+  padding: 12px 0 calc(16px + var(--ml-safe-bottom, 0px));
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.ml-numbers-challenge--ready .ml-valley-ready {
+  width: min(calc(100% - 96px), 292px);
+  transform: translateX(44px);
+}
+
+.ml-numbers-challenge__memo {
+  z-index: 7;
+  top: auto;
+  left: 1%;
+  bottom: calc(18px + var(--ml-safe-bottom, 0px));
+  --ml-memo-size: clamp(92px, 28vw, 118px);
+}
+
+.ml-numbers-challenge--ready .ml-numbers-challenge__memo,
+.ml-numbers-challenge--focus .ml-numbers-challenge__memo,
+.ml-numbers-challenge--encoding .ml-numbers-challenge__memo,
+.ml-numbers-challenge--recall .ml-numbers-challenge__memo,
+.ml-numbers-challenge--done .ml-numbers-challenge__memo,
+.ml-numbers-challenge--success .ml-numbers-challenge__memo {
+  top: auto;
+}
+
+.ml-numbers-challenge--focus .ml-numbers-challenge__memo,
+.ml-numbers-challenge--encoding .ml-numbers-challenge__memo {
+  left: 3%;
+  bottom: 7%;
+  --ml-memo-size: clamp(84px, 25vw, 106px);
+}
+
+.ml-numbers-challenge--recall .ml-numbers-challenge__memo,
+.ml-numbers-challenge--done .ml-numbers-challenge__memo,
+.ml-numbers-challenge--success .ml-numbers-challenge__memo {
+  left: 2%;
+  bottom: min(46%, 330px);
+  --ml-memo-size: clamp(76px, 23vw, 96px);
+}
+
+.ml-valley-recall {
+  max-width: 356px;
+  padding: 10px;
+  border: 2px solid rgba(224, 245, 255, .84);
+  border-radius: 24px;
+  background: rgba(7, 23, 50, .78);
+  box-shadow: 0 7px 0 rgba(4, 13, 34, .76), 0 16px 28px rgba(4, 13, 34, .34);
+  backdrop-filter: blur(7px);
+}
+
+@media (max-width: 359px), (max-height: 680px) {
+  .ml-numbers-challenge__surface {
+    width: calc(100% - 12px);
+    padding-top: 6px;
+    padding-bottom: calc(8px + var(--ml-safe-bottom, 0px));
+  }
+  .ml-numbers-challenge--ready .ml-valley-ready {
+    width: min(calc(100% - 84px), 276px);
+    transform: translateX(38px);
+  }
+  .ml-numbers-challenge__memo { --ml-memo-size: 82px; }
+  .ml-numbers-challenge--recall .ml-numbers-challenge__memo,
+  .ml-numbers-challenge--done .ml-numbers-challenge__memo,
+  .ml-numbers-challenge--success .ml-numbers-challenge__memo {
+    bottom: min(48%, 294px);
+    --ml-memo-size: 70px;
+  }
+  .ml-valley-recall { padding: 7px; }
+}

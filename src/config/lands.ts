@@ -64,13 +64,21 @@ export const LANDS: Record<LandId, LandMeta> = {
     subtitle: 'מהירות עיבוד',
     order: 6,
   },
+  cars: {
+    id: 'cars',
+    name: 'עיר המכוניות',
+    guide: 'ממו',
+    colorVar: '--ml-city-teal',
+    subtitle: 'זיכרון ללוחיות רישוי',
+    order: 7,
+  },
   castle: {
     id: 'castle',
     name: 'טירת האוצר',
     guide: 'ממו',
     colorVar: '--gold',
     subtitle: 'שינון וקידוד',
-    order: 7,
+    order: 8,
   },
 };
 

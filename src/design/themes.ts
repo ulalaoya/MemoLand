@@ -11,7 +11,7 @@ export interface LandVisualTheme {
   checkpoint: string;
   route: string;
   glow: string;
-  motif: 'numbers' | 'echo' | 'connections' | 'image' | 'pattern' | 'speed' | 'treasure';
+  motif: 'numbers' | 'echo' | 'connections' | 'image' | 'pattern' | 'speed' | 'cars' | 'treasure';
 }
 
 export const LAND_THEMES: Record<LandId, LandVisualTheme> = {
@@ -41,9 +41,14 @@ export const LAND_THEMES: Record<LandId, LandVisualTheme> = {
     glow: 'rgba(140, 82, 217, 0.3)', motif: 'pattern',
   },
   speed: {
-    id: 'speed', primary: '#F59D2A', secondary: '#2E8DF6', accent: '#F04A3A', background: '#DFF3FF',
-    surface: '#FFF8EC', cardBorder: '#F59D2A', checkpoint: '#FFC928', route: '#5267D9',
-    glow: 'rgba(245, 157, 42, 0.32)', motif: 'speed',
+    id: 'speed', primary: '#2E8DF6', secondary: '#5B4FD6', accent: '#FF6C5C', background: '#DFF3FF',
+    surface: '#F4FAFF', cardBorder: '#2E8DF6', checkpoint: '#77E6FF', route: '#5267D9',
+    glow: 'rgba(46, 141, 246, 0.32)', motif: 'speed',
+  },
+  cars: {
+    id: 'cars', primary: '#E88B2A', secondary: '#167F91', accent: '#FFD35A', background: '#DCEEFF',
+    surface: '#FFF8EC', cardBorder: '#E88B2A', checkpoint: '#FFD35A', route: '#37527C',
+    glow: 'rgba(232, 139, 42, 0.32)', motif: 'cars',
   },
   castle: {
     id: 'castle', primary: '#6940B7', secondary: '#8C52D9', accent: '#FFC928', background: '#34295D',

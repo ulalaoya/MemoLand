@@ -16,6 +16,7 @@ export function LandBackground({ land }: { land: LandId }) {
       {land === 'forest' && <Forest />}
       {land === 'patterns' && <Patterns />}
       {land === 'speed' && <Speed />}
+      {land === 'cars' && <Connections />}
       {land === 'castle' && <Castle />}
     </svg>
   );

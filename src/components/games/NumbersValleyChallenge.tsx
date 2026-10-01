@@ -45,13 +45,13 @@ export function NumbersValleyChallenge({
         <span className="ml-numbers-challenge__flower ml-numbers-challenge__flower--two" />
         <span className="ml-numbers-challenge__success-spark ml-numbers-challenge__success-spark--one">✦</span>
         <span className="ml-numbers-challenge__success-spark ml-numbers-challenge__success-spark--two">✦</span>
-        <MemoCompanion
-          key={`${memoBehavior}-${memoBeat}`}
-          behavior={memoBehavior}
-          className="ml-numbers-challenge__memo"
-        />
       </div>
 
+      <MemoCompanion
+        key={`${memoBehavior}-${memoBeat}`}
+        behavior={memoBehavior}
+        className="ml-numbers-challenge__memo"
+      />
       <div className="ml-numbers-challenge__surface">{children}</div>
     </section>
   );

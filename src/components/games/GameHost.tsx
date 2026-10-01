@@ -10,6 +10,7 @@ import { PatternGame } from './PatternGame';
 import { QuickMatchGame } from './QuickMatchGame';
 import { MemorizeGame } from './MemorizeGame';
 import { ConnectionsCityGame } from './ConnectionsCityGame';
+import { CarCityGame } from './CarCityGame';
 
 export function GameHost({
   challenge,
@@ -47,6 +48,8 @@ export function GameHost({
       return <PatternGame {...p} challenge={challenge as never} />;
     case 'speed.match':
       return <QuickMatchGame {...p} challenge={challenge as never} />;
+    case 'cars.plates':
+      return <CarCityGame {...p} challenge={challenge as never} />;
     case 'castle.memorize':
       return <MemorizeGame {...p} challenge={challenge as never} />;
     default:

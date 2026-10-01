@@ -14,6 +14,7 @@ import {
 import { connectionsLink } from './connections';
 import { factsAvailableAtLevel } from '../learning/multiplicationFacts';
 import { speedMatch } from './speed';
+import { carPlateMemory } from './cars';
 import { challengeFingerprint, generateVariedChallenge } from './variety';
 
 /** בדיקת יסוד: כל generator מייצר אתגר פתיר שהתשובה נגזרת מהגירוי,
@@ -91,6 +92,7 @@ describe('מרשם המנועים', () => {
     expect(enginesForLand('forest').map(({ id }) => id)).toEqual(['forest.grid']);
     expect(enginesForLand('patterns').map(({ id }) => id)).toEqual(['patterns.complete']);
     expect(enginesForLand('speed').map(({ id }) => id)).toEqual(['speed.match']);
+    expect(enginesForLand('cars').map(({ id }) => id)).toEqual(['cars.plates']);
     expect(enginesForLand('castle').map(({ id }) => id)).toEqual(['castle.memorize']);
   });
 });
@@ -107,6 +109,12 @@ describe('actual world difficulty progression', () => {
     expect(patternLength(15)).toBeGreaterThan(patternLength(1));
     expect(speedMatch.generate(15, 7).stimulus.options.length).toBeGreaterThan(
       speedMatch.generate(1, 7).stimulus.options.length,
+    );
+    expect(carPlateMemory.generate(15, 7).stimulus.plate.length).toBeGreaterThan(
+      carPlateMemory.generate(1, 7).stimulus.plate.length,
+    );
+    expect(carPlateMemory.generate(15, 7).stimulus.exposureMs).toBeLessThan(
+      carPlateMemory.generate(1, 7).stimulus.exposureMs,
     );
     expect(memorizeConfig(15).items).toBeGreaterThan(memorizeConfig(1).items);
     expect(memorizeConfig(15).viewMs).toBeLessThan(memorizeConfig(1).viewMs);
