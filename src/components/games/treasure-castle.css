@@ -113,3 +113,93 @@
 @media (prefers-reduced-motion: reduce) {
   .ml-castle-chest.is-open { animation: none; }
 }
+
+/* Treasure-room presentation: ornate frame, glowing pedestal and a real chest reveal. */
+.ml-castle-card {
+  border-color: #f8f1dc;
+  background:
+    radial-gradient(circle at 50% 0, rgba(255, 224, 122, .16), transparent 34%),
+    linear-gradient(150deg, rgba(255, 253, 246, .985), rgba(232, 229, 244, .98));
+  box-shadow: 0 7px 0 rgba(10, 12, 38, .76), 0 18px 32px rgba(7, 8, 28, .4), inset 0 0 0 4px rgba(214, 165, 29, .1);
+}
+
+.ml-castle-card::before,
+.ml-castle-card::after {
+  content: '◆';
+  position: absolute;
+  top: 9px;
+  color: #705127;
+  font-size: 12px;
+  opacity: .74;
+}
+.ml-castle-card::before { left: 11px; }
+.ml-castle-card::after { right: 11px; }
+
+.ml-castle-preview-treasure,
+.ml-castle-treasure {
+  background:
+    radial-gradient(circle at 30% 18%, rgba(255,255,255,.96), transparent 27%),
+    linear-gradient(145deg, #fffdf6, #eee5cf) !important;
+  box-shadow: inset 0 1px #fff, 0 4px 0 rgba(76, 55, 31, .3), 0 9px 15px rgba(24, 20, 43, .13) !important;
+}
+
+.ml-castle-preview-treasure { animation: ml-castle-treasure-arrive 380ms var(--ml-ease-spring) both; }
+.ml-castle-preview-treasure:nth-child(2) { animation-delay: 70ms; }
+.ml-castle-preview-treasure:nth-child(3) { animation-delay: 140ms; }
+.ml-castle-preview-treasure:nth-child(4) { animation-delay: 210ms; }
+.ml-castle-preview-treasure:nth-child(5) { animation-delay: 280ms; }
+
+.ml-castle-chest-stage {
+  position: relative;
+  width: 178px;
+  height: 132px;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+.ml-castle-chest-stage__rays {
+  position: absolute;
+  z-index: -1;
+  width: 148px;
+  height: 148px;
+  border-radius: 50%;
+  opacity: .35;
+  background: repeating-conic-gradient(from 0deg, rgba(214,165,29,.55) 0 7deg, transparent 8deg 22deg);
+}
+
+.ml-castle-chest-stage__pedestal {
+  position: absolute;
+  z-index: -1;
+  bottom: 3px;
+  width: 154px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(214,165,29,.55), rgba(63,46,91,.26) 56%, transparent 72%);
+}
+
+.ml-castle-chest-stage__spark {
+  position: absolute;
+  z-index: 3;
+  color: #9a711e;
+  opacity: .58;
+  text-shadow: 0 0 8px rgba(255, 220, 98, .75);
+}
+.ml-castle-chest-stage__spark--one { top: 12px; left: 9px; }
+.ml-castle-chest-stage__spark--two { top: 28px; right: 7px; font-size: 20px; }
+.ml-castle-chest-stage__spark--three { bottom: 26px; left: 20px; font-size: 11px; }
+.ml-castle-chest-stage.is-open .ml-castle-chest-stage__rays { animation: ml-castle-rays 3.6s linear infinite; opacity: .8; }
+.ml-castle-chest-stage.is-open .ml-castle-chest-stage__spark { animation: ml-castle-spark 900ms ease-in-out infinite alternate; }
+
+@keyframes ml-castle-treasure-arrive {
+  from { opacity: 0; transform: translateY(12px) rotate(-3deg) scale(.86); }
+  to { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+}
+@keyframes ml-castle-rays { to { transform: rotate(360deg); } }
+@keyframes ml-castle-spark { to { opacity: 1; transform: translateY(-4px) scale(1.18); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ml-castle-preview-treasure,
+  .ml-castle-chest-stage__rays,
+  .ml-castle-chest-stage__spark { animation: none !important; }
+}

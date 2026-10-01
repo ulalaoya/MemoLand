@@ -865,6 +865,14 @@
   .ml-session-screen--connections .ml-session-hud__world { font-size: 0.7rem; }
 }
 
+/* Place the pattern console on the mountain plaza. */
+[data-pattern-game] {
+  justify-content: center !important;
+  padding-top: 8px;
+  padding-bottom: calc(8px + var(--safe-bottom));
+}
+.ml-pattern-memo { top: auto !important; bottom: 3% !important; }
+
 @media (max-height: 680px) {
   .ml-session-screen--echoes .ml-session-hud__meta-row { margin-top: 3px; }
   .ml-session-screen--echoes .ml-session-hud__world { padding-block: 2px; }
@@ -877,4 +885,63 @@
 @media (prefers-reduced-motion: reduce) {
   .ml-session-board__activity,
   [data-speed-target]::after { animation: none; }
+}
+
+/* One stable HUD in every world: coins left, one world title, hearts right. */
+.ml-session-screen .ml-session-hud__meta-row {
+  width: 100%;
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: minmax(66px, 1fr) minmax(128px, auto) minmax(66px, 1fr);
+  align-items: center;
+  gap: 7px;
+  direction: ltr;
+}
+
+.ml-session-screen .ml-session-hud__hearts {
+  grid-row: 1;
+  grid-column: 3;
+  justify-self: end;
+  min-width: 70px;
+  min-height: 32px;
+  padding: 3px 7px;
+  justify-content: center;
+  direction: rtl;
+  background: rgba(255, 255, 255, .94);
+  border: 2px solid #fff;
+  border-radius: 999px;
+  box-shadow: 0 2px 0 rgba(36, 50, 71, .22);
+  filter: none;
+}
+
+.ml-session-screen .ml-session-hud__world {
+  grid-row: 1;
+  grid-column: 2;
+  justify-self: center;
+  max-width: min(54vw, 244px);
+  padding: 5px 14px;
+  direction: rtl;
+  text-align: center;
+}
+
+.ml-session-screen .ml-session-hud__world-copy strong {
+  font-size: clamp(.94rem, 3.8vw, 1.08rem);
+  line-height: 1.12;
+}
+
+.ml-session-screen .ml-session-coin-counter {
+  grid-row: 1;
+  grid-column: 1;
+  justify-self: start;
+  direction: ltr;
+}
+
+@media (max-width: 359px) {
+  .ml-session-screen .ml-session-hud__meta-row {
+    grid-template-columns: 62px minmax(116px, auto) 62px;
+    gap: 4px;
+  }
+  .ml-session-screen .ml-session-hud__hearts { min-width: 62px; padding-inline: 4px; }
+  .ml-session-screen .ml-session-hud__world { max-width: 48vw; padding-inline: 9px; }
+  .ml-session-screen .ml-session-hud__world-icon { display: none; }
 }

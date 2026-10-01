@@ -67,7 +67,6 @@ export function MapScreen({
 
         <section className="ml-world-map-route" aria-label="עולמות ממו לנד">
           <div className="ml-world-map-route__light" aria-hidden />
-          <img className="ml-world-map-memo" src="./characters/memo-adventure.png" alt="" aria-hidden draggable={false} />
           <div className="ml-world-map-route__cards">
             {LAND_ORDER.map((id, index) => {
               const meta = LANDS[id];

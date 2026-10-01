@@ -364,6 +364,17 @@
   .ml-forest-grid { gap: 6px; }
 }
 
+/* The firefly board belongs in the visible clearing, not on the bottom bezel. */
+.ml-forest-game {
+  justify-content: center;
+  padding-top: 10px;
+  padding-bottom: calc(10px + var(--safe-bottom));
+}
+
+@media (max-height: 700px) {
+  .ml-forest-game { justify-content: center; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ml-forest-game__canopy i,
   .ml-forest-portal__halo,
@@ -441,4 +452,10 @@
   .ml-forest-game__header { padding-block: 8px; }
   .ml-forest-game__header p { font-size: 13px; }
   .ml-forest-game__ready > button { min-height: 54px; }
+}
+
+.ml-forest-game {
+  justify-content: center;
+  padding-top: 10px;
+  padding-bottom: calc(10px + var(--safe-bottom));
 }

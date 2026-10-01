@@ -827,3 +827,24 @@
   }
   .ml-valley-recall { padding: 7px; }
 }
+
+/* The activity sits on the central clearing instead of hugging the screen edge. */
+.ml-numbers-challenge__surface {
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: calc(8px + var(--ml-safe-bottom, 0px));
+}
+
+.ml-numbers-challenge__memo { bottom: 15%; }
+.ml-numbers-challenge--focus .ml-numbers-challenge__memo,
+.ml-numbers-challenge--encoding .ml-numbers-challenge__memo { bottom: 22%; }
+.ml-numbers-challenge--recall .ml-numbers-challenge__memo,
+.ml-numbers-challenge--done .ml-numbers-challenge__memo,
+.ml-numbers-challenge--success .ml-numbers-challenge__memo { bottom: 28%; }
+
+@media (max-height: 680px) {
+  .ml-numbers-challenge__memo { bottom: 10%; }
+  .ml-numbers-challenge--recall .ml-numbers-challenge__memo,
+  .ml-numbers-challenge--done .ml-numbers-challenge__memo,
+  .ml-numbers-challenge--success .ml-numbers-challenge__memo { bottom: 23%; }
+}

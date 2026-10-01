@@ -626,3 +626,21 @@
   .ml-echo-result { max-height: 56vh; padding: 10px; }
   .ml-echo-challenge__memo { top: 14%; --ml-memo-size: 76px; }
 }
+
+/* Center the cave console on its stone platform while leaving the cavern visible. */
+.ml-echo-challenge__surface {
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: calc(8px + var(--ml-safe-bottom));
+}
+
+.ml-echo-challenge__memo {
+  top: auto;
+  bottom: calc(3% + var(--ml-safe-bottom, 0px));
+  left: 1%;
+  --ml-memo-size: clamp(76px, 23vw, 96px);
+}
+
+@media (max-height: 680px) {
+  .ml-echo-challenge__memo { top: auto; bottom: calc(2% + var(--ml-safe-bottom, 0px)); --ml-memo-size: 70px; }
+}

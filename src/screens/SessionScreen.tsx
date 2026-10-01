@@ -505,11 +505,11 @@ export function SessionScreen({
             <span className="ml-session-hud__world-icon" aria-hidden>{WORLD_ICONS[activityLand]}</span>
             <span className="ml-session-hud__world-copy">
               <strong>{meta.name}</strong>
-              <small>{practiceMode
-                ? masteredCount === missionTotal
+              {practiceMode ? (
+                <small>{masteredCount === missionTotal
                   ? `תרגול שימור · ${masteredCount}/${missionTotal}`
-                  : `כפל: ${masteredCount}/${missionTotal}`
-                : activity.label}</small>
+                  : `כפל: ${masteredCount}/${missionTotal}`}</small>
+              ) : null}
             </span>
           </div>
 

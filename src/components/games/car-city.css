@@ -89,3 +89,106 @@
   .ml-car-city__plate { min-height:36px; bottom:10px; font-size:1.55rem; }
   .ml-car-city__keypad button { min-height:39px; }
 }
+
+/* A small cinematic beat makes the plate challenge feel part of the racing city. */
+.ml-car-city__content::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  bottom: 39%;
+  width: min(92%, 380px);
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(91, 215, 236, .25), rgba(8, 25, 45, .22) 48%, transparent 72%);
+  transform: translateX(-50%);
+  filter: blur(2px);
+}
+
+.ml-car-city__car {
+  background:
+    linear-gradient(112deg, transparent 0 22%, rgba(255,255,255,.28) 23% 30%, transparent 31% 100%),
+    linear-gradient(155deg, #ffb842, #e66d28 58%, #a93e26);
+  box-shadow: inset 0 8px rgba(255,255,255,.24), inset 0 -12px rgba(116,39,30,.2), 0 8px 0 #71381f, 0 18px 32px rgba(3,13,30,.35), 0 0 30px rgba(91,215,236,.18);
+}
+
+.ml-car-city__car::before {
+  content: '';
+  position: absolute;
+  left: 9%;
+  right: 9%;
+  bottom: 7px;
+  height: 14px;
+  border: solid rgba(24, 50, 79, .9);
+  border-width: 3px 0;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #20334b, #6c8190 45% 55%, #20334b);
+}
+
+.ml-car-city__car::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 7%;
+  right: 7%;
+  bottom: -28px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(5, 14, 29, .72), transparent 68%);
+}
+
+.ml-car-city--show .ml-car-city__car { animation: ml-car-city-arrive 680ms var(--ml-ease-spring) both; }
+.ml-car-city--answer .ml-car-city__car { animation: ml-car-city-plate-hide 360ms ease-out both; }
+.ml-car-city--result .ml-car-city__car { animation: ml-car-city-finish 620ms var(--ml-ease-spring) both; }
+.ml-car-city--show .ml-car-city__plate { animation: ml-car-city-plate-reveal 520ms 260ms var(--ml-ease-spring) both; }
+.ml-car-city--answer .ml-car-city__plate { animation: ml-car-city-plate-shutter 280ms ease-in both; }
+.ml-car-city--result .ml-car-city__light { animation: ml-car-city-lights 480ms ease-in-out 2; }
+
+.ml-car-city__story {
+  backdrop-filter: blur(8px);
+  animation: ml-car-city-story-in 360ms ease-out both;
+}
+
+@keyframes ml-car-city-arrive {
+  0% { opacity: 0; transform: translateY(-70px) scale(.72); }
+  68% { opacity: 1; transform: translateY(5px) scale(1.035); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes ml-car-city-plate-reveal {
+  0% { opacity: 0; transform: translateX(-50%) rotateX(86deg) scale(.72); }
+  100% { opacity: 1; transform: translateX(-50%) rotateX(0) scale(1); }
+}
+
+@keyframes ml-car-city-plate-hide {
+  0% { transform: translateY(-2px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes ml-car-city-plate-shutter {
+  0% { filter: brightness(1.45); }
+  100% { filter: brightness(.82); }
+}
+
+@keyframes ml-car-city-finish {
+  0% { transform: scale(.96); }
+  58% { transform: scale(1.045); }
+  100% { transform: scale(1); }
+}
+
+@keyframes ml-car-city-lights {
+  0%, 100% { filter: brightness(1); box-shadow: 0 0 12px rgba(255,231,118,.8); }
+  50% { filter: brightness(1.5); box-shadow: 0 0 28px rgba(255,241,145,1); }
+}
+
+@keyframes ml-car-city-story-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ml-car-city__car,
+  .ml-car-city__plate,
+  .ml-car-city__light,
+  .ml-car-city__story { animation: none !important; }
+}

@@ -185,21 +185,28 @@ export function MemorizeGame({
 
 function CastleChest({ open }: { open: boolean }) {
   return (
-    <svg className={`ml-castle-chest${open ? ' is-open' : ''}`} width="132" height="112" viewBox="0 0 132 112" role="img" aria-label={open ? 'תיבת אוצר פתוחה' : 'תיבת אוצר סגורה'}>
-      {open ? <path d="M29 42L20 15M66 36V7M101 42l12-25" stroke="#d6a51d" strokeWidth="5" strokeLinecap="round" /> : null}
-      <rect x="24" y="59" width="84" height="43" rx="8" fill="#8a4f2a" stroke="#243247" strokeWidth="4" />
-      <rect x="24" y="68" width="84" height="11" fill="#d6a51d" stroke="#243247" strokeWidth="3" />
-      <path
-        d={open ? 'M21 58Q66 16 111 58L108 42Q66 4 24 42Z' : 'M20 58Q66 38 112 58L110 50Q66 30 22 50Z'}
-        fill="#6d3c24"
-        stroke="#243247"
-        strokeWidth="4"
-        strokeLinejoin="round"
-      />
-      <rect x="59" y="72" width="14" height="18" rx="4" fill="#fff4c7" stroke="#243247" strokeWidth="3" />
-      {open ? ['💎', '⭐', '🪙'].map((item, index) => (
-        <text key={item} x={42 + index * 24} y={59 - (index % 2) * 8} fontSize="19">{item}</text>
-      )) : null}
-    </svg>
+    <div className={`ml-castle-chest-stage${open ? ' is-open' : ''}`}>
+      <span className="ml-castle-chest-stage__rays" aria-hidden />
+      <span className="ml-castle-chest-stage__spark ml-castle-chest-stage__spark--one" aria-hidden>✦</span>
+      <span className="ml-castle-chest-stage__spark ml-castle-chest-stage__spark--two" aria-hidden>✦</span>
+      <span className="ml-castle-chest-stage__spark ml-castle-chest-stage__spark--three" aria-hidden>✦</span>
+      <svg className={`ml-castle-chest${open ? ' is-open' : ''}`} width="132" height="112" viewBox="0 0 132 112" role="img" aria-label={open ? 'תיבת אוצר פתוחה' : 'תיבת אוצר סגורה'}>
+        {open ? <path d="M29 42L20 15M66 36V7M101 42l12-25" stroke="#d6a51d" strokeWidth="5" strokeLinecap="round" /> : null}
+        <rect x="24" y="59" width="84" height="43" rx="8" fill="#8a4f2a" stroke="#243247" strokeWidth="4" />
+        <rect x="24" y="68" width="84" height="11" fill="#d6a51d" stroke="#243247" strokeWidth="3" />
+        <path
+          d={open ? 'M21 58Q66 16 111 58L108 42Q66 4 24 42Z' : 'M20 58Q66 38 112 58L110 50Q66 30 22 50Z'}
+          fill="#6d3c24"
+          stroke="#243247"
+          strokeWidth="4"
+          strokeLinejoin="round"
+        />
+        <rect x="59" y="72" width="14" height="18" rx="4" fill="#fff4c7" stroke="#243247" strokeWidth="3" />
+        {open ? ['💎', '⭐', '🪙'].map((item, index) => (
+          <text key={item} x={42 + index * 24} y={59 - (index % 2) * 8} fontSize="19">{item}</text>
+        )) : null}
+      </svg>
+      <span className="ml-castle-chest-stage__pedestal" aria-hidden />
+    </div>
   );
 }

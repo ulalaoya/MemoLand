@@ -42,7 +42,7 @@ export const LANDS: Record<LandId, LandMeta> = {
   },
   forest: {
     id: 'forest',
-    name: 'יער התמונות',
+    name: 'שביל הגחליליות',
     guide: 'הצב',
     colorVar: '--btn-green',
     subtitle: 'זיכרון חזותי-מרחבי',

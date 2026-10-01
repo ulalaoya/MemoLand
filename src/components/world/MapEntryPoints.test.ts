@@ -31,8 +31,10 @@ describe('map entry points', () => {
       onStart: vi.fn(),
     }));
 
-    expect(html).toContain('המסע של היום מחכה לך!');
-    expect(html).toContain('בחרו עולם למשחק חופשי');
+    expect(html).toContain('מפת ההרפתקה · המסע היומי');
+    expect(html).toContain('המסע של היום');
+    expect(html).toContain('memo-journey-map-v3.png');
+    expect(html).not.toContain('בחרו עולם למשחק חופשי');
     expect(html).toContain('66/1000');
     expect(html).toContain('יוצאים לדרך');
   });

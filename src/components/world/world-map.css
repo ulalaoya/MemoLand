@@ -346,6 +346,64 @@
   }
 }
 
+.ml-land-row[data-land='cars'] .ml-land-card { direction: ltr; transform: none; }
+.ml-land-row[data-land='cars'] .ml-land-card__content { direction: rtl; }
+
+/* October polish: Memo belongs to the journey invitation, and every pin lands on its biome. */
+.ml-daily-journey {
+  grid-template-columns: 116px minmax(0, 1fr) auto;
+  min-height: 132px;
+  padding-block: 10px;
+}
+
+.ml-daily-journey__art {
+  align-self: stretch;
+  overflow: visible;
+}
+
+.ml-daily-journey__art > img {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: -11px;
+  width: auto;
+  max-width: none;
+  height: 142px;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 8px 5px rgba(3, 10, 27, .5));
+}
+
+.ml-daily-journey__copy { padding-inline: 4px 12px; }
+.ml-daily-journey__copy strong { font-size: clamp(1.16rem, 4.7vw, 1.58rem); }
+.ml-daily-journey__description { margin-top: 3px; }
+
+.ml-world-map-memo { display: none; }
+
+.ml-land-row[data-land='numbers'] { justify-content: flex-end; }
+.ml-land-row[data-land='echoes'] { justify-content: flex-start; }
+.ml-land-row[data-land='connections'] { justify-content: flex-end; }
+.ml-land-row[data-land='forest'] { justify-content: flex-start; }
+.ml-land-row[data-land='patterns'] { justify-content: flex-end; }
+.ml-land-row[data-land='speed'] { justify-content: flex-start; }
+.ml-land-row[data-land='cars'] { justify-content: flex-start; }
+.ml-land-row[data-land='castle'] { justify-content: center; }
+
+.ml-land-row[data-land='echoes'] .ml-land-card { transform: translateX(3%); }
+.ml-land-row[data-land='forest'] .ml-land-card { transform: translateX(2%); }
+.ml-land-row[data-land='cars'] .ml-land-card { transform: translateX(10%); }
+.ml-land-row[data-land='castle'] .ml-land-card { transform: translateX(-5%); }
+.ml-land-row[data-land='cars'] .ml-land-card { direction: ltr; transform: none; }
+.ml-land-row[data-land='cars'] .ml-land-card__content { direction: rtl; }
+
+@media (max-width: 359px) {
+  .ml-daily-journey {
+    grid-template-columns: 92px minmax(0, 1fr) 44px;
+    min-height: 126px;
+  }
+  .ml-daily-journey__art > img { width: auto; height: 145px; bottom: -14px; }
+  .ml-daily-journey__description { font-size: .7rem; }
+}
+
 .ml-world-map-main {
   position: relative;
   z-index: 2;
@@ -1159,6 +1217,46 @@
     clip: rect(0 0 0 0);
   }
 }
+
+/* Final map composition overrides. */
+.ml-daily-journey { grid-template-columns: 116px minmax(0, 1fr) auto; min-height: 132px; padding-block: 10px; }
+.ml-daily-journey__art { align-self: stretch; overflow: visible; }
+.ml-daily-journey__art > img {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: -11px;
+  width: auto;
+  max-width: none;
+  height: 142px;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 8px 5px rgba(3, 10, 27, .5));
+}
+.ml-daily-journey__copy { padding-inline: 4px 12px; }
+.ml-daily-journey__copy strong { font-size: clamp(1.16rem, 4.7vw, 1.58rem); }
+.ml-daily-journey__description { margin-top: 3px; }
+.ml-world-map-memo { display: none; }
+.ml-land-row[data-land='numbers'] { justify-content: flex-end; }
+.ml-land-row[data-land='echoes'] { justify-content: flex-start; }
+.ml-land-row[data-land='connections'] { justify-content: flex-end; }
+.ml-land-row[data-land='forest'] { justify-content: flex-start; }
+.ml-land-row[data-land='patterns'] { justify-content: flex-end; }
+.ml-land-row[data-land='speed'] { justify-content: flex-start; }
+.ml-land-row[data-land='cars'] { justify-content: flex-start; }
+.ml-land-row[data-land='castle'] { justify-content: center; }
+.ml-land-row[data-land='echoes'] .ml-land-card { transform: translateX(3%); }
+.ml-land-row[data-land='forest'] .ml-land-card { transform: translateX(2%); }
+.ml-land-row[data-land='cars'] .ml-land-card { transform: translateX(10%); }
+.ml-land-row[data-land='castle'] .ml-land-card { transform: translateX(-5%); }
+
+@media (max-width: 359px) {
+  .ml-daily-journey { grid-template-columns: 92px minmax(0, 1fr) 44px; min-height: 126px; }
+  .ml-daily-journey__art > img { width: 106px; bottom: -10px; }
+  .ml-daily-journey__description { font-size: .7rem; }
+}
+
+.ml-land-row[data-land='cars'] .ml-land-card { direction: ltr; transform: none; }
+.ml-land-row[data-land='cars'] .ml-land-card__content { direction: rtl; }
 
 @media (max-width: 359px) {
   .ml-world-map-memo { width: 84px; left: 2%; }
