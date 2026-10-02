@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import type { Challenge } from '../../types';
 import type { MemorizeStimulus } from '../../engines/castle';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
-import { Button } from '../Button';
 import { FeedbackBanner } from './common';
 import type { GameProps } from './common';
 import { MemoCompanion } from './MemoCompanion';
@@ -22,28 +21,24 @@ export function MemorizeGame({
   onResult,
 }: GameProps & { challenge: Challenge<MemorizeStimulus, string[]> }) {
   const stim = challenge.stimulus;
-  const [phase, setPhase] = useState<Phase>('ready');
+  const [phase, setPhase] = useState<Phase>('showing');
   const [assembled, setAssembled] = useState<number[]>([]);
   const [result, setResult] = useState<boolean | null>(null);
   const startRef = useRef(0);
   const submittedRef = useRef(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  useEffect(() => {
+    timers.current.push(setTimeout(() => {
+      setPhase('input');
+      startRef.current = performance.now();
+    }, stim.viewMs));
+    return () => timers.current.forEach(clearTimeout);
+  }, [stim.viewMs]);
 
   useEffect(() => {
     if (phase === 'input' && assembled.length === stim.items.length) submit();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembled, phase]);
-
-  function run() {
-    setPhase('showing');
-    timers.current.push(
-      setTimeout(() => {
-        setPhase('input');
-        startRef.current = performance.now();
-      }, stim.viewMs),
-    );
-  }
 
   function submit() {
     if (submittedRef.current) return;
@@ -71,63 +66,27 @@ export function MemorizeGame({
         className={`ml-castle-treasure${selected ? ' is-selected' : ''}`}
         onClick={onClick}
         disabled={!onClick}
-        style={{
-          minWidth: 82,
-          padding: '9px 12px',
-          borderRadius: 14,
-          border: `3px solid ${selected ? '#ffffff' : '#d6a51d'}`,
-          background: selected ? '#243247' : '#ffffff',
-          color: selected ? '#ffffff' : '#243247',
-          boxShadow: '0 3px 0 rgba(36,50,71,.18)',
-          opacity: onClick ? 1 : 0.36,
-          fontFamily: 'var(--font-body)',
-          fontWeight: 700,
-          fontSize: 17,
-        }}
       >
-        <span aria-hidden style={{ marginInlineEnd: 6 }}>{ITEM_GLYPHS[label] ?? '💎'}</span>
-        {label}
+        <span className="ml-castle-treasure__glyph" aria-hidden>{ITEM_GLYPHS[label] ?? '💎'}</span>
+        <span>{label}</span>
       </button>
     );
   }
 
   return (
-    <div data-treasure-castle-game style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center', color: '#243247' }}>
+    <div data-treasure-castle-game>
       <MemoCompanion behavior={result === true ? 'success' : phase === 'input' ? 'thinking' : 'idle'} className="ml-castle-memo" />
-      {phase === 'ready' && (
-        <div className="ml-castle-card ml-castle-card--ready">
-          <span className="ml-castle-card__eyebrow">אתגר חדר האוצר</span>
-          <CastleChest open={false} />
-          <p className="ml-castle-card__title">
-            זכור את האוצרות לפי הסדר
-          </p>
-          <p className="ml-castle-card__description">האוצרות ינצנצו לרגע — שמור את הסדר ופתח את התיבה.</p>
-          <Button variant="green" size="lg" onClick={run} icon="▶">פותחים את שער הטירה</Button>
-        </div>
-      )}
-
       {phase === 'showing' && (
-        <div className="ml-castle-card ml-castle-card--showing" data-castle-treasure-preview style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
-          <p style={{ margin: 0, fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 21 }}>זכור את האוצרות לפי הסדר</p>
-          <div style={{ display: 'flex', gap: 9, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div className="ml-castle-card ml-castle-card--showing" data-castle-treasure-preview>
+          <span className="ml-castle-card__eyebrow">חדר האוצר</span>
+          <h2 className="ml-castle-card__heading">זכור את האוצרות לפי הסדר</h2>
+          <div className="ml-castle-preview-row">
             {stim.items.map((word, index) => (
               <div
                 key={`${word}-${index}`}
                 className="ml-castle-preview-treasure"
-                style={{
-                  width: 92,
-                  minHeight: 82,
-                  display: 'grid',
-                  placeItems: 'center',
-                  padding: 8,
-                  borderRadius: 16,
-                  background: '#fffdf7',
-                  border: '3px solid #d6a51d',
-                  boxShadow: '0 4px 0 rgba(36,50,71,.16)',
-                  fontWeight: 800,
-                }}
               >
-                <span aria-hidden style={{ fontSize: 30 }}>{ITEM_GLYPHS[word] ?? '💎'}</span>
+                <span aria-hidden>{ITEM_GLYPHS[word] ?? '💎'}</span>
                 <span>{index + 1}. {word}</span>
               </div>
             ))}
@@ -137,11 +96,10 @@ export function MemorizeGame({
 
       {phase === 'input' && (
         <div className="ml-castle-card ml-castle-card--input">
-          <p style={{ margin: 0, textAlign: 'center', fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 22 }}>
-            סדר את האוצרות כדי לפתוח את התיבה
-          </p>
-          <div style={{ minHeight: 48, display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
-            {assembled.length === 0 && <span style={{ color: '#667085' }}>בחר את האוצר הראשון…</span>}
+          <span className="ml-castle-card__eyebrow">מנגנון התיבה</span>
+          <h2 className="ml-castle-card__heading">סדר את האוצרות כדי לפתוח את התיבה</h2>
+          <div className="ml-castle-order-well">
+            {assembled.length === 0 && <span className="ml-castle-order-well__placeholder">בחר את האוצר הראשון…</span>}
             {assembled.map((index, position) => tile(
               stim.scrambled[index],
               () => setAssembled((items) => items.filter((_, itemPosition) => itemPosition !== position)),
@@ -149,8 +107,8 @@ export function MemorizeGame({
               `chosen-${position}`,
             ))}
           </div>
-          <div aria-hidden style={{ width: '82%', borderTop: '2px dashed #d6a51d' }} />
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div className="ml-castle-divider" aria-hidden />
+          <div className="ml-castle-treasure-bank">
             {stim.scrambled.map((word, index) => tile(
               word,
               assembled.includes(index) ? undefined : () => setAssembled((items) => [...items, index]),
@@ -162,18 +120,18 @@ export function MemorizeGame({
       )}
 
       {phase === 'done' && result !== null && (
-        <div className="ml-castle-card ml-castle-card--done" style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center', textAlign: 'center' }}>
+        <div className="ml-castle-card ml-castle-card--done">
           {result ? (
             <>
               <CastleChest open />
-              <p style={{ margin: 0, fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 22, color: '#243247' }}>
+              <p className="ml-castle-card__heading">
                 התיבה נפתחה! האוצר שלך בדרך
               </p>
             </>
           ) : (
             <>
               <FeedbackBanner correct={false} hint="התיבה כמעט נפתחה — ננסה סדר חדש" />
-              <p style={{ margin: 0, fontFamily: 'var(--font-head)', color: '#243247' }}>
+              <p className="ml-castle-card__answer">
                 הסדר היה: <b>{challenge.answer.join(' · ')}</b>
               </p>
             </>

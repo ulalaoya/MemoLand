@@ -1,7 +1,7 @@
 /* מסך בחירת משתמש — "מי משחק היום?".
    לכל פרופיל התקדמות נפרדת. אפשר להוסיף, לבחור, ולמחוק פרופילים. */
 import { useState } from 'react';
-import { createProfile, deleteProfile, selectProfile, useProfiles } from '../state/store';
+import { createProfile, deleteProfile, selectProfile, updateProfileAvatar, useProfiles } from '../state/store';
 import { Guide } from '../components/svg/Memo';
 import { Logo } from '../components/Logo';
 import { Button } from '../components/Button';
@@ -23,6 +23,8 @@ export function ProfileScreen({ onReady }: { onReady: () => void }) {
   const profiles = useProfiles((r) => r.profiles);
   const [adding, setAdding] = useState(profiles.length === 0);
   const [editing, setEditing] = useState(false);
+  const [avatarProfileId, setAvatarProfileId] = useState<string | null>(null);
+  const avatarProfile = profiles.find((profile) => profile.id === avatarProfileId);
 
   return (
     <div className="ml-profile-screen">
@@ -50,7 +52,10 @@ export function ProfileScreen({ onReady }: { onReady: () => void }) {
                 <button
                   className="ml-profile-card ml-pressable"
                   onClick={() => {
-                    if (editing) return;
+                    if (editing) {
+                      setAvatarProfileId(p.id);
+                      return;
+                    }
                     selectProfile(p.id);
                     onReady();
                   }}
@@ -60,15 +65,18 @@ export function ProfileScreen({ onReady }: { onReady: () => void }) {
                   <small>בחירת מסע</small>
                 </button>
                 {editing && (
-                  <button
-                    aria-label={`מחק את ${p.name}`}
-                    onClick={() => {
-                      if (confirm(`למחוק את הפרופיל "${p.name}" ואת כל ההתקדמות שלו?`)) deleteProfile(p.id);
-                    }}
-                    className="ml-profile-card__delete"
-                  >
-                    ✕
-                  </button>
+                  <>
+                    <span className="ml-profile-card__change">החלפת דמות</span>
+                    <button
+                      aria-label={`מחק את ${p.name}`}
+                      onClick={() => {
+                        if (confirm(`למחוק את הפרופיל "${p.name}" ואת כל ההתקדמות שלו?`)) deleteProfile(p.id);
+                      }}
+                      className="ml-profile-card__delete"
+                    >
+                      ✕
+                    </button>
+                  </>
                 )}
               </div>
             ))}
@@ -91,8 +99,54 @@ export function ProfileScreen({ onReady }: { onReady: () => void }) {
               {editing ? 'סיום' : 'עריכה'}
             </button>
           )}
+          {avatarProfile && (
+            <AvatarPicker
+              name={avatarProfile.name}
+              selected={avatarProfile.avatar}
+              onSelect={(avatar) => {
+                updateProfileAvatar(avatarProfile.id, avatar);
+                setAvatarProfileId(null);
+              }}
+              onCancel={() => setAvatarProfileId(null)}
+            />
+          )}
         </>
       )}
+    </div>
+  );
+}
+
+function AvatarPicker({
+  name,
+  selected,
+  onSelect,
+  onCancel,
+}: {
+  name: string;
+  selected: AvatarKind;
+  onSelect: (avatar: AvatarKind) => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="ml-avatar-picker" role="dialog" aria-modal="true" aria-label={`בחירת דמות עבור ${name}`}>
+      <div className="ml-avatar-picker__card">
+        <span className="ml-add-profile__eyebrow">הדמות במסע</span>
+        <h2>בחרו דמות חדשה</h2>
+        <div className="ml-add-profile__avatars">
+          {AVATARS.map((avatar) => (
+            <button
+              key={avatar.kind}
+              type="button"
+              className={selected === avatar.kind ? 'is-selected' : ''}
+              onClick={() => onSelect(avatar.kind)}
+              aria-label={avatar.label}
+            >
+              <Guide kind={avatar.kind} size={50} />
+            </button>
+          ))}
+        </div>
+        <Button variant="red" onClick={onCancel} block>ביטול</Button>
+      </div>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { LandIcon } from '../components/svg/LandIcon';
 import { Button } from '../components/Button';
 import type { Medal as MedalType } from '../types';
 import './meta-screens.css';
+import { JourneyAchievementGlyph } from '../components/world/PlayerHUD';
 
 const MEDAL_DEFS: { id: string; tier: MedalType['tier']; name: string; desc: string }[] = [
   { id: 'streak7', tier: 'gold', name: 'שבוע רצוף', desc: '7 ימים ברצף' },
@@ -28,7 +29,7 @@ export function AchievementsScreen({ onExit }: { onExit: () => void }) {
     <div className="ml-meta-screen ml-meta-screen--achievements">
       <div className="ml-meta-screen__backdrop" aria-hidden />
       <header className="ml-meta-header">
-        <span className="ml-meta-header__icon" aria-hidden>🏆</span>
+        <span className="ml-meta-header__icon" aria-hidden><JourneyAchievementGlyph /></span>
         <div className="ml-meta-header__copy">
           <small>יומן ההרפתקה</small>
           <h1>ההישגים שלי</h1>

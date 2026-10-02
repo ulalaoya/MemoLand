@@ -748,6 +748,7 @@
   object-position: top right;
   filter: drop-shadow(0 10px 12px rgba(4,18,38,.38));
 }
+.ml-journey-secret-memo > div { width: 100% !important; height: 100% !important; }
 
 .ml-journey-secret-card {
   position: relative;

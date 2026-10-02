@@ -26,7 +26,7 @@ export function Logo({ variant = 'full', width = 240 }: { variant?: LogoVariant;
       <img className="ml-brand-logo__emblem" src="./brand/journey-emblem-v2.png" alt="" draggable={false} />
       <span className="ml-brand-logo__wordmark" aria-hidden>
         <span className="ml-brand-logo__spark ml-brand-logo__spark--left">✦</span>
-        <span className="ml-brand-logo__title">MemoLand</span>
+        <span className="ml-brand-logo__title"><span>MEMO</span><span>LAND</span></span>
         <span className="ml-brand-logo__spark ml-brand-logo__spark--right">✦</span>
         {variant === 'full' ? <small>מסע של זיכרון</small> : null}
       </span>

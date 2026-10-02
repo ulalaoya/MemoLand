@@ -87,13 +87,13 @@ export function buildDailySession(
     rounds: 2,
   });
 
-  // 2. עשר שליפות ישירות בעיר — מקטע ראשון וקבוע בכל משך מסע.
+  // 2. שמונה שליפות בעיר — החלק הראשון של פאזל יומי בן 15 חלקים.
   steps.push({
     kind: 'connections-practice',
     label: 'בונים את עיר הקשרים',
     landId: 'connections',
     exerciseId: 'connections.direct',
-    rounds: 10,
+    rounds: 8,
   });
 
   // 3. "מה שזכרת אתמול" — חזרה במרווחים
@@ -124,13 +124,13 @@ export function buildDailySession(
     timerSeconds: 60,
   });
 
-  // 6. עשר שליפות ישירות נוספות — אחרי פעילויות מארצות אחרות.
+  // 6. שבע שליפות נוספות — משלימות בדיוק את 15 חלקי הפאזל.
   steps.push({
     kind: 'connections-practice',
     label: 'ממשיכים לבנות את העיר',
     landId: 'connections',
     exerciseId: 'connections.direct',
-    rounds: 10,
+    rounds: 7,
   });
 
   // 7. סיום מובטח — קל בוודאות, אחריו שליפת סוד המסע ואז תיבת האוצר

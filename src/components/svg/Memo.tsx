@@ -15,6 +15,10 @@ const SRC: Record<CharKind, string> = {
   turtle: './characters/turtle-wizard-v3.png',
 };
 
+export function characterAssetFor(kind: AvatarKind): string {
+  return SRC[kind];
+}
+
 const LABEL: Record<CharKind, string> = {
   memo: 'ממו',
   mima: 'מימה',
@@ -68,7 +72,21 @@ export function Character({
         style={{ width: '96%', height: '96%', objectFit: 'contain', borderRadius: 'inherit', filter: 'drop-shadow(0 5px 4px rgba(2,8,22,.35))' }}
       />
       {hat && (
-        <div style={{ position: 'absolute', top: -size * 0.16, insetInlineEnd: size * 0.12, width: size * 0.5, height: size * 0.5 }}>
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            insetInlineEnd: size * 0.035,
+            bottom: size * 0.035,
+            width: size * 0.31,
+            height: size * 0.31,
+            padding: size * 0.035,
+            borderRadius: '50%',
+            background: 'linear-gradient(180deg, #fff8d7, #efc75e)',
+            border: `${Math.max(2, size * 0.022)}px solid #fff7d4`,
+            boxShadow: '0 3px 0 rgba(75,45,6,.75), 0 4px 10px rgba(2,8,22,.42)',
+          }}
+        >
           <HatGlyph id={hat} />
         </div>
       )}

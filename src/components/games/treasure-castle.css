@@ -250,3 +250,83 @@
 .ml-castle-card--ready .ml-castle-card__description {
   color: #3b4964;
 }
+
+/* Final castle UI: one coherent treasure-room language, with ink/white copy and gold accents only. */
+[data-treasure-castle-game] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  color: #f8fbff;
+}
+
+.ml-castle-card,
+.ml-castle-card.ml-castle-card--ready {
+  color: #f8fbff;
+  border-color: rgba(255, 232, 159, .94);
+  background:
+    radial-gradient(circle at 50% 0, rgba(89, 181, 231, .18), transparent 34%),
+    linear-gradient(155deg, rgba(25, 51, 84, .98), rgba(9, 20, 48, .99) 72%);
+  box-shadow: 0 7px 0 rgba(3, 9, 27, .86), 0 18px 34px rgba(3, 8, 26, .46), inset 0 1px rgba(255,255,255,.16);
+}
+
+.ml-castle-card--showing,
+.ml-castle-card--input,
+.ml-castle-card--done { padding-top: 45px; }
+
+.ml-castle-card--showing .ml-castle-card__eyebrow,
+.ml-castle-card--input .ml-castle-card__eyebrow,
+.ml-castle-card--done .ml-castle-card__eyebrow { top: 7px; }
+
+.ml-castle-card__heading {
+  width: 100%;
+  margin: 0;
+  color: #fff;
+  font-family: var(--ml-font-heading, var(--font-head));
+  font-size: clamp(1.12rem, 5vw, 1.38rem);
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+  text-shadow: 0 2px rgba(0,0,0,.34);
+}
+
+.ml-castle-preview-row,
+.ml-castle-treasure-bank,
+.ml-castle-order-well { width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+
+.ml-castle-preview-treasure,
+.ml-castle-treasure {
+  min-width: 78px;
+  min-height: 76px;
+  padding: 8px 10px;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  color: #172a46 !important;
+  border: 3px solid #d4ad4e !important;
+  border-radius: 17px;
+  background: linear-gradient(145deg, #fffef7, #e7f2f7) !important;
+  box-shadow: inset 0 1px #fff, 0 4px 0 rgba(5,19,37,.62), 0 9px 15px rgba(3,10,29,.2) !important;
+  font-family: var(--ml-font-body);
+  font-size: .94rem;
+  font-weight: 900;
+}
+
+.ml-castle-preview-treasure > span:first-child,
+.ml-castle-treasure__glyph { font-size: 1.75rem; line-height: 1; }
+.ml-castle-treasure:disabled { opacity: .32; }
+.ml-castle-treasure.is-selected { min-height: 62px; color: #fff !important; border-color: #fff1b0 !important; background: linear-gradient(150deg, #2c6480, #133654) !important; opacity: 1; }
+
+.ml-castle-order-well { min-height: 76px; padding: 8px; align-items: center; border: 2px solid rgba(189, 230, 255, .6); border-radius: 18px; background: rgba(4,17,41,.48); }
+.ml-castle-order-well__placeholder { color: #d5e8f7; font-weight: 800; }
+.ml-castle-divider { width: 82%; border-top: 2px dashed rgba(255, 219, 112, .72); }
+.ml-castle-card__answer { margin: 0; color: #e1effa; font-family: var(--ml-font-heading, var(--font-head)); }
+
+@media (max-height: 700px) {
+  .ml-castle-preview-treasure,
+  .ml-castle-treasure { min-width: 70px; min-height: 62px; padding: 5px 7px; }
+  .ml-castle-card--showing,
+  .ml-castle-card--input,
+  .ml-castle-card--done { padding-top: 41px; }
+}

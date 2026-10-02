@@ -13,12 +13,21 @@ export function CarCityGame({
   const [phase, setPhase] = useState<'show' | 'answer' | 'result'>('show');
   const [entered, setEntered] = useState('');
   const [correct, setCorrect] = useState<boolean | null>(null);
+  const [replaysLeft, setReplaysLeft] = useState(1);
   const startedAt = useRef(performance.now());
 
   useEffect(() => {
+    if (phase !== 'show') return;
     const timer = window.setTimeout(() => setPhase('answer'), challenge.stimulus.exposureMs);
     return () => window.clearTimeout(timer);
-  }, [challenge.stimulus.exposureMs]);
+  }, [challenge.stimulus.exposureMs, phase]);
+
+  function replayPlate() {
+    if (phase !== 'answer' || replaysLeft <= 0) return;
+    setEntered('');
+    setReplaysLeft((left) => left - 1);
+    setPhase('show');
+  }
 
   function addDigit(digit: string) {
     if (phase !== 'answer' || entered.length >= challenge.stimulus.plate.length) return;
@@ -62,15 +71,20 @@ export function CarCityGame({
               {entered || <span>{'—'.repeat(challenge.stimulus.plate.length)}</span>}
             </div>
             {phase === 'answer' ? (
-              <CalculatorKeypad
-                theme="cars"
-                className="ml-car-city__keypad"
-                onDigit={(digit) => addDigit(String(digit))}
-                onBackspace={() => setEntered((value) => value.slice(0, -1))}
-                onSubmit={submit}
-                backspaceDisabled={entered.length === 0}
-                submitDisabled={entered.length !== challenge.stimulus.plate.length}
-              />
+              <>
+                <button type="button" className="ml-car-city__replay ml-pressable" onClick={replayPlate} disabled={replaysLeft <= 0}>
+                  👁️ הצג שוב {replaysLeft > 0 ? `(${replaysLeft})` : ''}
+                </button>
+                <CalculatorKeypad
+                  theme="cars"
+                  className="ml-car-city__keypad"
+                  onDigit={(digit) => addDigit(String(digit))}
+                  onBackspace={() => setEntered((value) => value.slice(0, -1))}
+                  onSubmit={submit}
+                  backspaceDisabled={entered.length === 0}
+                  submitDisabled={entered.length !== challenge.stimulus.plate.length}
+                />
+              </>
             ) : null}
           </div>
         ) : (

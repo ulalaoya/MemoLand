@@ -37,7 +37,7 @@ export function GridGame({
 }: GameProps & { challenge: Challenge<GridStimulus, number[]> }) {
   const stim = challenge.stimulus;
   const total = stim.grid * stim.grid;
-  const [phase, setPhase] = useState<Phase>('ready');
+  const [phase, setPhase] = useState<Phase>('showing');
   const [picked, setPicked] = useState<number[]>([]);
   const pickedRef = useRef<number[]>([]);
   pickedRef.current = picked;
@@ -47,17 +47,13 @@ export function GridGame({
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const copy = PHASE_COPY[phase];
 
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
-
-  function run() {
-    setPhase('showing');
-    timers.current.push(
-      setTimeout(() => {
-        setPhase('input');
-        startRef.current = performance.now();
-      }, stim.viewMs),
-    );
-  }
+  useEffect(() => {
+    timers.current.push(setTimeout(() => {
+      setPhase('input');
+      startRef.current = performance.now();
+    }, stim.viewMs));
+    return () => timers.current.forEach(clearTimeout);
+  }, [stim.viewMs]);
 
   function toggle(index: number) {
     setPicked((current) => (
@@ -96,15 +92,7 @@ export function GridGame({
         <p>{copy.helper}</p>
       </header>
 
-      {phase === 'ready' ? (
-        <div className="ml-forest-game__ready">
-          <ForestPortalArt />
-          <Button variant="green" size="lg" onClick={run} icon="✦">
-            הדלק את אורות היער
-          </Button>
-        </div>
-      ) : (
-        <div className="ml-forest-game__challenge">
+      <div className="ml-forest-game__challenge">
           <div className="ml-forest-board" data-forest-grid={stim.grid}>
             <span className="ml-forest-board__vine ml-forest-board__vine--start" aria-hidden>❧</span>
             <span className="ml-forest-board__vine ml-forest-board__vine--end" aria-hidden>❧</span>
@@ -167,8 +155,8 @@ export function GridGame({
               <strong>{result ? 'מצוין! כל הגחליליות נמצאו' : 'כמעט! האורות מראים את הדרך'}</strong>
             </div>
           ) : null}
-        </div>
-      )}
+      </div>
+      <div className="ml-forest-game__world-label" aria-hidden>✦ שביל הגחליליות ✦</div>
     </section>
   );
 }
@@ -178,20 +166,6 @@ function ForestCanopy() {
     <div className="ml-forest-game__canopy" aria-hidden>
       <span>●</span><span>●</span><span>●</span><span>●</span><span>●</span>
       <i>✦</i><i>✦</i><i>✦</i>
-    </div>
-  );
-}
-
-function ForestPortalArt() {
-  return (
-    <div className="ml-forest-portal" aria-hidden>
-      <div className="ml-forest-portal__halo" />
-      <div className="ml-forest-portal__trunk ml-forest-portal__trunk--left" />
-      <div className="ml-forest-portal__trunk ml-forest-portal__trunk--right" />
-      <div className="ml-forest-portal__light">
-        <span>✦</span><span>✦</span><span>✦</span>
-      </div>
-      <div className="ml-forest-portal__ground" />
     </div>
   );
 }

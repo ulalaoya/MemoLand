@@ -42,11 +42,15 @@ export const patternComplete: ExerciseEngine<PatternStimulus, PatternAnswer> = {
     for (let i = 0; i < shown; i++) sequence.push(base[i % period]);
     const correct = base[shown % period];
     // אפשרויות: הנכון + מסיחים
-    const distractPool = base.filter((t) => tokKey(t) !== tokKey(correct));
-    const opts: Token[] = [correct, ...rng.shuffle(distractPool).slice(0, 2)];
-    // מוסיפים מסיח נוסף מורכב אם צריך (צורה/צבע שלא בבסיס)
-    while (opts.length < 3) {
-      opts.push({ shape: rng.pick(SHAPES), color: rng.pick(COLORS) });
+    const allTokens = SHAPES.flatMap((shape) => COLORS.map((color) => ({ shape, color })));
+    const distractPool = rng.shuffle(allTokens.filter((token) => tokKey(token) !== tokKey(correct)));
+    const opts: Token[] = [correct];
+    const used = new Set([tokKey(correct)]);
+    for (const candidate of distractPool) {
+      if (used.has(tokKey(candidate))) continue;
+      opts.push(candidate);
+      used.add(tokKey(candidate));
+      if (opts.length === 3) break;
     }
     const options = rng.shuffle(opts);
     const answer = options.findIndex((t) => tokKey(t) === tokKey(correct));

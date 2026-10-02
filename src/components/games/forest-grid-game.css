@@ -412,6 +412,24 @@
   }
 }
 
+.ml-forest-game__world-label {
+  position: absolute;
+  z-index: 8;
+  inset-inline: 50%;
+  bottom: calc(9px + var(--ml-safe-bottom, 0px));
+  width: max-content;
+  max-width: calc(100% - 30px);
+  padding: 7px 18px;
+  color: #fff3a6;
+  border: 2px solid rgba(225, 246, 255, .9);
+  border-radius: 999px;
+  background: linear-gradient(150deg, rgba(17, 73, 71, .96), rgba(7, 35, 54, .96));
+  box-shadow: 0 4px 0 rgba(2, 18, 29, .75);
+  font-family: var(--ml-font-heading, var(--font-head));
+  font-weight: 900;
+  transform: translateX(50%);
+}
+
 /* Illustrated Firefly Path: preserve the forest vista and keep play in the lower clearing. */
 .ml-forest-game {
   min-height: 100%;

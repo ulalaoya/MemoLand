@@ -1,9 +1,9 @@
 /* מסך סיום המסע — פשוט ונקי. ספירת מטבעות מתגלגלת, שיא אישי, ותיבת אוצר
    שנותנת צ'ופר (מטבעות בונוס). בלי נצנצים מיותרים. */
 import { useEffect, useRef, useState } from 'react';
-import { addCoins, useStore } from '../state/store';
-import { Button } from '../components/Button';
+import { addCoins, useProfiles, useStore } from '../state/store';
 import { Coin, Medal, StarIcon } from '../components/svg/Icons';
+import { Character } from '../components/svg/Memo';
 import './meta-screens.css';
 
 export interface JourneyResult {
@@ -18,6 +18,9 @@ export interface JourneyResult {
 }
 
 export function TreasureScreen({ result, onHome }: { result: JourneyResult; onHome: () => void }) {
+  const avatar = useProfiles((registry) => (
+    registry.profiles.find((profile) => profile.id === registry.activeId)?.avatar ?? 'memo'
+  ));
   const medals = useStore((s) => s.medals);
   const [display, setDisplay] = useState(result.coinsStart);
   const [opened, setOpened] = useState(false);
@@ -53,7 +56,7 @@ export function TreasureScreen({ result, onHome }: { result: JourneyResult; onHo
       <div className="ml-treasure-finale__content">
         <span className="ml-treasure-finale__eyebrow">המסע הושלם</span>
         <h1>כבשת את המסע של היום!</h1>
-        <img className="ml-treasure-finale__memo" src="./characters/memo-journey-map-wizard-v6.png" alt="" draggable={false} aria-hidden />
+        <div className="ml-treasure-finale__memo" aria-hidden><Character kind={avatar} size={150} /></div>
 
         {/* מטבעות מתגלגלים */}
         <div className="ml-treasure-finale__coins" aria-label={`${display} מטבעות`}>
@@ -94,9 +97,11 @@ export function TreasureScreen({ result, onHome }: { result: JourneyResult; onHo
           </div>
         )}
 
-        <Button variant="green" size="lg" block onClick={onHome} icon="🗺️">
-          חזרה למפה
-        </Button>
+        <button type="button" className="ml-treasure-finale__home ml-pressable" onClick={onHome}>
+          <span aria-hidden>🗺️</span>
+          <strong>חזרה למפת ההרפתקה</strong>
+          <span aria-hidden>←</span>
+        </button>
       </div>
     </div>
   );

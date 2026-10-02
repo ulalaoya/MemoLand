@@ -10,7 +10,7 @@ import { LISTEN_REPEAT_BETA_SENTENCES, STORIES, TAP_ICONS } from './echoesConten
 
 /* ---- הקשב וחזור ---- */
 export interface ListenRepeatStimulus {
-  words: string[]; // רכיבי הזכירה בסדר הנכון; רכיב עשוי להיות צירוף בן כמה מילים
+  words: string[]; // מילה אחת בכל אריח, בסדר המשפט
   scrambled: string[]; // אריחים מעורבבים לבחירה
 }
 export type ListenRepeatAnswer = string[];
@@ -23,10 +23,13 @@ export const listenRepeat: ExerciseEngine<ListenRepeatStimulus, ListenRepeatAnsw
   generate(level, seed): Challenge<ListenRepeatStimulus, ListenRepeatAnswer> {
     const rng = makeRng(seed);
     const targetComponentCount = sentenceComponentCount(level);
-    const tier = LISTEN_REPEAT_BETA_SENTENCES.filter(({ tiles }) => tiles.length === targetComponentCount);
+    const tier = LISTEN_REPEAT_BETA_SENTENCES.filter(({ difficulty }) => difficulty === targetComponentCount);
     // Adjacent deterministic seeds walk every sentence in the tier before repeating.
     // The shared recent-fingerprint selector can therefore enforce an LRU cycle.
-    const sentence = tier[(seed >>> 0) % tier.length];
+    // Adjacent probe seeds intentionally walk the whole tier. The shared LRU
+    // selector can therefore skip the last three without getting trapped in a
+    // small hash cycle, while the level offset avoids an identical first item.
+    const sentence = tier[((seed >>> 0) + level * 3) % tier.length];
     const words = [...sentence.tiles];
     const scrambled = rng.shuffle(words);
     return {

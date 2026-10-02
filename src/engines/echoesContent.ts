@@ -52,71 +52,30 @@ export interface ListenRepeatBetaSentence {
   id: string;
   text: string;
   tiles: readonly string[];
+  difficulty: 3 | 4 | 5 | 6;
 }
 
-/** בנק בטא מצומצם של משפטים מלאים, כדי שהשמעת הגיבוי תהיה רציפה ולא מחוברת מקטעים. */
-export const LISTEN_REPEAT_BETA_SENTENCES: readonly ListenRepeatBetaSentence[] = [
-  {
-    id: 'listen-repeat-beta-01',
-    text: 'הילד מצא תפוח אדום',
-    tiles: ['הילד', 'מצא', 'תפוח אדום'],
-  },
-  {
-    id: 'listen-repeat-beta-02',
-    text: 'סבתא ראתה פרח צהוב',
-    tiles: ['סבתא', 'ראתה', 'פרח צהוב'],
-  },
-  {
-    id: 'listen-repeat-beta-03',
-    text: 'הציפור בנתה קן קטן',
-    tiles: ['הציפור', 'בנתה', 'קן קטן'],
-  },
-  {
-    id: 'listen-repeat-beta-04',
-    text: 'ממו הביא כדור גדול לגינה',
-    tiles: ['ממו', 'הביא', 'כדור גדול', 'לגינה'],
-  },
-  {
-    id: 'listen-repeat-beta-05',
-    text: 'הילדה קראה ספר מצחיק בערב',
-    tiles: ['הילדה', 'קראה', 'ספר מצחיק', 'בערב'],
-  },
-  {
-    id: 'listen-repeat-beta-06',
-    text: 'הארנב מצא גזר גדול ליד העץ',
-    tiles: ['הארנב', 'מצא', 'גזר גדול', 'ליד העץ'],
-  },
-  {
-    id: 'listen-repeat-beta-07',
-    text: 'הכלב מצא כדור אדום מתחת לספסל בגינה',
-    tiles: ['הכלב', 'מצא', 'כדור אדום', 'מתחת לספסל', 'בגינה'],
-  },
-  {
-    id: 'listen-repeat-beta-08',
-    text: 'סבתא הכינה עוגת שוקולד לנכדים אחר הצהריים',
-    tiles: ['סבתא', 'הכינה', 'עוגת שוקולד', 'לנכדים', 'אחר הצהריים'],
-  },
-  {
-    id: 'listen-repeat-beta-09',
-    text: 'ממו שם בקבוק מים בתוך התיק לפני הטיול',
-    tiles: ['ממו', 'שם', 'בקבוק מים', 'בתוך התיק', 'לפני הטיול'],
-  },
-  {
-    id: 'listen-repeat-beta-10',
-    text: 'הילדה אספה שלוש צדפות עם אחותה על החוף בבוקר',
-    tiles: ['הילדה', 'אספה', 'שלוש צדפות', 'עם אחותה', 'על החוף', 'בבוקר'],
-  },
-  {
-    id: 'listen-repeat-beta-11',
-    text: 'סבתא שתלה פרחים צבעוניים ליד העץ בגינה ביום שישי',
-    tiles: ['סבתא', 'שתלה', 'פרחים צבעוניים', 'ליד העץ', 'בגינה', 'ביום שישי'],
-  },
-  {
-    id: 'listen-repeat-beta-12',
-    text: 'הילד החזיר את הספר למדף העליון בספרייה אחרי השיעור',
-    tiles: ['הילד', 'החזיר', 'את הספר', 'למדף העליון', 'בספרייה', 'אחרי השיעור'],
-  },
+/**
+ * משפטים מלאים עם קובץ שמע רציף ומוקלט לכל משפט. difficulty שומר את
+ * מדרגת הזיכרון המקורית; במסך כל מילה מוצגת באריח נפרד, ללא צירופי מילים.
+ */
+const RECORDED_LISTEN_REPEAT_SENTENCES: readonly Omit<ListenRepeatBetaSentence, 'tiles'>[] = [
+  { id: 'listen-repeat-beta-01', text: 'הילד מצא תפוח אדום', difficulty: 3 },
+  { id: 'listen-repeat-beta-02', text: 'סבתא ראתה פרח צהוב', difficulty: 3 },
+  { id: 'listen-repeat-beta-03', text: 'הציפור בנתה קן קטן', difficulty: 3 },
+  { id: 'listen-repeat-beta-04', text: 'ממו הביא כדור גדול לגינה', difficulty: 4 },
+  { id: 'listen-repeat-beta-05', text: 'הילדה קראה ספר מצחיק בערב', difficulty: 4 },
+  { id: 'listen-repeat-beta-06', text: 'הארנב מצא גזר גדול ליד העץ', difficulty: 4 },
+  { id: 'listen-repeat-beta-07', text: 'הכלב מצא כדור אדום מתחת לספסל בגינה', difficulty: 5 },
+  { id: 'listen-repeat-beta-08', text: 'סבתא הכינה עוגת שוקולד לנכדים אחר הצהריים', difficulty: 5 },
+  { id: 'listen-repeat-beta-09', text: 'ממו שם בקבוק מים בתוך התיק לפני הטיול', difficulty: 5 },
+  { id: 'listen-repeat-beta-10', text: 'הילדה אספה שלוש צדפות עם אחותה על החוף בבוקר', difficulty: 6 },
+  { id: 'listen-repeat-beta-11', text: 'סבתא שתלה פרחים צבעוניים ליד העץ בגינה ביום שישי', difficulty: 6 },
+  { id: 'listen-repeat-beta-12', text: 'הילד החזיר את הספר למדף העליון בספרייה אחרי השיעור', difficulty: 6 },
 ];
+
+export const LISTEN_REPEAT_BETA_SENTENCES: readonly ListenRepeatBetaSentence[] =
+  RECORDED_LISTEN_REPEAT_SENTENCES.map((sentence) => ({ ...sentence, tiles: sentence.text.split(' ') }));
 
 /** אייקונים למשחק ההוראות (מזהה + שם עברי + אימוג'י פנימי לצייר כ-SVG). */
 export interface TapIcon {

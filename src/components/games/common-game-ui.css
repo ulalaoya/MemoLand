@@ -1,0 +1,31 @@
+.ml-adventure-feedback {
+  min-height: 62px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  color: #f8fbff;
+  border: 2px solid rgba(218, 242, 255, .9);
+  border-radius: 20px;
+  background: linear-gradient(150deg, rgba(22, 70, 99, .98), rgba(7, 27, 54, .98));
+  box-shadow: 0 6px 0 rgba(3, 14, 31, .82), 0 13px 24px rgba(2, 10, 28, .28), inset 0 1px rgba(255,255,255,.16);
+  font-family: var(--ml-font-heading, var(--font-head));
+  font-size: clamp(1rem, 4.8vw, 1.2rem);
+  font-weight: 900;
+  text-align: center;
+  animation: ml-adventure-feedback-in .28s ease-out;
+}
+
+.ml-adventure-feedback.is-correct { border-color: #ffe178; background: linear-gradient(150deg, #176c67, #0b374d 70%); }
+.ml-adventure-feedback.is-guided { border-color: #bfe6ff; }
+.ml-adventure-feedback__seal { width: 39px; height: 39px; flex: 0 0 39px; display: grid; place-items: center; color: #ffd659; border: 2px solid #fff1a5; border-radius: 50%; background: #12345a; box-shadow: 0 3px 0 rgba(0,0,0,.38); }
+
+@keyframes ml-adventure-feedback-in {
+  from { opacity: 0; transform: translateY(8px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ml-adventure-feedback { animation: none; }
+}

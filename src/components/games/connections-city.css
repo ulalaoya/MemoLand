@@ -833,9 +833,10 @@
   position: absolute;
   z-index: 8;
   left: 50%;
+  top: 178px;
   bottom: calc(12px + var(--ml-safe-bottom, 0px));
   width: min(calc(100% - 24px), 354px);
-  max-height: min(calc(100% - 138px), 520px);
+  max-height: none;
   padding: 12px 13px 13px;
   overflow-y: auto;
   gap: 7px;
@@ -851,7 +852,7 @@
 }
 
 .ml-city-game.is-hint-open .ml-city-game__worksite {
-  max-height: min(calc(100% - 112px), 548px);
+  max-height: none;
 }
 
 .ml-city-game__worksite::before,
@@ -886,6 +887,6 @@
 @media (max-width: 359px), (max-height: 700px) {
   .ml-city-game__puzzle { height: 118px; }
   .ml-city-game__memo { top: 119px; --ml-memo-size: 56px; }
-  .ml-city-game__worksite { max-height: calc(100% - 108px); padding: 9px 10px 10px; gap: 5px; }
-  .ml-city-game.is-hint-open .ml-city-game__worksite { max-height: calc(100% - 88px); }
+  .ml-city-game__worksite { top: 142px; max-height: none; padding: 9px 10px 10px; gap: 5px; }
+  .ml-city-game.is-hint-open .ml-city-game__worksite { max-height: none; }
 }

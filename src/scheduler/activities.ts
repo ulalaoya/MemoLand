@@ -48,7 +48,7 @@ export function buildFreePlayActivities(landId: LandId): Activity[] {
   }));
 }
 
-/** Goal-extension rounds deliberately exclude City; its 20-question quota is explicit above. */
+/** Goal-extension rounds deliberately exclude City; its 15-question puzzle quota is explicit above. */
 export function buildDailySupplementalActivity(atIndex: number): Activity {
   const lands = playableLands().filter((land) => land !== 'connections' && land !== 'speed');
   const land = lands[atIndex % lands.length];

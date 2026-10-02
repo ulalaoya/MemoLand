@@ -56,10 +56,10 @@ function makeDigitEngine(
         params: { length: stimulus.digits.length, flashMs: stimulus.flashMs },
         prompt:
           mode === 'forward'
-            ? 'הקשב וזכור את הספרות לפי הסדר'
+            ? 'הקלד את הספרות לפי הסדר'
             : mode === 'backward'
-              ? 'זכור את הספרות — ותקליד אותן מהסוף להתחלה'
-              : 'זכור את הספרות — ותסדר אותן מהקטן לגדול',
+              ? 'הקלד את הספרות מהסוף להתחלה'
+              : 'הקלד את הספרות מהקטן לגדול',
       };
     },
     check(challenge, given) {

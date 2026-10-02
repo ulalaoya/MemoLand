@@ -32,6 +32,7 @@ import {
   setDailyJourneyPoints,
   startDailyJourneySecretRecall,
   updateSettings,
+  useProfiles,
   useStore,
 } from '../state/store';
 import { advanceOnSuccess, regressOnFailure } from '../scheduler/spacedRepetition';
@@ -47,7 +48,7 @@ import {
   type CoinRewardEvent,
 } from '../components/CoinRewardExperience';
 import { LandBackground } from '../components/svg/Backgrounds';
-import { Guide, guideKindFor } from '../components/svg/Memo';
+import { Character } from '../components/svg/Memo';
 import { speak } from '../audio/speech';
 import { sfxLevelUp } from '../audio/sfx';
 import type { JourneySecret, LandId } from '../types';
@@ -95,6 +96,9 @@ export function SessionScreen({
   onQuit: () => void;
 }) {
   const settings = useStore((s) => s.settings);
+  const activeAvatar = useProfiles((registry) => (
+    registry.profiles.find((profile) => profile.id === registry.activeId)?.avatar ?? 'memo'
+  ));
   const persistedCoins = useStore((s) => s.coins);
   const multiplicationProgress = useStore((s) => s.multiplication);
   const journeySecret = useStore((s) => s.dailyJourney.secret);
@@ -478,7 +482,7 @@ export function SessionScreen({
           </div>
 
           <span className="ml-session-hud__guide">
-            <Guide kind={guideKindFor(meta.guide)} size={36} />
+            <Character kind={activeAvatar} size={36} />
           </span>
 
           <button
@@ -606,7 +610,7 @@ export function SessionScreen({
                 <HeartIcon key={i} size={34} empty />
               ))}
             </div>
-            <Guide kind={guideKindFor(meta.guide)} size={72} />
+            <Character kind={activeAvatar} size={72} />
             <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 22 }}>נגמרו הלבבות!</h2>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 17, margin: 0 }}>
               ממו לא מוותר אף פעם 💪 רוצה לנסות שוב?
@@ -680,6 +684,9 @@ function JourneySecretScreen({
   onRevealDone: () => void;
   onAnswer: (selected: string) => void;
 }) {
+  const avatar = useProfiles((registry) => (
+    registry.profiles.find((profile) => profile.id === registry.activeId)?.avatar ?? 'memo'
+  ));
   const [chosen, setChosen] = useState<string | null>(secret.answered ? secret.value : null);
   const recalling = secret.recallStarted;
 
@@ -696,7 +703,7 @@ function JourneySecretScreen({
         <span className="ml-journey-secret-star ml-journey-secret-star--two">✦</span>
         <span className="ml-journey-secret-star ml-journey-secret-star--three">✦</span>
       </div>
-      <img className="ml-journey-secret-memo" src="./characters/memo-journey-map-wizard-v6.png" alt="" draggable={false} aria-hidden />
+      <div className="ml-journey-secret-memo" aria-hidden><Character kind={avatar} size={150} /></div>
       <main className="ml-journey-secret-card" aria-live="polite">
         <div className="ml-journey-secret-lock" aria-hidden><span>{recalling ? '🗝️' : '🔐'}</span></div>
         <span className="ml-journey-secret-eyebrow">סוד המסע</span>

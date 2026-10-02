@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { MemoRank, Profile } from '../../types';
 import { rankLabel, rankProgress } from '../../state/rewards';
 import { Logo } from '../Logo';
-import { Coin, HeartIcon, TrophyIcon } from '../svg/Icons';
+import { Coin, HeartIcon } from '../svg/Icons';
 import { PlayerIdentity } from './PlayerIdentity';
 
 interface PlayerHUDProps {
@@ -64,8 +64,8 @@ export function PlayerHUD({
         </div>
 
         <nav className="ml-player-hud__actions" aria-label="פעולות במפה">
-          <HudAction label="הישגים" onClick={onOpenAchievements} icon={<TrophyIcon size={20} />} />
-          <HudAction label="אוספים" onClick={onOpenCollections} icon={<CollectionGlyph />} />
+          <HudAction label="הישגים" onClick={onOpenAchievements} icon={<JourneyAchievementGlyph />} />
+          <HudAction label="אוספים" onClick={onOpenCollections} icon={<JourneyCollectionGlyph />} />
         </nav>
       </div>
     </section>
@@ -133,12 +133,23 @@ function HudAction({ label, icon, onClick }: { label: string; icon: React.ReactN
   );
 }
 
-function CollectionGlyph() {
+export function JourneyCollectionGlyph() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
-      <path d="M5 8.5h14v11H5z" fill="var(--ml-purple)" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-      <path d="M8 8.5V6.8A4 4 0 0112 3a4 4 0 014 3.8v1.7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M8.5 13h7" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+      <path d="M4 7.5 12 3l8 4.5v10L12 22l-8-4.5z" fill="#153f70" stroke="#ffe27a" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M12 3v19M4 7.5l8 4.5 8-4.5" fill="none" stroke="#bdeaff" strokeWidth="1.4" />
+      <path d="m9.3 14.3 1.7.2.9-1.6.8 1.6 1.8.2-1.3 1.2.4 1.8-1.6-.8-1.6.8.3-1.8z" fill="#ffe16d" />
+    </svg>
+  );
+}
+
+export function JourneyAchievementGlyph() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
+      <path d="M7 3h10v6a5 5 0 0 1-10 0z" fill="#ffd75e" stroke="#143255" strokeWidth="1.8" />
+      <path d="M7 5H3v2c0 3 2 5 5 5M17 5h4v2c0 3-2 5-5 5" fill="none" stroke="#dff3ff" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M12 14v4M8 21h8" stroke="#dff3ff" strokeWidth="2" strokeLinecap="round" />
+      <path d="m12 5 .9 1.8 2 .3-1.5 1.4.4 2-1.8-.9-1.8.9.4-2-1.5-1.4 2-.3z" fill="#fff5c7" />
     </svg>
   );
 }

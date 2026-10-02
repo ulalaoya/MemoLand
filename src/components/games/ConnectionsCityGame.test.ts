@@ -139,11 +139,11 @@ describe('City child interaction', () => {
   it('celebrates the second row and gives every 15-part project a longer explicit finish', () => {
     expect(cityModule.cityProjectCelebration(7)).toBeNull();
     expect(cityModule.cityProjectCelebration(8)).toBe('מצוין, העיר גדלה!');
-    expect(cityModule.cityProjectCelebration(15)).toBe('כל הכבוד! סיימת לבנות את העיר!');
+    expect(cityModule.cityProjectCelebration(15)).toBe('כל הכבוד! השלמת את הפאזל!');
     expect(cityModule.cityProjectCelebration(23)).toBe('מצוין, פסל הלגו מתקדם!');
-    expect(cityModule.cityProjectCelebration(30)).toBe('כל הכבוד! סיימת לבנות את פסל הלגו!');
+    expect(cityModule.cityProjectCelebration(30)).toBe('כל הכבוד! השלמת את הפאזל!');
     expect(cityModule.cityProjectCelebration(38)).toBe('מצוין, מכונית המרוץ מתקדמת!');
-    expect(cityModule.cityProjectCelebration(45)).toBe('כל הכבוד! מכונית המרוץ מוכנה!');
+    expect(cityModule.cityProjectCelebration(45)).toBe('כל הכבוד! השלמת את הפאזל!');
     expect(cityModule.citySuccessDelay(14)).toBe(cityModule.CITY_SUCCESS_RESULT_MS);
     expect(cityModule.CITY_SUCCESS_RESULT_MS).toBe(1_920);
     expect(cityModule.citySuccessDelay(15)).toBe(cityModule.CITY_PROJECT_COMPLETE_MS);

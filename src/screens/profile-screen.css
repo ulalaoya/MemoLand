@@ -58,7 +58,12 @@
 .ml-profile-card small { color: #a9dcff; font-size: .68rem; }
 .ml-profile-card--new { color: #fff1b8; border-style: dashed; border-color: #e8c354; background: rgba(13, 31, 67, .8); }
 .ml-profile-card__delete { position: absolute; top: -8px; inset-inline-start: -8px; z-index: 4; width: 34px; height: 34px; color: #fff; background: #cf3d4f; border: 2px solid #fff; border-radius: 50%; font-size: 1rem; font-weight: 900; }
+.ml-profile-card__change { position: absolute; inset-inline: 10px; bottom: 8px; z-index: 2; padding: 4px 8px; color: #fff7c8; border-radius: 999px; background: rgba(8, 30, 58, .9); font-size: .72rem; font-weight: 900; text-align: center; pointer-events: none; }
 .ml-profile-edit { padding: 9px 18px; color: #fff; background: rgba(13, 31, 67, .82); border: 1px solid rgba(218, 241, 255, .6); border-radius: 999px; font-family: var(--ml-font-heading); font-weight: 800; }
+
+.ml-avatar-picker { position: fixed; z-index: 50; inset: 0; padding: 18px; display: grid; place-items: center; background: rgba(2, 12, 30, .8); backdrop-filter: blur(8px); }
+.ml-avatar-picker__card { width: min(100%, 390px); padding: 22px 18px 18px; display: grid; gap: 16px; color: #fff; text-align: center; border: 3px solid rgba(223, 244, 255, .92); border-radius: 28px; background: linear-gradient(155deg, #143e68, #071a38 72%); box-shadow: 0 8px 0 #031125, 0 24px 60px rgba(0,0,0,.48); }
+.ml-avatar-picker__card h2 { margin: 0; }
 
 .ml-add-profile {
   width: min(100%, 370px);

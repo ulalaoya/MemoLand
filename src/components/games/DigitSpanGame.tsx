@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Challenge } from '../../types';
 import type { DigitSpanStimulus } from '../../engines/numbers';
-import { speak } from '../../audio/speech';
+import { speak, stopSpeech } from '../../audio/speech';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import { FeedbackBanner, ReplayButton } from './common';
 import type { GameProps } from './common';
@@ -34,33 +34,63 @@ export function DigitSpanGame({
   const [result, setResult] = useState<boolean | null>(null);
   const startRef = useRef(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const playbackRef = useRef(0);
 
   function clearTimers() {
     timers.current.forEach(clearTimeout);
     timers.current = [];
   }
-  useEffect(() => () => clearTimers(), []);
+  useEffect(() => () => {
+    playbackRef.current += 1;
+    clearTimers();
+    stopSpeech();
+  }, []);
 
   function runShow() {
+    const playbackId = ++playbackRef.current;
     clearTimers();
+    stopSpeech();
     setPhase('showing');
     setShownIdx(-1);
-    stim.digits.forEach((d, i) => {
-      timers.current.push(
-        setTimeout(() => {
-          setShownIdx(i);
-          // queue=true — כל ספרה נאמרת עד הסוף בלי לבטל את הקודמת
-          speak(String(d), speechRate, { queue: true });
-        }, FOCUS_BREATH_MS + i * stim.flashMs),
-      );
-    });
-    timers.current.push(
-      setTimeout(() => {
-        setShownIdx(-1);
-        setPhase('input');
-        startRef.current = performance.now();
-      }, FOCUS_BREATH_MS + stim.digits.length * stim.flashMs + 300),
-    );
+
+    const finish = () => {
+      if (playbackRef.current !== playbackId) return;
+      setShownIdx(-1);
+      setPhase('input');
+      startRef.current = performance.now();
+    };
+
+    const showDigit = (index: number) => {
+      if (playbackRef.current !== playbackId) return;
+      if (index >= stim.digits.length) {
+        timers.current.push(setTimeout(finish, 260));
+        return;
+      }
+      let advanced = false;
+      let visualStartedAt = performance.now();
+      const advance = () => {
+        if (advanced || playbackRef.current !== playbackId) return;
+        advanced = true;
+        const elapsed = performance.now() - visualStartedAt;
+        timers.current.push(setTimeout(() => showDigit(index + 1), Math.max(90, stim.flashMs - elapsed)));
+      };
+      const queued = speak(String(stim.digits[index]), speechRate, {
+        onStart: () => {
+          if (playbackRef.current !== playbackId) return;
+          visualStartedAt = performance.now();
+          setShownIdx(index);
+        },
+        onEnd: advance,
+        onError: advance,
+      });
+      if (!queued) {
+        visualStartedAt = performance.now();
+        setShownIdx(index);
+        timers.current.push(setTimeout(advance, stim.flashMs));
+      }
+    };
+
+    timers.current.push(setTimeout(() => showDigit(0), FOCUS_BREATH_MS));
   }
 
   function submit() {
@@ -111,10 +141,7 @@ export function DigitSpanGame({
       {phase === 'ready' && (
         <div className="ml-valley-ready">
           <span className="ml-valley-ready__eyebrow">אתגר הזיכרון</span>
-          <p className="ml-valley-ready__prompt">{challenge.prompt}</p>
-          <p className="ml-valley-ready__hint">
-            תזכור <b className="ltr">{stim.digits.length}</b> ספרות — ותקליד אותן {modeHint}
-          </p>
+          <p className="ml-valley-ready__prompt">הקלד את הספרות {modeHint}</p>
           <ValleyReadyButton onClick={runShow} />
         </div>
       )}
@@ -128,8 +155,7 @@ export function DigitSpanGame({
       {phase === 'input' && (
         <div className="ml-valley-recall">
           <div className="ml-valley-recall__header">
-            <span className="ml-valley-recall__eyebrow">עכשיו תורך</span>
-            <p className="ml-valley-recall__prompt">הקלד {modeHint}</p>
+            <p className="ml-valley-recall__prompt">הקלד את הספרות {modeHint}</p>
           </div>
           <ValleyEnteredDigits digits={entered} />
           <ValleyNumberPad

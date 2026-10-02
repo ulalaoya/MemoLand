@@ -124,6 +124,19 @@ export function createProfile(name: string, avatar: AvatarKind): Profile {
   return p;
 }
 
+/** משנה את דמות הפרופיל בלי לגעת בהתקדמות, במטבעות או במסע השמור. */
+export function updateProfileAvatar(id: string, avatar: AvatarKind): void {
+  if (!registry.profiles.some((profile) => profile.id === id)) return;
+  registry = {
+    ...registry,
+    profiles: registry.profiles.map((profile) => (
+      profile.id === id ? { ...profile, avatar } : profile
+    )),
+  };
+  saveRegistry(registry);
+  emit();
+}
+
 /** מוחק פרופיל ואת השמירה שלו. */
 export function deleteProfile(id: string): void {
   deleteSaveFor(id);

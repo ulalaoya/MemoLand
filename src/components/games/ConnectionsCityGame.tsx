@@ -87,7 +87,7 @@ const CITY_BUILD_PROJECTS: readonly CityBuildProject[] = [
     title: 'בונים עיר',
     icon: '🏙️',
     rowCopy: CITY_SUCCESS_COPY,
-    completeCopy: 'כל הכבוד! סיימת לבנות את העיר!',
+    completeCopy: 'כל הכבוד! השלמת את פאזל העיר!',
   },
   {
     kind: 'blocks',
@@ -146,7 +146,7 @@ export function cityProjectCelebration(totalBuilt: number): string | null {
   if (totalBuilt <= 0) return null;
   const model = cityDistrictProgress(totalBuilt);
   const project = cityBuildProject(model.districtIndex);
-  if (model.districtComplete) return project.completeCopy;
+  if (model.districtComplete) return 'כל הכבוד! השלמת את הפאזל!';
   return model.builtCount === CITY_DISTRICT_BACK_ROW_SIZE ? project.rowCopy : null;
 }
 
@@ -579,8 +579,8 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
         {phase === 'success' && city.districtComplete ? (
           <div className="ml-city-game__project-complete">
             <span>{project.icon}</span>
-            <strong>{project.completeCopy}</strong>
-            <small>כרטיס הבנייה נוסף לאוסף שלך</small>
+            <strong>כל הכבוד! השלמת את הפאזל!</strong>
+            <small>{project.title.replace(/^(בונים|מרכיבים)\s+/, '')} נוסף לאוסף שלך</small>
           </div>
         ) : null}
         <MemoCompanion behavior={behavior} className="ml-city-game__memo" />

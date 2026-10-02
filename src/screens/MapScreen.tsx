@@ -1,4 +1,5 @@
 /* מסך הבית — מפת ממו לנד: מסלול הרפתקה אנכי שמחבר בין כל הארצות. */
+import { useEffect } from 'react';
 import { DAILY_GOAL, getActiveProfile, getDailyJourneyProgress, getTodayPoints, useProfiles, useStore } from '../state/store';
 import { LAND_ORDER, LANDS, TRACKS_PER_LAND } from '../config/lands';
 import { playableLands } from '../engines';
@@ -37,6 +38,27 @@ export function MapScreen({
   const journey = getDailyJourneyProgress();
   const currentLandIndex = getCurrentLandIndex(playable, lands);
 
+  useEffect(() => {
+    let saved = 0;
+    try {
+      saved = Number(sessionStorage.getItem('memoland.map-scroll-y'));
+    } catch {
+      return;
+    }
+    if (!Number.isFinite(saved) || saved <= 0) return;
+    const restore = () => window.scrollTo({ top: saved, behavior: 'auto' });
+    const first = window.requestAnimationFrame(() => window.requestAnimationFrame(restore));
+    return () => window.cancelAnimationFrame(first);
+  }, []);
+
+  const rememberMapPosition = () => {
+    try {
+      sessionStorage.setItem('memoland.map-scroll-y', String(window.scrollY));
+    } catch {
+      // Private-mode storage can be unavailable; map navigation still works.
+    }
+  };
+
   return (
     <div className="ml-world-map-screen">
       <div className="ml-world-map-scene" aria-hidden />
@@ -61,7 +83,10 @@ export function MapScreen({
             dailyGoal={DAILY_GOAL}
             status={journey.status}
             currentActivity={journey.currentActivity}
-            onStart={onStartJourney}
+            onStart={() => {
+              rememberMapPosition();
+              onStartJourney();
+            }}
           />
         </section>
 
@@ -86,7 +111,11 @@ export function MapScreen({
                   current={index === currentLandIndex}
                   side={index % 2 === 0 ? 'left' : 'right'}
                   theme={LAND_THEMES[id]}
-                  onSelect={() => available && onPlayLand(id)}
+                  onSelect={() => {
+                    if (!available) return;
+                    rememberMapPosition();
+                    onPlayLand(id);
+                  }}
                 />
               );
             })}

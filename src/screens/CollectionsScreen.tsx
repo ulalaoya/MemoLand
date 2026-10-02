@@ -12,6 +12,7 @@ import {
   cityProjectCollectibleId,
 } from '../components/games/ConnectionsCityGame';
 import './meta-screens.css';
+import { JourneyCollectionGlyph } from '../components/world/PlayerHUD';
 
 type Tab = 'build' | 'hat' | 'sticker' | 'theme';
 
@@ -24,12 +25,17 @@ export function CollectionsScreen({ onExit }: { onExit: () => void }) {
   const [notice, setNotice] = useState<string | null>(null);
 
   const catalog: Record<Exclude<Tab, 'build'>, Collectible[]> = { hat: HATS, sticker: STICKERS, theme: THEMES };
+  const tabItems = tab === 'build' ? [] : catalog[tab];
+  const ownedInTab = tab === 'build'
+    ? Array.from({ length: CITY_BUILD_PROJECT_COUNT }, (_, index) => cityProjectCollectibleId(index)).filter((id) => cosmetics.some((item) => item.id === id)).length
+    : tabItems.filter((item) => ownsCollectible(item.id) || item.cost === 0).length;
+  const totalInTab = tab === 'build' ? CITY_BUILD_PROJECT_COUNT : tabItems.length;
 
   return (
     <div className="ml-meta-screen ml-meta-screen--collections">
       <div className="ml-meta-screen__backdrop" aria-hidden />
       <header className="ml-meta-header">
-        <span className="ml-meta-header__icon" aria-hidden>🎒</span>
+        <span className="ml-meta-header__icon" aria-hidden><JourneyCollectionGlyph /></span>
         <div className="ml-meta-header__copy">
           <small>האוצרות שמצאת בדרך</small>
           <h1>האוספים שלי</h1>
@@ -46,10 +52,15 @@ export function CollectionsScreen({ onExit }: { onExit: () => void }) {
       </div>
 
       <nav className="ml-collection-tabs" aria-label="סוג אוסף">
-        {([['build', 'בניות'], ['hat', 'לבוש'], ['sticker', 'מדבקות'], ['theme', 'רקעים']] as [Tab, string][]).map(([t, label]) => (
-          <button key={t} className={tab === t ? 'is-active' : ''} onClick={() => setTab(t)}>{label}</button>
+        {([['build', 'פאזלים'], ['hat', 'אביזרי קסם'], ['sticker', 'אלבום מדבקות'], ['theme', 'רקעים']] as [Tab, string][]).map(([t, label]) => (
+          <button key={t} className={tab === t ? 'is-active' : ''} onClick={() => setTab(t)}><span>{label}</span></button>
         ))}
       </nav>
+
+      <div className="ml-collection-album-heading">
+        <strong>{tab === 'build' ? 'הפאזלים שהושלמו' : tab === 'sticker' ? 'אלבום המדבקות שלי' : tab === 'hat' ? 'אביזרי המסע שלי' : 'עולמות שפתחתי'}</strong>
+        <span className="ltr">{ownedInTab}/{totalInTab}</span>
+      </div>
 
       {notice ? (
         <button type="button" className="ml-collection-notice" onClick={() => setNotice(null)} aria-live="polite">

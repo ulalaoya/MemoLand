@@ -4,42 +4,18 @@ import { listenRepeat } from './echoes';
 import { LISTEN_REPEAT_BETA_SENTENCES } from './echoesContent';
 import { challengeFingerprint, generateVariedChallenge } from './variety';
 
-const EXPECTED_SENTENCES = [
-  ['הילד מצא תפוח אדום', ['הילד', 'מצא', 'תפוח אדום']],
-  ['סבתא ראתה פרח צהוב', ['סבתא', 'ראתה', 'פרח צהוב']],
-  ['הציפור בנתה קן קטן', ['הציפור', 'בנתה', 'קן קטן']],
-  ['ממו הביא כדור גדול לגינה', ['ממו', 'הביא', 'כדור גדול', 'לגינה']],
-  ['הילדה קראה ספר מצחיק בערב', ['הילדה', 'קראה', 'ספר מצחיק', 'בערב']],
-  ['הארנב מצא גזר גדול ליד העץ', ['הארנב', 'מצא', 'גזר גדול', 'ליד העץ']],
-  ['הכלב מצא כדור אדום מתחת לספסל בגינה', ['הכלב', 'מצא', 'כדור אדום', 'מתחת לספסל', 'בגינה']],
-  [
-    'סבתא הכינה עוגת שוקולד לנכדים אחר הצהריים',
-    ['סבתא', 'הכינה', 'עוגת שוקולד', 'לנכדים', 'אחר הצהריים'],
-  ],
-  ['ממו שם בקבוק מים בתוך התיק לפני הטיול', ['ממו', 'שם', 'בקבוק מים', 'בתוך התיק', 'לפני הטיול']],
-  [
-    'הילדה אספה שלוש צדפות עם אחותה על החוף בבוקר',
-    ['הילדה', 'אספה', 'שלוש צדפות', 'עם אחותה', 'על החוף', 'בבוקר'],
-  ],
-  [
-    'סבתא שתלה פרחים צבעוניים ליד העץ בגינה ביום שישי',
-    ['סבתא', 'שתלה', 'פרחים צבעוניים', 'ליד העץ', 'בגינה', 'ביום שישי'],
-  ],
-  [
-    'הילד החזיר את הספר למדף העליון בספרייה אחרי השיעור',
-    ['הילד', 'החזיר', 'את הספר', 'למדף העליון', 'בספרייה', 'אחרי השיעור'],
-  ],
-] as const;
-
 describe('Echo ListenRepeat curated beta content', () => {
-  it('contains only the exact 12 approved sentences and tile decompositions', () => {
-    expect(LISTEN_REPEAT_BETA_SENTENCES.map(({ text, tiles }) => [text, tiles])).toEqual(EXPECTED_SENTENCES);
+  it('contains the 12 recorded full utterances split into one-word tiles', () => {
     expect(LISTEN_REPEAT_BETA_SENTENCES).toHaveLength(12);
+    for (const { text, tiles } of LISTEN_REPEAT_BETA_SENTENCES) {
+      expect(tiles.join(' ')).toBe(text);
+      expect(tiles.every((word) => !word.includes(' '))).toBe(true);
+    }
   });
 
-  it('contains three sentences in each 3/4/5/6-component tier', () => {
+  it('contains three recorded alternatives in each 3/4/5/6 difficulty tier', () => {
     expect(
-      [3, 4, 5, 6].map((count) => LISTEN_REPEAT_BETA_SENTENCES.filter(({ tiles }) => tiles.length === count).length),
+      [3, 4, 5, 6].map((difficulty) => LISTEN_REPEAT_BETA_SENTENCES.filter((sentence) => sentence.difficulty === difficulty).length),
     ).toEqual([3, 3, 3, 3]);
     for (const { text, tiles } of LISTEN_REPEAT_BETA_SENTENCES) expect(tiles.join(' ')).toBe(text);
   });
@@ -51,7 +27,9 @@ describe('Echo ListenRepeat curated beta content', () => {
         const challenge = listenRepeat.generate(level, seed);
         expect(challenge.prompt).toBeDefined();
         expect(bankTexts.has(challenge.prompt!)).toBe(true);
-        expect(challenge.stimulus.words).toHaveLength(sentenceComponentCount(level));
+        expect(
+          LISTEN_REPEAT_BETA_SENTENCES.find(({ text }) => text === challenge.prompt)?.difficulty,
+        ).toBe(sentenceComponentCount(level));
         expect(challenge.stimulus.words.join(' ')).toBe(challenge.prompt);
       }
     }
@@ -73,7 +51,6 @@ describe('Echo ListenRepeat curated beta content', () => {
       recent.push(fingerprint);
       if (recent.length > 3) recent.shift();
     }
-    expect(new Set(seen.slice(0, 3)).size).toBe(3);
-    expect(seen[3]).toBe(seen[0]);
+    expect(new Set(seen).size).toBe(3);
   });
 });

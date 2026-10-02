@@ -5,6 +5,7 @@ import { Button } from '../Button';
 import { StarIcon } from '../svg/Icons';
 import type { MultiplicationAttemptInput } from '../../types';
 import { CalculatorKeypad } from './CalculatorKeypad';
+import './common-game-ui.css';
 
 /** תוצאה שכל משחק מדווח למעלה. */
 export interface GameResult {
@@ -71,25 +72,11 @@ export function ReplayButton({ onReplay, limit = 2 }: { onReplay: () => void; li
 /** באנר משוב — חיובי תמיד. */
 export function FeedbackBanner({ correct, hint }: { correct: boolean; hint?: string }) {
   return (
-    <div
-      style={{
-        animation: 'pop .3s ease',
-        background: correct ? 'var(--btn-green)' : 'var(--panel)',
-        color: correct ? '#fff' : 'var(--ink)',
-        border: `3px solid ${correct ? '#fff' : 'var(--gray-300)'}`,
-        borderRadius: 16,
-        padding: '14px 18px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        fontFamily: 'var(--font-head)',
-        fontWeight: 700,
-        fontSize: 20,
-        boxShadow: 'var(--btn-shadow)',
-      }}
-    >
-      {correct ? <StarIcon size={26} /> : null}
-      <span>{correct ? 'יפה מאוד! ' : hint ?? 'כמעט! בוא ננסה עוד פעם'}</span>
+    <div className={`ml-adventure-feedback ${correct ? 'is-correct' : 'is-guided'}`} role="status">
+      <span className="ml-adventure-feedback__seal" aria-hidden>
+        {correct ? <StarIcon size={28} /> : '✦'}
+      </span>
+      <span>{correct ? 'מעולה! ממשיכים במסע' : hint ?? 'כמעט! הדרך כבר מתבהרת'}</span>
     </div>
   );
 }

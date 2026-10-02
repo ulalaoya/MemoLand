@@ -211,7 +211,7 @@ describe('בניית המסע היומי', () => {
       const session = buildDailySession(stats, minutes, false, Date.UTC(2026, 7, 28));
       const citySteps = session.steps.filter((step) => step.kind === 'connections-practice');
       expect(citySteps).toHaveLength(2);
-      expect(citySteps.map((step) => step.rounds)).toEqual([10, 10]);
+      expect(citySteps.map((step) => step.rounds)).toEqual([8, 7]);
       expect(citySteps.every((step) => step.exerciseId === 'connections.direct')).toBe(true);
 
       const { activities } = buildActivities(session, [], 17);
@@ -220,10 +220,10 @@ describe('בניית המסע היומי', () => {
           && activity.exerciseId === 'connections.direct'
           && activity.landId === 'connections' ? index : -1)
         .filter((index) => index >= 0);
-      expect(cityIndexes).toHaveLength(20);
-      expect(cityIndexes.slice(0, 10)).toEqual(Array.from({ length: 10 }, (_, index) => cityIndexes[0] + index));
-      expect(cityIndexes.slice(10)).toEqual(Array.from({ length: 10 }, (_, index) => cityIndexes[10] + index));
-      expect(cityIndexes[10] - cityIndexes[9]).toBeGreaterThan(1);
+      expect(cityIndexes).toHaveLength(15);
+      expect(cityIndexes.slice(0, 8)).toEqual(Array.from({ length: 8 }, (_, index) => cityIndexes[0] + index));
+      expect(cityIndexes.slice(8)).toEqual(Array.from({ length: 7 }, (_, index) => cityIndexes[8] + index));
+      expect(cityIndexes[8] - cityIndexes[7]).toBeGreaterThan(1);
 
       const rotations = session.steps.filter((step) => step.kind === 'rotation');
       expect(rotations).toHaveLength(minutes <= 15 ? 7 : minutes <= 20 ? 8 : 10);
