@@ -1336,7 +1336,7 @@
   min-height: 100%;
   background:
     linear-gradient(180deg, rgba(8, 18, 42, .16), rgba(8, 18, 42, .88)),
-    url('/worlds/memo-journey-map-v3.webp') center top / cover no-repeat;
+    url('/worlds/memo-journey-map-v4.webp') center top / cover no-repeat;
   filter: saturate(.88) brightness(.7);
 }
 
@@ -1430,7 +1430,7 @@
   height: clamp(1520px, 395vw, 2000px);
   margin: 0;
   overflow: hidden;
-  background: url('/worlds/memo-journey-map-v3.webp') center top / 100% 100% no-repeat;
+  background: url('/worlds/memo-journey-map-v4.webp') center top / 100% 100% no-repeat;
   border: 3px solid rgba(226, 244, 255, .92);
   border-radius: 34px;
   box-shadow: 0 9px 0 rgba(5, 15, 39, .82), 0 24px 42px rgba(5, 12, 31, .44), inset 0 0 0 1px rgba(255, 255, 255, .2);
@@ -1474,6 +1474,30 @@
 
 .ml-land-row:nth-child(odd) { justify-content: flex-end; }
 .ml-land-row:nth-child(even) { justify-content: flex-start; }
+
+/* The illustrated map alternates landmarks. Keep each pin tip over the
+   landmark itself instead of letting RTL place every pin on the same edge. */
+.ml-land-row:nth-child(odd) .ml-land-card {
+  direction: rtl;
+  transform: none;
+}
+
+.ml-land-row:nth-child(even) .ml-land-card {
+  direction: ltr;
+  transform: translateX(18%);
+}
+
+.ml-land-row:nth-child(even) .ml-land-card__content {
+  direction: rtl;
+}
+
+.ml-land-card__art {
+  transform: translateY(-24px);
+}
+
+.ml-land-row[data-land='castle'] .ml-land-card__art {
+  transform: translateY(-42px);
+}
 
 .ml-land-card {
   width: min(64%, 344px);

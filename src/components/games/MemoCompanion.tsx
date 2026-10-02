@@ -3,11 +3,11 @@ import './memo-companion.css';
 export type MemoBehavior = 'idle' | 'attentive' | 'listening' | 'thinking' | 'success';
 
 const MEMO_ASSET: Record<MemoBehavior, string> = {
-  idle: './characters/memo-wizard-v3.png',
+  idle: './characters/memo-thinking-wizard-v3.png',
   attentive: './characters/memo-listening-wizard-v3.png',
   listening: './characters/memo-listening-wizard-v3.png',
   thinking: './characters/memo-thinking-wizard-v3.png',
-  success: './characters/memo-wizard-v3.png',
+  success: './characters/memo-thinking-wizard-v3.png',
 };
 
 export function MemoCompanion({

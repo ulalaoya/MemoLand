@@ -5,10 +5,10 @@ import type { AvatarKind, MemoRank } from '../../types';
 type CharKind = AvatarKind;
 
 const SRC: Record<CharKind, string> = {
-  memo: './characters/memo-wizard-v3.png',
-  mima: './characters/mima-wizard-v1.png',
-  dragonBoy: './characters/dragon-boy-wizard-v1.png',
-  dragonGirl: './characters/dragon-girl-wizard-v1.png',
+  memo: './characters/memo-thinking-wizard-v3.png',
+  mima: './characters/mima-wizard-v2.png',
+  dragonBoy: './characters/dragon-boy-adventurer-v2.png',
+  dragonGirl: './characters/dragon-girl-adventurer-v2.png',
   water: './characters/water-wizard-v3.png',
   purple: './characters/purple-wizard-v3.png',
   mushroom: './characters/forest-wizard-v3.png',
@@ -18,8 +18,8 @@ const SRC: Record<CharKind, string> = {
 const LABEL: Record<CharKind, string> = {
   memo: 'ממו',
   mima: 'מימה',
-  dragonBoy: 'דרקון קוסם',
-  dragonGirl: 'דרקונית קוסמת',
+  dragonBoy: 'דרקון נווט',
+  dragonGirl: 'דרקונית אור',
   water: 'קוסם המים',
   purple: 'שומר הרונות',
   mushroom: 'קוסם היער',

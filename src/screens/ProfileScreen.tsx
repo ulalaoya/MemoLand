@@ -11,8 +11,8 @@ import './profile-screen.css';
 const AVATARS: { kind: AvatarKind; label: string }[] = [
   { kind: 'memo', label: 'ממו' },
   { kind: 'mima', label: 'מימה' },
-  { kind: 'dragonBoy', label: 'דרקון קוסם' },
-  { kind: 'dragonGirl', label: 'דרקונית קוסמת' },
+  { kind: 'dragonBoy', label: 'דרקון נווט' },
+  { kind: 'dragonGirl', label: 'דרקונית אור' },
   { kind: 'water', label: 'קוסם המים' },
   { kind: 'purple', label: 'שומר הרונות' },
   { kind: 'mushroom', label: 'קוסם היער' },
