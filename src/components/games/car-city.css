@@ -69,12 +69,7 @@
 .ml-car-city__console { width:min(94%,350px); padding:9px; display:grid; gap:8px; background:rgba(8,24,49,.94); border:2px solid #e8f7ff; border-radius:22px; box-shadow:0 6px 0 rgba(3,13,30,.78); }
 .ml-car-city__entered { min-height:38px; display:grid; place-items:center; direction:ltr; color:#fff; background:#102d51; border:2px solid #5bd7ec; border-radius:12px; font-size:1.55rem; font-weight:900; letter-spacing:.14em; }
 .ml-car-city__entered span { color:rgba(255,255,255,.48); }
-.ml-car-city__keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
-.ml-car-city__keypad button { min-height:43px; color:#fff; background:linear-gradient(180deg,#3e9ddd,#2165a5); border:2px solid #eafaff; border-radius:12px; box-shadow:0 3px 0 #123f72; font-family:var(--ml-font-display); font-size:1.32rem; font-weight:900; }
-.ml-car-city__keypad button:active { transform:translateY(2px); box-shadow:0 1px 0 #123f72; }
-.ml-car-city__keypad .is-erase { color:#51351e; background:linear-gradient(180deg,#fff4d9,#e6bd82); box-shadow:0 3px 0 #986226; }
-.ml-car-city__keypad .is-submit { background:linear-gradient(180deg,#55cf79,#248f50); box-shadow:0 3px 0 #176338; }
-.ml-car-city__keypad .is-submit:disabled { opacity:.42; }
+.ml-car-city__keypad { width: 100%; }
 .ml-car-city__watch { padding:8px 16px; color:#19324e; background:#fff3aa; border:2px solid #fff; border-radius:999px; font-weight:900; box-shadow:0 4px 0 #a96b12; }
 .ml-car-city.is-correct .ml-car-city__plate { background:#d7ffe4; box-shadow:inset 0 0 0 3px #32b765; }
 .ml-car-city.is-wrong .ml-car-city__plate { background:#ffe0dc; box-shadow:inset 0 0 0 3px #df493f; }
@@ -87,7 +82,6 @@
   .ml-car-city__window { height:31px; }
   .ml-car-city__light { top:55px; }
   .ml-car-city__plate { min-height:36px; bottom:10px; font-size:1.55rem; }
-  .ml-car-city__keypad button { min-height:39px; }
 }
 
 /* A small cinematic beat makes the plate challenge feel part of the racing city. */

@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
 import { MemoCompanion, type MemoBehavior } from './MemoCompanion';
+import { CalculatorKeypad } from './CalculatorKeypad';
 import './numbers-valley-challenge.css';
 
 export type NumbersChallengePhase = 'ready' | 'focus' | 'encoding' | 'recall' | 'success' | 'done';
-
-const CALCULATOR_DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 
 export function NumbersValleyChallenge({
   phase,
@@ -112,35 +111,13 @@ export function ValleyNumberPad({
   submitDisabled?: boolean;
 }) {
   return (
-    <div className="ml-valley-number-pad" dir="ltr" aria-label="מקלדת מחשבון">
-      <div className="ml-valley-number-pad__grid">
-        {CALCULATOR_DIGITS.map((digit) => (
-          <button
-            key={digit}
-            type="button"
-            className="ml-valley-key ml-pressable"
-            onClick={() => onDigit(digit)}
-            aria-label={`ספרה ${digit}`}
-          >
-            {digit}
-          </button>
-        ))}
-        <button type="button" className="ml-valley-action ml-valley-action--erase ml-pressable" onClick={onBackspace} aria-label="מחק">
-          <span aria-hidden>⌫</span>
-        </button>
-        <button type="button" className="ml-valley-key ml-valley-key--zero ml-pressable" onClick={() => onDigit(0)} aria-label="ספרה 0">
-          0
-        </button>
-        <button
-          type="button"
-          className="ml-valley-action ml-valley-action--submit ml-pressable"
-          onClick={onSubmit}
-          disabled={submitDisabled}
-          aria-label="אישור"
-        >
-          <span aria-hidden>✓</span>
-        </button>
-      </div>
-    </div>
+    <CalculatorKeypad
+      theme="valley"
+      className="ml-valley-number-pad"
+      onDigit={onDigit}
+      onBackspace={onBackspace}
+      onSubmit={onSubmit}
+      submitDisabled={submitDisabled}
+    />
   );
 }

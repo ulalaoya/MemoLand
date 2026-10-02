@@ -366,9 +366,36 @@
 
 /* The firefly board belongs in the visible clearing, not on the bottom bezel. */
 .ml-forest-game {
-  justify-content: center;
+  display: grid;
+  grid-template-rows: 116px 390px;
+  justify-items: center;
+  align-content: center;
   padding-top: 10px;
   padding-bottom: calc(10px + var(--safe-bottom));
+}
+
+.ml-forest-game__header {
+  align-self: end;
+  min-height: 108px;
+}
+
+.ml-forest-game__ready,
+.ml-forest-game__challenge {
+  height: 390px;
+  align-self: start;
+}
+
+.ml-forest-game__ready { justify-content: center; }
+.ml-forest-game__challenge { justify-content: flex-start; }
+
+@media (max-height: 700px) {
+  .ml-forest-game {
+    grid-template-rows: 102px 350px;
+    align-content: center;
+  }
+  .ml-forest-game__header { min-height: 96px; }
+  .ml-forest-game__ready,
+  .ml-forest-game__challenge { height: 350px; }
 }
 
 @media (max-height: 700px) {

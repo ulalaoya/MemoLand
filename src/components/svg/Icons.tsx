@@ -115,18 +115,33 @@ export function BrainIcon({ size = 28, style, className }: IconProps) {
 }
 
 /** מטבע זהב מסתובב (אנימציה דרך className). */
-export function Coin({ size = 28, spin = false, style }: IconProps & { spin?: boolean }) {
+export function Coin({ size = 28, spin = false, style, className }: IconProps & { spin?: boolean }) {
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 32 32"
+      className={className}
       style={{ ...style, animation: spin ? 'coin-spin 1.2s linear infinite' : undefined }}
       aria-hidden
     >
-      <circle cx="16" cy="16" r="13" fill="var(--gold)" stroke={INK} strokeWidth="2" />
-      <circle cx="16" cy="16" r="9" fill="var(--gold-lite)" stroke="var(--gold-deep)" strokeWidth="1.5" />
-      <text x="16" y="21" textAnchor="middle" fontFamily="Lilita One, sans-serif" fontSize="13" fill="var(--gold-deep)">
+      <defs>
+        <radialGradient id="ml-coin-face" cx="34%" cy="24%" r="78%">
+          <stop offset="0" stopColor="#fff8bd" />
+          <stop offset=".38" stopColor="#ffdc4b" />
+          <stop offset="1" stopColor="#e59a14" />
+        </radialGradient>
+        <linearGradient id="ml-coin-rim" x1="5" y1="3" x2="27" y2="29" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#fff09b" />
+          <stop offset=".45" stopColor="#f5b91f" />
+          <stop offset="1" stopColor="#9a5f0a" />
+        </linearGradient>
+      </defs>
+      <circle cx="16" cy="17" r="13" fill="#8d570a" opacity=".34" />
+      <circle cx="16" cy="15.5" r="13" fill="url(#ml-coin-rim)" stroke="#6d470d" strokeWidth="1.4" />
+      <circle cx="16" cy="15.5" r="9.5" fill="url(#ml-coin-face)" stroke="#bd7c0e" strokeWidth="1.25" />
+      <path d="M8.4 10.6c1.6-3.1 4.4-5 7.7-5.1" fill="none" stroke="#fff8ca" strokeWidth="1.5" strokeLinecap="round" opacity=".9" />
+      <text x="16" y="20.4" textAnchor="middle" fontFamily="Lilita One, sans-serif" fontSize="13" fill="#a4670a" stroke="#fff0a4" strokeWidth=".35">
         ★
       </text>
     </svg>

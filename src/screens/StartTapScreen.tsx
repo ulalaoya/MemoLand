@@ -21,14 +21,14 @@ export function StartTapScreen({ onStart }: { onStart: () => void }) {
         <Logo variant="compact" width={264} />
       </div>
 
-      <p className="ml-opening-welcome">ברוכים הבאים!</p>
+      <p className="ml-opening-welcome"><span>✦</span> ההרפתקה מתחילה כאן <span>✦</span></p>
 
       <div className="ml-opening-action">
         <button type="button" className="ml-opening-cta ml-pressable" onClick={start}>
           <span className="ml-opening-cta__icon" aria-hidden>▶</span>
           <span>הקש כדי להתחיל</span>
         </button>
-        <p className="ml-opening-hint">ממו כבר מצא את הדרך. ההרפתקה מחכה לך!</p>
+        <p className="ml-opening-hint">כל עולם שומר סוד חדש לזיכרון</p>
       </div>
     </main>
   );

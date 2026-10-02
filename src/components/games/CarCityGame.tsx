@@ -3,9 +3,8 @@ import type { Challenge } from '../../types';
 import type { CarPlateStimulus } from '../../engines/cars';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import type { GameProps } from './common';
+import { CalculatorKeypad } from './CalculatorKeypad';
 import './car-city.css';
-
-const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'] as const;
 
 export function CarCityGame({
   challenge,
@@ -63,12 +62,15 @@ export function CarCityGame({
               {entered || <span>{'—'.repeat(challenge.stimulus.plate.length)}</span>}
             </div>
             {phase === 'answer' ? (
-              <div className="ml-car-city__keypad">
-                {KEYS.map((digit) => <button key={digit} type="button" onClick={() => addDigit(digit)}>{digit}</button>)}
-                <button type="button" className="is-erase" aria-label="מחיקת ספרה" onClick={() => setEntered((value) => value.slice(0, -1))}>⌫</button>
-                <button type="button" onClick={() => addDigit('0')}>0</button>
-                <button type="button" className="is-submit" aria-label="בדיקת התשובה" disabled={entered.length !== challenge.stimulus.plate.length} onClick={submit}>✓</button>
-              </div>
+              <CalculatorKeypad
+                theme="cars"
+                className="ml-car-city__keypad"
+                onDigit={(digit) => addDigit(String(digit))}
+                onBackspace={() => setEntered((value) => value.slice(0, -1))}
+                onSubmit={submit}
+                backspaceDisabled={entered.length === 0}
+                submitDisabled={entered.length !== challenge.stimulus.plate.length}
+              />
             ) : null}
           </div>
         ) : (

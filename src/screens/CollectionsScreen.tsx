@@ -6,48 +6,85 @@ import { buyCollectible, equipCosmetic, getActiveProfile, ownsCollectible, useSt
 import { Character, HatGlyph } from '../components/svg/Memo';
 import { Coin, StarIcon } from '../components/svg/Icons';
 import type { AvatarKind } from '../types';
+import {
+  CITY_BUILD_PROJECT_COUNT,
+  cityBuildProject,
+  cityProjectCollectibleId,
+} from '../components/games/ConnectionsCityGame';
+import './meta-screens.css';
 
-type Tab = 'hat' | 'sticker' | 'theme';
+type Tab = 'build' | 'hat' | 'sticker' | 'theme';
 
 export function CollectionsScreen({ onExit }: { onExit: () => void }) {
   const coins = useStore((s) => s.coins);
-  useStore((s) => s.cosmetics);
+  const cosmetics = useStore((s) => s.cosmetics);
   const equipped = useStore((s) => s.equipped);
   const profile = getActiveProfile();
-  const [tab, setTab] = useState<Tab>('hat');
+  const [tab, setTab] = useState<Tab>('build');
+  const [notice, setNotice] = useState<string | null>(null);
 
-  const catalog: Record<Tab, Collectible[]> = { hat: HATS, sticker: STICKERS, theme: THEMES };
+  const catalog: Record<Exclude<Tab, 'build'>, Collectible[]> = { hat: HATS, sticker: STICKERS, theme: THEMES };
 
   return (
-    <div style={{ position: 'absolute', inset: 0, background: 'var(--gray-100)', overflowY: 'auto', color: 'var(--ink)' }}>
-      <header style={{ position: 'sticky', top: 0, zIndex: 3, background: 'var(--btn-purple)', color: '#fff', padding: 'calc(12px + var(--safe-top)) 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <b style={{ fontFamily: 'var(--font-head)', fontSize: 20 }}>🎒 האוספים שלי</b>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,.2)', padding: '4px 10px', borderRadius: 999, fontFamily: 'var(--font-head)', fontWeight: 700 }}>
+    <div className="ml-meta-screen ml-meta-screen--collections">
+      <div className="ml-meta-screen__backdrop" aria-hidden />
+      <header className="ml-meta-header">
+        <span className="ml-meta-header__icon" aria-hidden>🎒</span>
+        <div className="ml-meta-header__copy">
+          <small>האוצרות שמצאת בדרך</small>
+          <h1>האוספים שלי</h1>
+        </div>
+        <span className="ml-meta-coins" aria-label={`${coins} מטבעות`}>
           <Coin size={18} /> <span className="ltr">{coins}</span>
         </span>
-        <button onClick={onExit} style={{ background: '#fff', color: 'var(--ink)', border: 'none', borderRadius: 999, padding: '6px 14px', fontWeight: 700 }}>סגור</button>
+        <button className="ml-meta-close ml-pressable" onClick={onExit} aria-label="חזרה למפה">←</button>
       </header>
 
-      {/* תצוגת האוואטר עם הכובע */}
-      {profile && (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '14px 0 4px' }}>
-          <Character kind={profile.avatar} size={110} hat={equipped.hat} />
-        </div>
-      )}
+      <div className="ml-collection-hero">
+        {profile && <div className="ml-collection-hero__avatar"><Character kind={profile.avatar} size={118} hat={equipped.hat} /></div>}
+        <div className="ml-collection-hero__copy"><strong>המחסן של ההרפתקן</strong><span>בחרו פריט והפכו אותו לשלכם</span></div>
+      </div>
 
-      {/* לשוניות */}
-      <nav style={{ display: 'flex', gap: 6, padding: 10, position: 'sticky', top: 56, background: 'var(--gray-100)', zIndex: 2 }}>
-        {([['hat', 'לבוש'], ['sticker', 'מדבקות'], ['theme', 'רקעים']] as [Tab, string][]).map(([t, label]) => (
-          <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: 10, borderRadius: 10, border: 'none', fontWeight: 700, fontFamily: 'var(--font-head)', background: tab === t ? 'var(--btn-purple)' : 'var(--panel)', color: tab === t ? '#fff' : 'var(--ink)' }}>{label}</button>
+      <nav className="ml-collection-tabs" aria-label="סוג אוסף">
+        {([['build', 'בניות'], ['hat', 'לבוש'], ['sticker', 'מדבקות'], ['theme', 'רקעים']] as [Tab, string][]).map(([t, label]) => (
+          <button key={t} className={tab === t ? 'is-active' : ''} onClick={() => setTab(t)}>{label}</button>
         ))}
       </nav>
 
-      <div style={{ padding: '4px 14px 40px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        {catalog[tab].map((item) => (
-          <ItemCard key={item.id} item={item} coins={coins} kind={tab} equipped={equipped} />
-        ))}
+      {notice ? (
+        <button type="button" className="ml-collection-notice" onClick={() => setNotice(null)} aria-live="polite">
+          <span aria-hidden>✦</span> {notice}
+        </button>
+      ) : null}
+
+      <div className="ml-collection-grid">
+        {tab === 'build'
+          ? Array.from({ length: CITY_BUILD_PROJECT_COUNT }, (_, projectIndex) => {
+              const project = cityBuildProject(projectIndex);
+              const owned = cosmetics.some((item) => item.id === cityProjectCollectibleId(projectIndex));
+              return <CityBuildCard key={project.kind} projectIndex={projectIndex} owned={owned} />;
+            })
+          : catalog[tab].map((item) => (
+              <ItemCard key={item.id} item={item} coins={coins} kind={tab} equipped={equipped} onNotify={setNotice} />
+            ))}
       </div>
     </div>
+  );
+}
+
+function CityBuildCard({ projectIndex, owned }: { projectIndex: number; owned: boolean }) {
+  const project = cityBuildProject(projectIndex);
+  const name = project.title.replace(/^(בונים|מרכיבים)\s+/, '');
+  return (
+    <article className={`ml-collection-card ml-collection-card--build${owned ? ' is-owned' : ' is-locked'}`}>
+      <div className="ml-build-collectible" aria-hidden>
+        <span className="ml-build-collectible__star">✦</span>
+        <span className="ml-build-collectible__icon">{owned ? project.icon : '◇'}</span>
+        <span className="ml-build-collectible__path" />
+      </div>
+      <strong>{owned ? name : 'כרטיס מסתורי'}</strong>
+      <span className="ml-build-collectible__status">{owned ? 'הרווחת בעיר הקשרים' : 'השלימו 15 תרגילים כדי לגלות'}</span>
+    </article>
   );
 }
 
@@ -60,7 +97,7 @@ function ItemVisual({ item, kind }: { item: Collectible; kind: CollectibleKind }
   return <Character kind={stickerKind as AvatarKind} size={56} />;
 }
 
-function ItemCard({ item, coins, kind, equipped }: { item: Collectible; coins: number; kind: CollectibleKind; equipped: { hat?: string; theme?: string } }) {
+function ItemCard({ item, coins, kind, equipped, onNotify }: { item: Collectible; coins: number; kind: CollectibleKind; equipped: { hat?: string; theme?: string }; onNotify: (message: string) => void }) {
   const owned = ownsCollectible(item.id) || item.cost === 0;
   const isEquipped = (kind === 'hat' && equipped.hat === item.id) || (kind === 'theme' && (equipped.theme ?? 'theme.day') === item.id);
   const canEquip = kind === 'hat' || kind === 'theme';
@@ -68,27 +105,25 @@ function ItemCard({ item, coins, kind, equipped }: { item: Collectible; coins: n
   function act() {
     if (!owned) {
       if (!buyCollectible(item)) {
-        alert('אין מספיק מטבעות עדיין — תמשיך לאסוף!');
+        onNotify('עוד קצת מטבעות — והפריט הזה שלך!');
         return;
       }
+      onNotify(`${item.name} נוסף לאוסף שלך!`);
     }
     if (canEquip) equipCosmetic(kind as 'hat' | 'theme', item.id);
   }
 
   return (
-    <div style={{ background: 'var(--panel)', borderRadius: 14, padding: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, border: `2px solid ${isEquipped ? 'var(--btn-green)' : 'var(--gray-300)'}` }}>
-      <div style={{ height: 60, display: 'grid', placeItems: 'center' }}>
+    <div className={`ml-collection-card${isEquipped ? ' is-equipped' : ''}`}>
+      <div className="ml-collection-card__visual">
         <ItemVisual item={item} kind={kind} />
       </div>
-      <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 13, textAlign: 'center' }}>{item.name}</div>
+      <strong>{item.name}</strong>
       <button
+        className={`ml-collection-card__action${isEquipped ? ' is-equipped' : ''}`}
         onClick={act}
         disabled={owned && !canEquip}
-        style={{
-          width: '100%', padding: '7px 0', borderRadius: 10, border: 'none', fontWeight: 700, fontFamily: 'var(--font-head)', fontSize: 13,
-          background: isEquipped ? 'var(--btn-green)' : owned ? 'var(--btn-blue)' : coins >= item.cost ? 'var(--gold-deep)' : 'var(--gray-300)',
-          color: isEquipped || owned || coins >= item.cost ? '#fff' : 'var(--ink)',
-        }}
+        data-state={isEquipped ? 'equipped' : owned ? 'owned' : coins >= item.cost ? 'available' : 'locked'}
       >
         {isEquipped ? 'נבחר ✓' : owned ? (canEquip ? 'בחר' : 'בבעלותך') : (
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{item.cost} <Coin size={14} /></span>

@@ -15,7 +15,7 @@ import {
   type MultiplicationFact,
 } from '../../learning/multiplicationFacts';
 import { sfxCorrect, sfxLevelUp, sfxSoft } from '../../audio/sfx';
-import { useStore } from '../../state/store';
+import { addCosmetic, useStore } from '../../state/store';
 import {
   CITY_DISTRICT_BACK_ROW_SIZE,
   CITY_DISTRICT_BUILDING_COUNT,
@@ -26,6 +26,7 @@ import {
 import { MemoCompanion, type MemoBehavior } from './MemoCompanion';
 import type { GameProps } from './common';
 import './connections-city.css';
+import { CalculatorKeypad } from './CalculatorKeypad';
 
 type CityChallenge = Challenge<MultiplicationBaseStimulus | DerivedFactStimulus | FactLinkStimulus, number | string>;
 type CityPhase = 'answering' | 'reveal' | 'success';
@@ -34,7 +35,8 @@ export const CITY_HINT_ENTRY_COPY = 'רוצה רמז? ממו כאן לעזור';
 export const CITY_RETRY_COPY = 'כמעט, נסה שוב';
 export const CITY_SUCCESS_COPY = 'מצוין, העיר גדלה!';
 export const CITY_CORRECT_REVEAL_MS = 1_500;
-export const CITY_PROJECT_COMPLETE_MS = 2_600;
+export const CITY_SUCCESS_RESULT_MS = 1_920;
+export const CITY_PROJECT_COMPLETE_MS = 3_600;
 export const CITY_DISTRICT_CAPACITY = CITY_DISTRICT_BUILDING_COUNT;
 export const CITY_PUZZLE_COLUMNS = 5;
 export const CITY_PUZZLE_ROWS = 3;
@@ -136,6 +138,10 @@ export function cityBuildProject(projectIndex: number): CityBuildProject {
   return CITY_BUILD_PROJECTS[projectIndex % CITY_BUILD_PROJECTS.length];
 }
 
+export function cityProjectCollectibleId(projectIndex: number): string {
+  return `city.project.${cityBuildProject(projectIndex).kind}`;
+}
+
 export function cityProjectCelebration(totalBuilt: number): string | null {
   if (totalBuilt <= 0) return null;
   const model = cityDistrictProgress(totalBuilt);
@@ -145,7 +151,7 @@ export function cityProjectCelebration(totalBuilt: number): string | null {
 }
 
 export function citySuccessDelay(totalBuilt: number): number {
-  return cityDistrictProgress(totalBuilt).districtComplete ? CITY_PROJECT_COMPLETE_MS : 920;
+  return cityDistrictProgress(totalBuilt).districtComplete ? CITY_PROJECT_COMPLETE_MS : CITY_SUCCESS_RESULT_MS;
 }
 
 export function nextCityHelpLevel(_current: number): number {
@@ -277,12 +283,15 @@ function ProjectPuzzle({
           <stop offset="100%" stopColor="var(--project-main, #4e9fd8)" />
         </linearGradient>
         <g id={artId}>
-          <rect width="300" height="150" rx="18" fill={`url(#${gradientId})`} />
-          <circle cx="42" cy="31" r="20" fill="rgba(255,255,255,.42)" />
-          <circle cx="263" cy="120" r="29" fill="rgba(255,255,255,.18)" />
-          <circle cx="245" cy="24" r="5" fill="rgba(255,255,255,.72)" />
-          <circle cx="265" cy="42" r="3" fill="rgba(255,255,255,.66)" />
-          <text className="ml-city-game__puzzle-icon" x="150" y="118" textAnchor="middle">{project.icon}</text>
+          <rect width="300" height="150" rx="18" fill="#081d3d" />
+          <rect x="8" y="8" width="284" height="134" rx="14" fill={`url(#${gradientId})`} opacity=".68" />
+          <circle cx="150" cy="70" r="53" fill="rgba(19,52,99,.74)" stroke="rgba(255,221,111,.78)" strokeWidth="3" />
+          <circle cx="150" cy="70" r="43" fill="rgba(91,207,255,.17)" stroke="rgba(158,231,255,.48)" strokeWidth="2" />
+          <path d="M16 122 52 96l23 15 35-35 27 26 35-41 27 31 29-22 56 52Z" fill="rgba(5,18,47,.72)" />
+          <path d="M20 128h260" stroke="rgba(255,220,111,.66)" strokeWidth="3" strokeLinecap="round" />
+          <path d="M24 24h34M242 24h34M24 126h34M242 126h34" stroke="#ffe487" strokeWidth="3" strokeLinecap="round" />
+          <text className="ml-city-game__puzzle-icon" x="150" y="91" textAnchor="middle">{project.icon}</text>
+          <text className="ml-city-game__puzzle-mark" x="150" y="131" textAnchor="middle">MEMOLAND</text>
         </g>
         {pieces.map(({ part, path }) => (
           <clipPath key={part} id={`ml-city-puzzle-clip-${project.kind}-${part}`}>
@@ -499,8 +508,15 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
     setAttempts(completed);
     setPhase('success');
     setFeedback(null);
-    if (cityDistrictProgress(persistedMilestones + 1).districtComplete) sfxLevelUp();
-    else sfxCorrect();
+    const completedProgress = cityDistrictProgress(persistedMilestones + 1);
+    if (completedProgress.districtComplete) {
+      addCosmetic({
+        id: cityProjectCollectibleId(completedProgress.districtIndex),
+        kind: 'sticker',
+        name: cityBuildProject(completedProgress.districtIndex).title.replace(/^(בונים|מרכיבים)\s+/, ''),
+      });
+      sfxLevelUp();
+    } else sfxCorrect();
     finishAfter(citySuccessDelay(persistedMilestones + 1), () => {
       onResult({
         correct: true,
@@ -564,6 +580,7 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
           <div className="ml-city-game__project-complete">
             <span>{project.icon}</span>
             <strong>{project.completeCopy}</strong>
+            <small>כרטיס הבנייה נוסף לאוסף שלך</small>
           </div>
         ) : null}
         <MemoCompanion behavior={behavior} className="ml-city-game__memo" />
@@ -575,10 +592,10 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
           className={`ml-city-game__equation${helpLevel > 0 && phase === 'answering' ? ' is-cued' : ''}${phase === 'reveal' ? ' is-revealed' : ''}`}
           dir="ltr"
           aria-label={`${stimulus.displayA} כפול ${stimulus.displayB}`}
-          aria-live={phase === 'reveal' ? 'polite' : undefined}
+          aria-live={phase !== 'answering' ? 'polite' : undefined}
         >
           <span>{stimulus.displayA}</span><b>×</b><span>{stimulus.displayB}</span><b>=</b>
-          <span className="ml-city-game__unknown">{phase === 'reveal' ? expectedNumber : '?'}</span>
+          <span className="ml-city-game__unknown">{phase !== 'answering' ? expectedNumber : '?'}</span>
         </div>
 
         {type === 'link' && phase === 'answering' ? (
@@ -601,38 +618,22 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
             <div className={`ml-city-game__answer${phase === 'success' ? ' is-built' : ''}`} dir="ltr" aria-live="polite">
               {Array.from({ length: maxDigits }).map((_, index) => (
                 <span key={index} className="ml-city-game__answer-brick">
-                  {phase === 'reveal' ? String(expectedNumber)[index] : digits[index] ?? ''}
+                  {phase !== 'answering' ? String(expectedNumber)[index] : digits[index] ?? ''}
                 </span>
               ))}
             </div>
             {feedback ? <div className="ml-city-game__feedback" role="status">{feedback}</div> : null}
             {phase === 'answering' ? (
               <>
-                <div className="ml-city-game__calculator" dir="ltr" aria-label="מקלדת מחשבון">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
-                    <button
-                      key={digit}
-                      type="button"
-                      onClick={() => enterDigit(digit)}
-                      aria-label={`ספרה ${digit}`}
-                    >
-                      {digit}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    className="ml-city-game__backspace"
-                    onClick={eraseDigit}
-                    disabled={digits.length === 0}
-                    aria-label="מחיקת ספרה אחרונה"
-                  >
-                    <span aria-hidden>⌫</span>
-                  </button>
-                  <button type="button" onClick={() => enterDigit(0)} aria-label="ספרה 0">0</button>
-                  <button type="button" className="ml-city-game__build" onClick={submitDigits} disabled={digits.length === 0}>
-                    בדיקה
-                  </button>
-                </div>
+                <CalculatorKeypad
+                  theme="city"
+                  className="ml-city-game__calculator"
+                  onDigit={enterDigit}
+                  onBackspace={eraseDigit}
+                  onSubmit={submitDigits}
+                  backspaceDisabled={digits.length === 0}
+                  submitDisabled={digits.length === 0}
+                />
               </>
             ) : null}
           </>

@@ -691,9 +691,14 @@ function JourneySecretScreen({
 
   return (
     <div className="ml-journey-secret-screen">
-      <LandBackground land="numbers" />
+      <div className="ml-journey-secret-atmosphere" aria-hidden>
+        <span className="ml-journey-secret-star ml-journey-secret-star--one">✦</span>
+        <span className="ml-journey-secret-star ml-journey-secret-star--two">✦</span>
+        <span className="ml-journey-secret-star ml-journey-secret-star--three">✦</span>
+      </div>
+      <img className="ml-journey-secret-memo" src="./characters/memo-journey-map-wizard-v6.png" alt="" draggable={false} aria-hidden />
       <main className="ml-journey-secret-card" aria-live="polite">
-        <div className="ml-journey-secret-lock" aria-hidden>{recalling ? '🗝️' : '🔐'}</div>
+        <div className="ml-journey-secret-lock" aria-hidden><span>{recalling ? '🗝️' : '🔐'}</span></div>
         <span className="ml-journey-secret-eyebrow">סוד המסע</span>
         {!recalling ? (
           <>

@@ -213,7 +213,7 @@ export interface Settings {
 }
 
 /** דמות אווטאר לפרופיל (אחת מדמויות ה-Style Guide). */
-export type AvatarKind = 'memo' | 'water' | 'purple' | 'mushroom' | 'turtle';
+export type AvatarKind = 'memo' | 'mima' | 'dragonBoy' | 'dragonGirl' | 'water' | 'purple' | 'mushroom' | 'turtle';
 
 /** פרופיל משתמש — לכל ילד/משתמש התקדמות נפרדת. */
 export interface Profile {

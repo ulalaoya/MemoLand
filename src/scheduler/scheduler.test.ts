@@ -163,6 +163,17 @@ describe('בניית המסע היומי', () => {
     expect(rot(long)).toBeGreaterThan(rot(short));
   });
 
+  it('מציג במסע לפחות שני אתגרים שונים במערה ובשביל הגחליליות', () => {
+    const session = buildDailySession({}, 10, false, Date.UTC(2026, 9, 2));
+    const { activities } = buildActivities(session, [], 17);
+    const gameLands = activities
+      .filter((activity) => activity.kind === 'game')
+      .map((activity) => activity.landId);
+
+    expect(gameLands.filter((land) => land === 'echoes')).toHaveLength(2);
+    expect(gameLands.filter((land) => land === 'forest')).toHaveLength(2);
+  });
+
   it.each([10, 15, 20, 25])('כולל שני מקטעים מופרדים של 10 שאלות עיר ב-%i דקות', (minutes) => {
     const statCases: Record<string, ExerciseStats>[] = [
       {},
@@ -215,7 +226,7 @@ describe('בניית המסע היומי', () => {
       expect(cityIndexes[10] - cityIndexes[9]).toBeGreaterThan(1);
 
       const rotations = session.steps.filter((step) => step.kind === 'rotation');
-      expect(rotations).toHaveLength(minutes <= 10 ? 5 : minutes <= 15 ? 6 : minutes <= 20 ? 8 : 10);
+      expect(rotations).toHaveLength(minutes <= 15 ? 7 : minutes <= 20 ? 8 : 10);
       expect(rotations.every((step) => step.landId !== 'connections' && step.landId !== 'speed')).toBe(true);
       expect(new Set(session.steps.map((step) => step.landId).filter(Boolean))).toEqual(new Set(LAND_ORDER));
       expect(session.steps.find((step) => step.kind === 'speed')?.landId).toBe('speed');

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { MemoRank, Profile } from '../../types';
 import { rankLabel, rankProgress } from '../../state/rewards';
 import { Logo } from '../Logo';
@@ -74,18 +74,23 @@ export function PlayerHUD({
 
 function ParentAccessLogo({ onOpenParent }: { onOpenParent: () => void }) {
   const timer = useRef<number | null>(null);
+  const [holding, setHolding] = useState(false);
 
   function cancelHold() {
     if (timer.current !== null) window.clearTimeout(timer.current);
     timer.current = null;
+    setHolding(false);
   }
 
   function startHold() {
     if (timer.current !== null) return;
+    setHolding(true);
     timer.current = window.setTimeout(() => {
       timer.current = null;
+      setHolding(false);
+      if ('vibrate' in navigator) navigator.vibrate(35);
       onOpenParent();
-    }, 1800);
+    }, 1200);
   }
 
   useEffect(() => cancelHold, []);
@@ -93,7 +98,7 @@ function ParentAccessLogo({ onOpenParent }: { onOpenParent: () => void }) {
   return (
     <button
       type="button"
-      className="ml-player-hud__logo"
+      className={`ml-player-hud__logo${holding ? ' is-holding' : ''}`}
       aria-label="MemoLand"
       onPointerDown={startHold}
       onPointerUp={cancelHold}
@@ -106,6 +111,7 @@ function ParentAccessLogo({ onOpenParent }: { onOpenParent: () => void }) {
       onContextMenu={(event) => event.preventDefault()}
     >
       <Logo variant="compact" width={126} />
+      <span className="ml-player-hud__parent-hold" aria-hidden>המשיכו ללחוץ…</span>
     </button>
   );
 }

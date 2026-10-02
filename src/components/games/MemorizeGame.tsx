@@ -95,12 +95,13 @@ export function MemorizeGame({
     <div data-treasure-castle-game style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center', color: '#243247' }}>
       <MemoCompanion behavior={result === true ? 'success' : phase === 'input' ? 'thinking' : 'idle'} className="ml-castle-memo" />
       {phase === 'ready' && (
-        <div className="ml-castle-card ml-castle-card--ready" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 15, alignItems: 'center' }}>
+        <div className="ml-castle-card ml-castle-card--ready">
+          <span className="ml-castle-card__eyebrow">אתגר חדר האוצר</span>
           <CastleChest open={false} />
-          <p style={{ margin: 0, fontSize: 26, fontFamily: 'var(--font-head)', fontWeight: 800, lineHeight: 1.25 }}>
+          <p className="ml-castle-card__title">
             זכור את האוצרות לפי הסדר
           </p>
-          <p style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>האוצרות יופיעו לזמן קצר ואז ייכנסו לתיבה.</p>
+          <p className="ml-castle-card__description">האוצרות ינצנצו לרגע — שמור את הסדר ופתח את התיבה.</p>
           <Button variant="green" size="lg" onClick={run} icon="▶">פותחים את שער הטירה</Button>
         </div>
       )}

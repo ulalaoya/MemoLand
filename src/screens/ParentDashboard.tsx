@@ -12,6 +12,8 @@ import { EchoDiagnosticsPanel } from '../components/games/EchoDiagnosticsPanel';
 import { hasHebrewVoice, listHebrewVoices, speak } from '../audio/speech';
 import type { LandId, Settings } from '../types';
 import { MULTIPLICATION_FACTS, MULTIPLICATION_FACT_BY_ID } from '../learning/multiplicationFacts';
+import { CalculatorKeypad } from '../components/games/CalculatorKeypad';
+import './parent-dashboard.css';
 
 type View = 'day' | 'week' | 'month';
 type Tab = 'stats' | 'content' | 'settings';
@@ -50,32 +52,26 @@ export function ParentDashboard({
 
 function Gate({ pin, setPin, onSubmit, onCancel, error }: { pin: string; setPin: (s: string) => void; onSubmit: () => void; onCancel: () => void; error: boolean }) {
   return (
-    <div style={{ position: 'absolute', inset: 0, background: 'var(--gray-100)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, padding: 24 }}>
+    <div className="ml-parent-gate">
+      <span className="ml-parent-gate__eyebrow">גישה למבוגרים בלבד</span>
       <h2>אזור הורים</h2>
-      <p style={{ opacity: 0.7 }}>הזינו קוד בן 4 ספרות</p>
+      <p>הזינו קוד בן 4 ספרות</p>
       <div dir="ltr" style={{ display: 'flex', gap: 10 }}>
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} style={{ width: 40, height: 50, border: '2px solid var(--gray-300)', borderRadius: 10, display: 'grid', placeItems: 'center', fontSize: 26, fontFamily: 'var(--font-display)', background: 'var(--panel)' }}>
+          <div key={i} className="ml-parent-gate__digit">
             {pin[i] ? '•' : ''}
           </div>
         ))}
       </div>
-      {error && <div style={{ color: 'var(--btn-red)', fontWeight: 700 }}>קוד שגוי, נסו שוב</div>}
-      <div dir="ltr" aria-label="מקלדת מחשבון" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, width: 220 }}>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (
-          <button
-            key={d}
-            onClick={() => pin.length < 4 && setPin(pin + d)}
-            aria-label={`ספרה ${d}`}
-            style={{ padding: 14, fontSize: 22, fontFamily: 'var(--font-display)', borderRadius: 12, border: '2px solid var(--gray-300)', background: 'var(--panel)' }}
-          >
-            {d}
-          </button>
-        ))}
-        <button onClick={() => setPin(pin.slice(0, -1))} aria-label="מחק" style={{ padding: 14, fontSize: 22, borderRadius: 12, border: '2px solid var(--gray-300)', background: 'var(--panel)' }}>⌫</button>
-        <button onClick={() => pin.length < 4 && setPin(pin + '0')} aria-label="ספרה 0" style={{ padding: 14, fontSize: 22, fontFamily: 'var(--font-display)', borderRadius: 12, border: '2px solid var(--gray-300)', background: 'var(--panel)' }}>0</button>
-        <button onClick={onSubmit} disabled={pin.length < 4} aria-label="כניסה" style={{ padding: 14, fontSize: 22, color: '#fff', borderRadius: 12, border: '2px solid #fff', background: 'var(--btn-green)' }}>✓</button>
-      </div>
+      {error && <div className="ml-parent-gate__error">קוד שגוי, נסו שוב</div>}
+      <CalculatorKeypad
+        theme="parent"
+        onDigit={(digit) => pin.length < 4 && setPin(pin + digit)}
+        onBackspace={() => setPin(pin.slice(0, -1))}
+        onSubmit={onSubmit}
+        backspaceDisabled={pin.length === 0}
+        submitDisabled={pin.length < 4}
+      />
       <Button variant="red" onClick={onCancel}>ביטול</Button>
     </div>
   );
@@ -90,13 +86,13 @@ function Dashboard({
 }) {
   const [tab, setTab] = useState<Tab>('stats');
   return (
-    <div style={{ position: 'absolute', inset: 0, background: 'var(--gray-100)', overflowY: 'auto', color: 'var(--ink)' }}>
-      <header style={{ position: 'sticky', top: 0, zIndex: 3, background: 'var(--btn-blue)', color: '#fff', padding: 'calc(12px + var(--safe-top)) 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className="ml-parent-dashboard" style={{ position: 'absolute', inset: 0, background: 'var(--gray-100)', overflowY: 'auto', color: 'var(--ink)' }}>
+      <header className="ml-parent-dashboard__header" style={{ position: 'sticky', top: 0, zIndex: 3, background: 'var(--btn-blue)', color: '#fff', padding: 'calc(12px + var(--safe-top)) 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <b style={{ fontFamily: 'var(--font-head)', fontSize: 20 }}>אזור הורים</b>
         <button onClick={onExit} style={{ background: '#fff', color: 'var(--ink)', border: 'none', borderRadius: 999, padding: '6px 14px', fontWeight: 700 }}>יציאה</button>
       </header>
 
-      <nav style={{ display: 'flex', gap: 6, padding: 10, position: 'sticky', top: 56, background: 'var(--gray-100)', zIndex: 2 }}>
+      <nav className="ml-parent-dashboard__tabs" style={{ display: 'flex', gap: 6, padding: 10, position: 'sticky', top: 56, background: 'var(--gray-100)', zIndex: 2 }}>
         {([['stats', 'התקדמות'], ['content', 'ניהול תוכן'], ['settings', 'הגדרות']] as [Tab, string][]).map(([t, label]) => (
           <button
             key={t}

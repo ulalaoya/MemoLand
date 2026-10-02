@@ -1,0 +1,25 @@
+.ml-parent-gate {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 24px;
+  color: #f8fbff;
+  background:
+    linear-gradient(180deg, rgba(8, 20, 48, .58), rgba(5, 14, 35, .94)),
+    url('/worlds/memo-journey-map-v3.webp') center / cover;
+}
+.ml-parent-gate::before { content: '🔐'; width: 68px; height: 68px; display: grid; place-items: center; background: linear-gradient(180deg, #fff3ad, #f0b431); border: 3px solid #fff3c7; border-radius: 22px; box-shadow: 0 5px 0 #8d5a13, 0 13px 22px rgba(2, 9, 26, .36); font-size: 2rem; }
+.ml-parent-gate h2 { margin: 0; color: #fff; font-size: 2rem; text-shadow: 0 3px 0 #07162f; }
+.ml-parent-gate p { margin: -7px 0 2px; color: #ccecff; font-weight: 700; }
+.ml-parent-gate__eyebrow { color: #ffe17a; font-size: .75rem; font-weight: 900; }
+.ml-parent-gate__digit { width: 43px; height: 52px; display: grid; place-items: center; color: #182541; background: #fffdf3; border: 3px solid #74d5ff; border-radius: 13px; box-shadow: 0 4px 0 #17345d; font-family: var(--ml-font-display); font-size: 1.65rem; }
+.ml-parent-gate__error { color: #fff; background: #a92f48; border: 1px solid #ffc0ca; border-radius: 999px; padding: 5px 12px; font-weight: 800; }
+.ml-parent-gate .ml-calculator-keypad { width: min(100%, 320px); }
+
+.ml-parent-dashboard { background: #eef5f9 !important; }
+.ml-parent-dashboard__header { background: linear-gradient(135deg, #0d3159, #176d89) !important; box-shadow: 0 4px 12px rgba(8, 31, 57, .24); }
+.ml-parent-dashboard__tabs { background: rgba(238, 245, 249, .95) !important; backdrop-filter: blur(10px); }

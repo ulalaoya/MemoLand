@@ -46,9 +46,38 @@
   backdrop-filter: blur(8px);
 }
 
-.ml-castle-card--ready { gap: 8px !important; }
-.ml-castle-card--ready p:first-of-type { color: #202f46; }
-.ml-castle-card--ready p:nth-of-type(2) { color: #445267; }
+.ml-castle-card--ready {
+  overflow: visible;
+  padding: 17px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  text-align: center;
+  border-color: #ffe8a1;
+  background:
+    radial-gradient(circle at 50% 26%, rgba(116, 195, 255, .22), transparent 34%),
+    linear-gradient(155deg, rgba(33, 45, 88, .97), rgba(18, 20, 59, .98));
+  box-shadow: 0 7px 0 #090b26, 0 18px 34px rgba(5,7,27,.5), inset 0 0 0 3px rgba(218,170,47,.18);
+}
+.ml-castle-card--ready::before,
+.ml-castle-card--ready::after { color: #ffe17a; opacity: 1; }
+.ml-castle-card__eyebrow {
+  position: absolute;
+  top: -15px;
+  padding: 6px 18px 7px;
+  color: #4a3009;
+  background: linear-gradient(180deg, #fff3a4, #e9ad2b);
+  border: 2px solid #fff5c8;
+  border-radius: 999px;
+  box-shadow: 0 3px 0 #8c5910;
+  font-family: var(--ml-font-heading);
+  font-size: .78rem;
+  font-weight: 900;
+}
+.ml-castle-card__title { margin: -5px 0 0; color: #fff; font-family: var(--ml-font-heading); font-size: 1.45rem; font-weight: 900; line-height: 1.17; text-shadow: 0 2px 0 rgba(0,0,0,.3); }
+.ml-castle-card__description { margin: 0; color: #d7eaff; font-size: .98rem; font-weight: 700; line-height: 1.3; }
 .ml-castle-card--ready button {
   width: 100%;
   min-height: 58px;
@@ -202,4 +231,22 @@
   .ml-castle-preview-treasure,
   .ml-castle-chest-stage__rays,
   .ml-castle-chest-stage__spark { animation: none !important; }
+}
+
+/* The welcome card stays light, so every instructional word uses ink—not gold or white. */
+.ml-castle-card.ml-castle-card--ready {
+  color: #182541;
+  border-color: #f7e4a4;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 220, 105, .2), transparent 35%),
+    linear-gradient(150deg, rgba(255, 253, 246, .99), rgba(235, 237, 247, .99));
+}
+
+.ml-castle-card--ready .ml-castle-card__title {
+  color: #182541;
+  text-shadow: none;
+}
+
+.ml-castle-card--ready .ml-castle-card__description {
+  color: #3b4964;
 }

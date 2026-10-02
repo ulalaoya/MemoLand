@@ -1,24 +1,29 @@
-/* ממו והמדריכים — תמונות מקוריות מתוך ה-Branding Board, בתוך "אריח" לבן
-   מעוגל (בסגנון האייקון). נאמן לעיצוב שהתקבל. */
+/* חבורת הקוסמים של ממו — דמויות פנטזיה עקביות בתוך אריח קסום. */
 import type { CSSProperties } from 'react';
 import type { AvatarKind, MemoRank } from '../../types';
 
-type CharKind = AvatarKind; // 'memo' | 'water' | 'purple' | 'mushroom' | 'turtle'
+type CharKind = AvatarKind;
 
 const SRC: Record<CharKind, string> = {
-  memo: './characters/memo.png',
-  water: './characters/water.png',
-  purple: './characters/purple.png',
-  mushroom: './characters/mushroom.png',
-  turtle: './characters/turtle.png',
+  memo: './characters/memo-wizard-v3.png',
+  mima: './characters/mima-wizard-v1.png',
+  dragonBoy: './characters/dragon-boy-wizard-v1.png',
+  dragonGirl: './characters/dragon-girl-wizard-v1.png',
+  water: './characters/water-wizard-v3.png',
+  purple: './characters/purple-wizard-v3.png',
+  mushroom: './characters/forest-wizard-v3.png',
+  turtle: './characters/turtle-wizard-v3.png',
 };
 
 const LABEL: Record<CharKind, string> = {
   memo: 'ממו',
-  water: 'טיפת המים',
-  purple: 'המפלצת הסגולה',
-  mushroom: 'הפטרייה',
-  turtle: 'הצב',
+  mima: 'מימה',
+  dragonBoy: 'דרקון קוסם',
+  dragonGirl: 'דרקונית קוסמת',
+  water: 'קוסם המים',
+  purple: 'שומר הרונות',
+  mushroom: 'קוסם היער',
+  turtle: 'קוסם הדרכים',
 };
 
 /** אריח דמות — תמונה על רקע לבן מעוגל עם מסגרת עדינה וצל.
@@ -45,9 +50,10 @@ export function Character({
         width: size,
         height: size,
         borderRadius: Math.round(size * 0.26),
-        background: '#fff',
-        border: `${Math.max(2, size * 0.03)}px solid ${ring ?? 'var(--gray-300)'}`,
-        boxShadow: '0 3px 0 rgba(36,50,71,.18)',
+        overflow: 'hidden',
+        background: 'radial-gradient(circle at 44% 24%, #2c6a8f, #10264d 62%, #07162f)',
+        border: `${Math.max(2, size * 0.03)}px solid ${ring ?? 'rgba(255,220,117,.82)'}`,
+        boxShadow: '0 4px 0 rgba(4,13,35,.5), inset 0 1px rgba(255,255,255,.2), 0 8px 18px rgba(4,13,35,.25)',
         display: 'grid',
         placeItems: 'center',
         flexShrink: 0,
@@ -59,7 +65,7 @@ export function Character({
         src={SRC[kind]}
         alt={LABEL[kind]}
         draggable={false}
-        style={{ width: '92%', height: '92%', objectFit: 'contain', borderRadius: 'inherit' }}
+        style={{ width: '96%', height: '96%', objectFit: 'contain', borderRadius: 'inherit', filter: 'drop-shadow(0 5px 4px rgba(2,8,22,.35))' }}
       />
       {hat && (
         <div style={{ position: 'absolute', top: -size * 0.16, insetInlineEnd: size * 0.12, width: size * 0.5, height: size * 0.5 }}>

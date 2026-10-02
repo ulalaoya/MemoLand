@@ -32,7 +32,7 @@ describe('City child interaction', () => {
     expect(challenge.exerciseId).toBe('connections.direct');
     expect(html).toContain('כמה זה?');
     expect(html).toContain(cityModule.CITY_HINT_ENTRY_COPY);
-    expect(html).toContain('>בדיקה<');
+    expect(html).toContain('aria-label="אישור"');
     expect(html).not.toContain('ml-city-game__hint-panel');
     expect(html).not.toContain(`= ${challenge.answer}`);
     expect(html).not.toContain('עוד רמז');
@@ -144,9 +144,10 @@ describe('City child interaction', () => {
     expect(cityModule.cityProjectCelebration(30)).toBe('כל הכבוד! סיימת לבנות את פסל הלגו!');
     expect(cityModule.cityProjectCelebration(38)).toBe('מצוין, מכונית המרוץ מתקדמת!');
     expect(cityModule.cityProjectCelebration(45)).toBe('כל הכבוד! מכונית המרוץ מוכנה!');
-    expect(cityModule.citySuccessDelay(14)).toBe(920);
+    expect(cityModule.citySuccessDelay(14)).toBe(cityModule.CITY_SUCCESS_RESULT_MS);
+    expect(cityModule.CITY_SUCCESS_RESULT_MS).toBe(1_920);
     expect(cityModule.citySuccessDelay(15)).toBe(cityModule.CITY_PROJECT_COMPLETE_MS);
-    expect(cityModule.CITY_PROJECT_COMPLETE_MS).toBeGreaterThanOrEqual(2_500);
+    expect(cityModule.CITY_PROJECT_COMPLETE_MS).toBeGreaterThanOrEqual(3_500);
   });
 
   it('cycles through thirty distinct construction projects', () => {

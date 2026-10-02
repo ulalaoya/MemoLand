@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '../Button';
 import { StarIcon } from '../svg/Icons';
 import type { MultiplicationAttemptInput } from '../../types';
+import { CalculatorKeypad } from './CalculatorKeypad';
 
 /** תוצאה שכל משחק מדווח למעלה. */
 export interface GameResult {
@@ -36,41 +37,15 @@ export function NumberPad({
   submitDisabled?: boolean;
   color: string;
 }) {
-  const keyStyle: React.CSSProperties = {
-    fontFamily: 'var(--font-display)',
-    fontSize: 28,
-    background: 'var(--panel)',
-    color: 'var(--ink)',
-    border: '2px solid var(--gray-300)',
-    borderRadius: 14,
-    padding: '14px 0',
-    boxShadow: '0 3px 0 rgba(36,50,71,.2)',
-    cursor: 'pointer',
-  };
   return (
-    <div style={{ width: '100%', maxWidth: 320, margin: '0 auto' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }} dir="ltr">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (
-          <button key={d} style={keyStyle} onClick={() => onDigit(d)} aria-label={`ספרה ${d}`}>
-            {d}
-          </button>
-        ))}
-        <button style={{ ...keyStyle, fontSize: 20, color: 'var(--btn-orange)' }} onClick={onBackspace} aria-label="מחק">
-          ⌫
-        </button>
-        <button style={keyStyle} onClick={() => onDigit(0)} aria-label="ספרה 0">
-          0
-        </button>
-        <button
-          style={{ ...keyStyle, background: color, color: '#fff', border: '2px solid #fff' }}
-          onClick={onSubmit}
-          disabled={submitDisabled}
-          aria-label="אישור"
-        >
-          ✓
-        </button>
-      </div>
-    </div>
+    <CalculatorKeypad
+      theme="city"
+      onDigit={onDigit}
+      onBackspace={onBackspace}
+      onSubmit={onSubmit}
+      submitDisabled={submitDisabled}
+      style={{ '--submit-top': color, '--submit-bottom': color } as React.CSSProperties}
+    />
   );
 }
 

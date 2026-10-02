@@ -458,6 +458,22 @@
   stroke-width: 3px;
 }
 
+.ml-city-game__puzzle-mark {
+  fill: rgba(255, 239, 184, .88);
+  font-family: var(--ml-font-display);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.ml-city-game__project-complete small {
+  display: block;
+  margin-top: 4px;
+  color: #fff0aa;
+  font-size: .72rem;
+  font-weight: 850;
+}
+
 .ml-city-game__puzzle-piece.is-just-built {
   transform-box: fill-box;
   transform-origin: center;
@@ -558,28 +574,7 @@
 .ml-city-game__answer.is-built { animation: ml-city-block-built 760ms var(--ml-ease-spring) both; }
 .ml-city-game__feedback { margin-top: -4px; color: #8a4a2e; font-family: var(--ml-font-heading); font-weight: 800; font-size: .88rem; }
 
-.ml-city-game__calculator {
-  width: min(100%, 292px);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-.ml-city-game__calculator button {
-  min-width: 0;
-  min-height: 43px;
-  color: #243247;
-  background: linear-gradient(#fff, #e7faf7);
-  border: 2px solid #62bdb8;
-  border-radius: 11px;
-  box-shadow: 0 4px 0 #368f8c;
-  font-family: var(--ml-font-display);
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-.ml-city-game__calculator button:active { transform: translateY(3px); box-shadow: 0 1px 0 #368f8c; }
-.ml-city-game__calculator button:disabled { opacity: .45; cursor: default; }
-.ml-city-game__calculator .ml-city-game__backspace { color: #743f25; background: #fff3df; border-color: #e6a96a; box-shadow: 0 4px 0 #b7763c; font-size: 1.65rem; }
-.ml-city-game__calculator .ml-city-game__build { color: #fff; background: #138f91; border-color: #fff; box-shadow: 0 4px 0 #0d686c; font-family: var(--ml-font-heading); font-size: 1rem; }
+.ml-city-game__calculator { width: min(100%, 292px); }
 
 .ml-city-game__help {
   min-height: 43px;
@@ -696,7 +691,6 @@
   .ml-city-game__worksite { padding-inline: 9px; gap: 6px; }
   .ml-city-game__equation { font-size: 3rem; }
   .ml-city-game__calculator { gap: 5px; }
-  .ml-city-game__calculator button { min-height: 41px; }
   .ml-city-game__help-zone { margin-top: 8px; padding-top: 8px; }
   .ml-city-game__hint-step { grid-template-columns: 55px 1fr; gap: 3px; padding-inline: 4px; font-size: .76rem; }
 }
@@ -709,7 +703,6 @@
   .ml-city-game__equation { font-size: clamp(3rem, 13vw, 3.5rem); }
   .ml-city-game__answer { min-height: 48px; }
   .ml-city-game__answer-brick { width: 44px; height: 46px; font-size: 1.65rem; }
-  .ml-city-game__calculator button { min-height: 38px; }
   .ml-city-game__help-zone { margin-top: 6px; padding-top: 6px; }
 }
 
@@ -842,7 +835,7 @@
   left: 50%;
   bottom: calc(12px + var(--ml-safe-bottom, 0px));
   width: min(calc(100% - 24px), 354px);
-  max-height: min(68%, 480px);
+  max-height: min(calc(100% - 138px), 520px);
   padding: 12px 13px 13px;
   overflow-y: auto;
   gap: 7px;
@@ -854,6 +847,11 @@
     linear-gradient(155deg, rgba(12, 52, 69, .98), rgba(6, 27, 48, .98));
   box-shadow: 0 8px 0 rgba(3, 15, 28, .82), 0 20px 34px rgba(3, 15, 28, .42), inset 0 1px rgba(255,255,255,.2);
   transform: translateX(-50%);
+  scrollbar-gutter: stable;
+}
+
+.ml-city-game.is-hint-open .ml-city-game__worksite {
+  max-height: min(calc(100% - 112px), 548px);
 }
 
 .ml-city-game__worksite::before,
@@ -883,9 +881,11 @@
 }
 .ml-city-game__help-zone { margin-top: 3px; padding-top: 7px; border-top-color: rgba(222,245,255,.22); }
 .ml-city-game__help { color: #dff8ff; border-color: rgba(222,245,255,.4); }
+.ml-city-game__hint-panel { margin-bottom: 2px; }
 
 @media (max-width: 359px), (max-height: 700px) {
   .ml-city-game__puzzle { height: 118px; }
   .ml-city-game__memo { top: 119px; --ml-memo-size: 56px; }
-  .ml-city-game__worksite { max-height: 70%; padding: 9px 10px 10px; gap: 5px; }
+  .ml-city-game__worksite { max-height: calc(100% - 108px); padding: 9px 10px 10px; gap: 5px; }
+  .ml-city-game.is-hint-open .ml-city-game__worksite { max-height: calc(100% - 88px); }
 }

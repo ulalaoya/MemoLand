@@ -1,7 +1,7 @@
 /* כפתור לפי ה-Style Guide: פינות 14px, מילוי מלא, מתאר לבן 2px,
    צל תחתון, אייקון בצד ההתחלה (ימין ב-RTL), טקסט לבן 700.
    לחיצה = ירידה 3px וצל מתקצר. */
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react';
 
 type Variant = 'blue' | 'green' | 'orange' | 'purple' | 'red' | 'gold';
 
@@ -25,28 +25,14 @@ export function Button({ variant = 'blue', icon, size = 'md', block, children, s
   return (
     <button
       {...rest}
-      className={`ml-btn ${rest.className ?? ''}`}
+      className={`ml-btn ml-btn--${variant} ml-btn--${size}${block ? ' ml-btn--block' : ''} ${rest.className ?? ''}`}
       style={{
-        display: block ? 'flex' : 'inline-flex',
-        width: block ? '100%' : undefined,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 10,
-        background: BG[variant],
-        color: '#fff',
-        fontWeight: 700,
-        fontSize: size === 'lg' ? 22 : 18,
-        padding: size === 'lg' ? '16px 26px' : '12px 20px',
-        border: '2px solid #fff',
-        borderRadius: 14,
-        boxShadow: 'var(--btn-shadow)',
-        transition: 'transform .08s, box-shadow .08s',
-        textShadow: '0 1px 1px rgba(36,50,71,.35)',
+        '--ml-btn-color': BG[variant],
         ...style,
-      }}
+      } as CSSProperties}
     >
-      {icon}
-      <span>{children}</span>
+      {icon ? <span className="ml-btn__icon" aria-hidden>{icon}</span> : null}
+      <span className="ml-btn__label">{children}</span>
     </button>
   );
 }

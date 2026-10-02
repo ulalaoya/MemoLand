@@ -2,23 +2,27 @@ import { useRef, useState } from 'react';
 import type { Challenge } from '../../types';
 import type { PatternStimulus, Shape, Token } from '../../engines/patterns';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
-import { FeedbackBanner } from './common';
 import type { GameProps } from './common';
 import { MemoCompanion } from './MemoCompanion';
 
-const INK = 'var(--ink)';
-
 function ShapeGlyph({ shape, color, size = 46 }: { shape: Shape; color: string; size?: number }) {
-  const c = { width: size, height: size, viewBox: '0 0 46 46' } as const;
+  const c = {
+    className: 'ml-pattern-rune',
+    width: size,
+    height: size,
+    viewBox: '0 0 52 52',
+    style: { '--ml-rune-color': color } as React.CSSProperties,
+  } as const;
+  const frame = <path className="ml-pattern-rune__crystal" d="M26 2 46 14 48 37 31 50 9 43 3 20 14 7Z" />;
   switch (shape) {
     case 'circle':
-      return <svg {...c}><circle cx="23" cy="23" r="17" fill={color} stroke={INK} strokeWidth="3" /></svg>;
+      return <svg {...c}>{frame}<circle className="ml-pattern-rune__symbol" cx="26" cy="26" r="12" /></svg>;
     case 'square':
-      return <svg {...c}><rect x="7" y="7" width="32" height="32" rx="5" fill={color} stroke={INK} strokeWidth="3" /></svg>;
+      return <svg {...c}>{frame}<rect className="ml-pattern-rune__symbol" x="15" y="15" width="22" height="22" rx="3" transform="rotate(8 26 26)" /></svg>;
     case 'triangle':
-      return <svg {...c}><path d="M23 6 L40 38 L6 38 Z" fill={color} stroke={INK} strokeWidth="3" strokeLinejoin="round" /></svg>;
+      return <svg {...c}>{frame}<path className="ml-pattern-rune__symbol" d="M26 12 40 38H12Z" /></svg>;
     case 'star':
-      return <svg {...c}><path d="M23 5l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill={color} stroke={INK} strokeWidth="3" strokeLinejoin="round" /></svg>;
+      return <svg {...c}>{frame}<path className="ml-pattern-rune__symbol" d="m26 10 4.8 10 11 .9-8.4 7.2 2.7 10.7-10.1-5.7-10.1 5.7 2.7-10.7-8.4-7.2 11-.9Z" /></svg>;
   }
 }
 
@@ -39,38 +43,49 @@ export function PatternGame({
     setTimeout(() => onResult({ correct, rtMs: performance.now() - startRef.current }), 1300);
   }
 
-  const box = (children: React.ReactNode, key: React.Key, extra?: React.CSSProperties) => (
-    <div key={key} style={{ width: 56, height: 56, display: 'grid', placeItems: 'center', background: 'var(--panel)', border: '2px solid var(--gray-300)', borderRadius: 12, ...extra }}>
+  const box = (children: React.ReactNode, key: React.Key, isQuestion = false) => (
+    <div key={key} className={`ml-pattern-token${isQuestion ? ' is-question' : ''}`}>
       {children}
     </div>
   );
 
   return (
-    <div data-pattern-game style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center' }}>
+    <div data-pattern-game>
       <MemoCompanion behavior={chosen === null ? 'thinking' : chosen === challenge.answer ? 'success' : 'idle'} className="ml-pattern-memo" />
-      <p className="ml-pattern-prompt" style={{ fontSize: 25, fontFamily: 'var(--font-head)', fontWeight: 700 }}>{challenge.prompt}</p>
+      <header className="ml-pattern-prompt">
+        <span aria-hidden>✦</span>
+        <p>{challenge.prompt}</p>
+        <small>פענחו את רצף אבני־הקסם</small>
+      </header>
 
-      {/* הרצף */}
-      <div className="ml-pattern-sequence" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
+      <div className="ml-pattern-sequence" aria-label="רצף אבני הקסם">
         {stim.sequence.map((t: Token, i) => box(<ShapeGlyph shape={t.shape} color={t.color} />, `s${i}`))}
-        {box(<span style={{ fontFamily: 'var(--font-display)', fontSize: 30, color }}>?</span>, 'q', { borderColor: color, borderWidth: 3, background: 'var(--gray-100)' })}
+        {box(<span className="ml-pattern-token__question" style={{ color }}>?</span>, 'q', true)}
       </div>
 
-      {/* אפשרויות */}
-      <div className="ml-pattern-options" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div className="ml-pattern-options" aria-label="אפשרויות להשלמת התבנית">
         {stim.options.map((t: Token, i) => {
           const isChosen = chosen === i;
           const isAnswer = i === challenge.answer;
-          const bg = chosen !== null ? (isAnswer ? 'var(--btn-green)' : isChosen ? color : 'var(--panel)') : 'var(--panel)';
           return (
-            <button className="ml-pattern-option" key={i} onClick={() => pick(i)} style={{ width: 68, height: 68, display: 'grid', placeItems: 'center', background: bg, border: '3px solid var(--gray-300)', borderRadius: 16, boxShadow: '0 3px 0 rgba(36,50,71,.15)' }}>
+            <button
+              type="button"
+              className={`ml-pattern-option${isChosen ? ' is-chosen' : ''}${chosen !== null && isAnswer ? ' is-answer' : ''}`}
+              key={i}
+              onClick={() => pick(i)}
+              disabled={chosen !== null}
+            >
               <ShapeGlyph shape={t.shape} color={t.color} size={44} />
             </button>
           );
         })}
       </div>
 
-      {chosen !== null && <FeedbackBanner correct={chosen === challenge.answer} />}
+      {chosen !== null && (
+        <div className={`ml-pattern-result ${chosen === challenge.answer ? 'is-correct' : 'is-retry'}`} aria-live="polite">
+          {chosen === challenge.answer ? 'השער נדלק — פתרת את התבנית!' : 'ההרים משנים צורה… נסו שוב'}
+        </div>
+      )}
     </div>
   );
 }

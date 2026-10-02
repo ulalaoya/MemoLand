@@ -7,6 +7,7 @@ import { Medal } from '../components/svg/Icons';
 import { LandIcon } from '../components/svg/LandIcon';
 import { Button } from '../components/Button';
 import type { Medal as MedalType } from '../types';
+import './meta-screens.css';
 
 const MEDAL_DEFS: { id: string; tier: MedalType['tier']; name: string; desc: string }[] = [
   { id: 'streak7', tier: 'gold', name: 'שבוע רצוף', desc: '7 ימים ברצף' },
@@ -24,25 +25,34 @@ export function AchievementsScreen({ onExit }: { onExit: () => void }) {
     Math.max(1, ...enginesForLand(land).map((e) => stats[e.id]?.level ?? 1));
 
   return (
-    <div style={{ position: 'absolute', inset: 0, background: 'var(--gray-100)', overflowY: 'auto', color: 'var(--ink)' }}>
-      <header style={{ position: 'sticky', top: 0, zIndex: 3, background: 'var(--btn-orange)', color: '#fff', padding: 'calc(12px + var(--safe-top)) 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <b style={{ fontFamily: 'var(--font-head)', fontSize: 20 }}>🏆 ההישגים שלי</b>
-        <button onClick={onExit} style={{ background: '#fff', color: 'var(--ink)', border: 'none', borderRadius: 999, padding: '6px 14px', fontWeight: 700 }}>סגור</button>
+    <div className="ml-meta-screen ml-meta-screen--achievements">
+      <div className="ml-meta-screen__backdrop" aria-hidden />
+      <header className="ml-meta-header">
+        <span className="ml-meta-header__icon" aria-hidden>🏆</span>
+        <div className="ml-meta-header__copy">
+          <small>יומן ההרפתקה</small>
+          <h1>ההישגים שלי</h1>
+        </div>
+        <button className="ml-meta-close ml-pressable" onClick={onExit} aria-label="חזרה למפה">←</button>
       </header>
 
-      <div style={{ padding: '14px 14px 40px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <section>
-          <h3 style={{ marginBottom: 8 }}>מדליות</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+      <div className="ml-meta-content">
+        <section className="ml-meta-panel">
+          <div className="ml-meta-section-title">
+            <span aria-hidden>✦</span>
+            <h2>אולם המדליות</h2>
+            <small>כל רגע אמיץ נשמר כאן</small>
+          </div>
+          <div className="ml-achievement-grid">
             {MEDAL_DEFS.map((m) => {
               const has = earnedIds.has(m.id);
               return (
-                <div key={m.id} style={{ background: 'var(--panel)', borderRadius: 14, padding: 12, display: 'flex', alignItems: 'center', gap: 10, border: '2px solid var(--gray-300)', opacity: has ? 1 : 0.5, filter: has ? undefined : 'grayscale(1)' }}>
-                  <Medal tier={m.tier} size={40} />
-                  <div>
-                    <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 14 }}>{m.name}</div>
-                    <div style={{ fontSize: 12, opacity: 0.7 }}>{m.desc}</div>
-                    {!has && <div style={{ fontSize: 11, color: 'var(--btn-orange)', fontWeight: 700 }}>עדיין נעול</div>}
+                <div key={m.id} className={`ml-achievement-card${has ? ' is-earned' : ' is-locked'}`}>
+                  <span className="ml-achievement-card__medal"><Medal tier={m.tier} size={48} /></span>
+                  <div className="ml-achievement-card__copy">
+                    <strong>{m.name}</strong>
+                    <span>{m.desc}</span>
+                    {!has && <small>🔒 עדיין נעול</small>}
                   </div>
                 </div>
               );
@@ -50,23 +60,27 @@ export function AchievementsScreen({ onExit }: { onExit: () => void }) {
           </div>
         </section>
 
-        <section>
-          <h3 style={{ marginBottom: 8 }}>יעד לכל עולם</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <section className="ml-meta-panel">
+          <div className="ml-meta-section-title">
+            <span aria-hidden>🗺️</span>
+            <h2>המסע בין העולמות</h2>
+            <small>הדרך שלך ממשיכה להתמלא</small>
+          </div>
+          <div className="ml-world-goals">
             {WORLD_GOALS.map((g) => {
               const lvl = landMaxLevel(g.land);
               const pct = Math.min(1, lvl / g.targetLevel);
               const done = lvl >= g.targetLevel;
               const color = landColor(g.land);
               return (
-                <div key={g.land} style={{ background: 'var(--panel)', borderRadius: 14, padding: 10, display: 'flex', alignItems: 'center', gap: 10, border: `2px solid ${color}` }}>
-                  <LandIcon land={g.land} size={44} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 14, color }}>{LANDS[g.land].name} {done && '✓'}</div>
-                    <div style={{ height: 9, background: 'var(--gray-300)', borderRadius: 999, overflow: 'hidden', margin: '5px 0 2px' }}>
-                      <div style={{ width: `${pct * 100}%`, height: '100%', background: color }} />
+                <div key={g.land} className={`ml-world-goal${done ? ' is-done' : ''}`} style={{ '--world-color': color } as React.CSSProperties}>
+                  <span className="ml-world-goal__icon"><LandIcon land={g.land} size={48} /></span>
+                  <div className="ml-world-goal__copy">
+                    <strong>{LANDS[g.land].name} {done && '✓'}</strong>
+                    <div className="ml-world-goal__track">
+                      <div style={{ width: `${pct * 100}%` }} />
                     </div>
-                    <div style={{ fontSize: 11, opacity: 0.7 }}>רמה <span className="ltr">{lvl}/{g.targetLevel}</span></div>
+                    <small>רמה <span className="ltr">{lvl}/{g.targetLevel}</span></small>
                   </div>
                 </div>
               );
@@ -74,7 +88,7 @@ export function AchievementsScreen({ onExit }: { onExit: () => void }) {
           </div>
         </section>
 
-        <Button variant="orange" block onClick={onExit}>חזרה למפה</Button>
+        <Button variant="orange" size="lg" block onClick={onExit} icon="🗺️">חזרה למפה</Button>
       </div>
     </div>
   );

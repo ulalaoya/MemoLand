@@ -114,6 +114,48 @@ button {
   cursor: pointer;
 }
 
+.ml-btn {
+  position: relative;
+  min-height: 52px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 22px;
+  color: #fff;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .28), transparent 46%),
+    var(--ml-btn-color, var(--btn-blue));
+  border: 3px solid rgba(255, 255, 255, .95);
+  border-radius: 18px;
+  box-shadow: 0 5px 0 color-mix(in srgb, var(--ml-btn-color, var(--btn-blue)) 66%, #14233b), 0 10px 20px rgba(13, 31, 55, .22), inset 0 2px 0 rgba(255, 255, 255, .34);
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 2px 1px rgba(20, 38, 62, .3);
+  transition: transform 90ms ease, box-shadow 90ms ease, filter 160ms ease;
+}
+
+.ml-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 -36%;
+  width: 24%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.34), transparent);
+  transform: skewX(-18deg);
+  transition: left 280ms ease;
+}
+
+.ml-btn:hover::before { left: 112%; }
+.ml-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 color-mix(in srgb, var(--ml-btn-color, var(--btn-blue)) 66%, #14233b), 0 5px 12px rgba(13,31,55,.2); }
+.ml-btn:disabled { cursor: default; opacity: .56; filter: saturate(.55); }
+.ml-btn--lg { min-height: 61px; padding: 15px 26px; border-radius: 20px; font-size: 21px; }
+.ml-btn--block { width: 100%; display: flex; }
+.ml-btn__icon, .ml-btn__label { position: relative; z-index: 1; }
+.ml-btn__icon { display: inline-grid; place-items: center; }
+
 /* מספרים ומילים באנגלית נשארים LTR בתוך טקסט עברי */
 .ltr {
   direction: ltr;

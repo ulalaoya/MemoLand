@@ -21,6 +21,9 @@ export const HATS: Collectible[] = [
 /** מדבקות דמויות לאיסוף. */
 export const STICKERS: Collectible[] = [
   { id: 'sticker.memo', kind: 'sticker', name: 'ממו', cost: 80 },
+  { id: 'sticker.mima', kind: 'sticker', name: 'מימה', cost: 80 },
+  { id: 'sticker.dragonBoy', kind: 'sticker', name: 'דרקון קוסם', cost: 100 },
+  { id: 'sticker.dragonGirl', kind: 'sticker', name: 'דרקונית קוסמת', cost: 100 },
   { id: 'sticker.water', kind: 'sticker', name: 'טיפת המים', cost: 80 },
   { id: 'sticker.purple', kind: 'sticker', name: 'המפלצת הסגולה', cost: 80 },
   { id: 'sticker.mushroom', kind: 'sticker', name: 'הפטרייה', cost: 80 },

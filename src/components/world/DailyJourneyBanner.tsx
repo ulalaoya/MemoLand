@@ -11,11 +11,11 @@ interface DailyJourneyBannerProps {
 export function DailyJourneyBanner({ todayPoints, dailyGoal, status, onStart }: DailyJourneyBannerProps) {
   const progress = Math.max(0, Math.min(1, todayPoints / dailyGoal));
   const completed = status === 'completed';
-  const action = status === 'in-progress' ? 'ממשיכים במסע' : 'יוצאים לדרך';
+  const action = status === 'in-progress' ? 'ממשיכים במסע' : 'מתחילים מסע יומי';
   const title = completed
     ? 'המסע הושלם. לאן בא לך ללכת עכשיו?'
     : status === 'in-progress'
-      ? 'ממשיכים במסע'
+      ? 'המסע ממשיך מכאן'
       : 'המסע של היום';
   const description = completed
     ? 'כל העולמות פתוחים למשחק חופשי.'
@@ -30,14 +30,14 @@ export function DailyJourneyBanner({ todayPoints, dailyGoal, status, onStart }: 
       aria-label={completed ? 'המסע של היום הושלם' : action}
     >
       <span className="ml-daily-journey__art" aria-hidden>
-        <img src="./characters/memo-journey-map-v3.png" alt="" draggable={false} />
+        <img src="./characters/memo-journey-map-wizard-v6.png" alt="" draggable={false} />
         <span className="ml-daily-journey__spark ml-daily-journey__spark--one">✦</span>
         <span className="ml-daily-journey__spark ml-daily-journey__spark--two">✦</span>
         <span className="ml-daily-journey__spark ml-daily-journey__spark--three">✦</span>
       </span>
 
       <span className="ml-daily-journey__copy">
-        <span className="ml-daily-journey__eyebrow">מפת ההרפתקה · המסע היומי</span>
+        <span className="ml-daily-journey__eyebrow">מפת ההרפתקה</span>
         <strong>{title}</strong>
         {description ? <span className="ml-daily-journey__description">{description}</span> : null}
         <span className="ml-daily-journey__progress" aria-label={`${todayPoints} מתוך ${dailyGoal} נקודות היום`}>

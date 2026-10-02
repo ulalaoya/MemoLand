@@ -1,10 +1,10 @@
 /* מסך סיום המסע — פשוט ונקי. ספירת מטבעות מתגלגלת, שיא אישי, ותיבת אוצר
    שנותנת צ'ופר (מטבעות בונוס). בלי נצנצים מיותרים. */
 import { useEffect, useRef, useState } from 'react';
-import { addCoins, getActiveProfile, useStore } from '../state/store';
+import { addCoins, useStore } from '../state/store';
 import { Button } from '../components/Button';
 import { Coin, Medal, StarIcon } from '../components/svg/Icons';
-import { Character } from '../components/svg/Memo';
+import './meta-screens.css';
 
 export interface JourneyResult {
   coinsStart: number;
@@ -19,7 +19,6 @@ export interface JourneyResult {
 
 export function TreasureScreen({ result, onHome }: { result: JourneyResult; onHome: () => void }) {
   const medals = useStore((s) => s.medals);
-  const profile = getActiveProfile();
   const [display, setDisplay] = useState(result.coinsStart);
   const [opened, setOpened] = useState(false);
   const bonusRef = useRef(20 + Math.floor(Math.random() * 30));
@@ -49,30 +48,32 @@ export function TreasureScreen({ result, onHome }: { result: JourneyResult; onHo
   }
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', background: 'linear-gradient(#3a2b6b,#171233)', color: '#fff', textAlign: 'center', paddingTop: 'calc(28px + var(--safe-top))' }}>
-      <div style={{ padding: '0 20px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
-        <h1 style={{ fontFamily: 'var(--font-head)', fontSize: 28 }}>כבשת את המסע של היום!</h1>
-        {profile && <Character kind={profile.avatar} size={116} bounce />}
+    <div className="ml-treasure-finale">
+      <div className="ml-treasure-finale__backdrop" aria-hidden />
+      <div className="ml-treasure-finale__content">
+        <span className="ml-treasure-finale__eyebrow">המסע הושלם</span>
+        <h1>כבשת את המסע של היום!</h1>
+        <img className="ml-treasure-finale__memo" src="./characters/memo-journey-map-wizard-v6.png" alt="" draggable={false} aria-hidden />
 
         {/* מטבעות מתגלגלים */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'var(--font-display)', fontSize: 44 }}>
+        <div className="ml-treasure-finale__coins" aria-label={`${display} מטבעות`}>
           <Coin size={40} />
           <span className="ltr">{display}</span>
         </div>
 
         {/* שיא אישי */}
-        <div style={{ background: 'rgba(255,255,255,.12)', borderRadius: 18, padding: 16, width: '100%', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="ml-treasure-finale__stats">
           <Row icon={<StarIcon size={22} />} label="דיוק היום" value={`${accuracy}%`} />
           <Row icon={<span style={{ fontSize: 20 }}>🔥</span>} label="רצף ימים" value={`${result.streakDays}`} />
           {result.bestSpan > 0 && <Row icon={<Coin size={20} />} label="השיא שלך" value={`${result.bestSpan} פריטים`} />}
         </div>
 
         {result.castleOpened && (
-          <div style={{ fontSize: 22, fontFamily: 'var(--font-head)', fontWeight: 700 }}>🏰 פתחת טירה חדשה!</div>
+          <div className="ml-treasure-finale__notice">🏰 פתחת טירה חדשה!</div>
         )}
 
         {newestMedal && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="ml-treasure-finale__medal">
             <Medal tier={newestMedal.tier} size={44} />
             <span style={{ fontFamily: 'var(--font-head)', fontWeight: 700 }}>מדליה חדשה!</span>
           </div>
@@ -80,20 +81,20 @@ export function TreasureScreen({ result, onHome }: { result: JourneyResult; onHo
 
         {/* תיבת האוצר — צ'ופר */}
         {!opened ? (
-          <button onClick={openBox} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+          <button className="ml-treasure-finale__chest" onClick={openBox}>
             <TreasureBox open={false} />
-            <div style={{ color: '#fff', fontFamily: 'var(--font-head)', fontWeight: 700, marginTop: 6 }}>הקש לפתיחת תיבת האוצר</div>
+            <strong>הקש לפתיחת תיבת האוצר</strong>
           </button>
         ) : (
-          <div style={{ animation: 'pop .4s ease', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+          <div className="ml-treasure-finale__chest is-open">
             <TreasureBox open />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'var(--font-head)', fontWeight: 700 }}>
+            <strong>
               <Coin size={22} /> צ'ופר: +{bonusRef.current} מטבעות!
-            </div>
+            </strong>
           </div>
         )}
 
-        <Button variant="green" size="lg" onClick={onHome} icon="🏠" style={{ marginTop: 8 }}>
+        <Button variant="green" size="lg" block onClick={onHome} icon="🗺️">
           חזרה למפה
         </Button>
       </div>
@@ -103,8 +104,8 @@ export function TreasureScreen({ result, onHome }: { result: JourneyResult; onHo
 
 function Row({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-      <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div className="ml-treasure-finale__stat">
+      <span>
         {icon} {label}
       </span>
       <b className="ltr">{value}</b>

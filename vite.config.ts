@@ -21,22 +21,21 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: false,
-      includeAssets: ['favicon.svg', 'icon.svg', 'app-icon.png', 'app-icon-maskable.png'],
+      includeAssets: ['brand/app-icon-v2.png'],
       manifest: {
         name: 'MemoLand — עולם של זיכרון',
         short_name: 'MemoLand',
         description: 'אימון זיכרון יומי לילדים',
         lang: 'he',
         dir: 'rtl',
-        theme_color: '#2D8CFF',
-        background_color: '#67C8FF',
+        theme_color: '#0B244D',
+        background_color: '#071A3D',
         display: 'standalone',
         orientation: 'portrait',
         start_url: './',
         icons: [
-          { src: 'app-icon.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: 'app-icon.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: 'app-icon-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'brand/app-icon-v2.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'brand/app-icon-v2.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {

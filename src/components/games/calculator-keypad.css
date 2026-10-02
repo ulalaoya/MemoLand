@@ -1,0 +1,118 @@
+.ml-calculator-keypad {
+  --keypad-surface-top: rgba(20, 46, 78, .97);
+  --keypad-surface-bottom: rgba(7, 22, 49, .97);
+  --keypad-border: rgba(235, 249, 255, .94);
+  --key-top: #58ccec;
+  --key-bottom: #237ebb;
+  --key-shadow: #0b4e82;
+  --key-color: #fff;
+  --erase-top: #fff3dd;
+  --erase-bottom: #dcb988;
+  --erase-shadow: #95683e;
+  --erase-color: #533825;
+  --submit-top: #6bd978;
+  --submit-bottom: #2ca55b;
+  --submit-shadow: #1d713e;
+  width: min(100%, 300px);
+  padding: 9px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  background: linear-gradient(155deg, var(--keypad-surface-top), var(--keypad-surface-bottom));
+  border: 3px solid var(--keypad-border);
+  border-radius: 21px;
+  box-shadow: 0 6px 0 color-mix(in srgb, var(--keypad-surface-bottom) 86%, #000), 0 15px 27px rgba(3, 13, 31, .32);
+}
+
+.ml-calculator-keypad__key {
+  min-width: 0;
+  min-height: 48px;
+  padding: 3px;
+  display: grid;
+  place-items: center;
+  color: var(--key-color);
+  background:
+    radial-gradient(circle at 36% 16%, rgba(255, 255, 255, .42), transparent 28%),
+    linear-gradient(155deg, var(--key-top), var(--key-bottom));
+  border: 2px solid rgba(255, 255, 255, .94);
+  border-radius: 13px;
+  box-shadow: 0 4px 0 var(--key-shadow);
+  font-family: var(--ml-font-display);
+  font-size: 1.52rem;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 2px rgba(20, 37, 61, .18);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.ml-calculator-keypad__key:not(:disabled):active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--key-shadow);
+}
+
+.ml-calculator-keypad__key:focus-visible {
+  outline: none;
+  box-shadow: 0 4px 0 var(--key-shadow), var(--ml-focus-ring);
+}
+
+.ml-calculator-keypad__key:disabled { opacity: .45; cursor: default; }
+
+.ml-calculator-keypad__key--erase {
+  color: var(--erase-color);
+  background: linear-gradient(180deg, var(--erase-top), var(--erase-bottom));
+  box-shadow: 0 4px 0 var(--erase-shadow);
+  text-shadow: none;
+}
+
+.ml-calculator-keypad__key--submit {
+  color: #fff;
+  background: linear-gradient(155deg, var(--submit-top), var(--submit-bottom));
+  box-shadow: 0 4px 0 var(--submit-shadow);
+  text-shadow: 0 2px rgba(19, 75, 42, .28);
+}
+
+.ml-calculator-keypad--valley {
+  --keypad-surface-top: rgba(17, 38, 75, .97);
+  --keypad-surface-bottom: rgba(8, 20, 48, .97);
+  --key-top: #54dff2;
+  --key-bottom: #1e7fc0;
+  --key-shadow: #0b4f87;
+}
+
+.ml-calculator-keypad--city {
+  --keypad-surface-top: rgba(244, 255, 252, .98);
+  --keypad-surface-bottom: rgba(188, 229, 222, .98);
+  --keypad-border: #fff;
+  --key-top: #fff;
+  --key-bottom: #dff7f2;
+  --key-shadow: #368f8c;
+  --key-color: #243247;
+  --submit-top: #2bb5ae;
+  --submit-bottom: #138184;
+  --submit-shadow: #0d6267;
+}
+
+.ml-calculator-keypad--cars {
+  --keypad-surface-top: rgba(13, 42, 77, .98);
+  --keypad-surface-bottom: rgba(5, 23, 48, .98);
+  --key-top: #53b9ed;
+  --key-bottom: #256da9;
+  --key-shadow: #123f72;
+}
+
+.ml-calculator-keypad--parent {
+  --keypad-surface-top: rgba(255, 255, 255, .98);
+  --keypad-surface-bottom: rgba(227, 241, 250, .98);
+  --keypad-border: #fff;
+  --key-top: #fff;
+  --key-bottom: #e9f4fb;
+  --key-shadow: #98b5c9;
+  --key-color: var(--ink);
+  width: min(100%, 270px);
+}
+
+@media (max-height: 690px) {
+  .ml-calculator-keypad { padding: 7px; gap: 6px; }
+  .ml-calculator-keypad__key { min-height: 42px; font-size: 1.35rem; }
+}

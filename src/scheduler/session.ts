@@ -49,13 +49,21 @@ export function buildDailySession(
   now: number,
 ): DailySession {
   const weak = landsByWeakness(stats);
-  const rounds = rotationRounds(minutes);
+  const requestedRounds = rotationRounds(minutes);
   // City has its two fixed blocks and Speed has its single continuous race.
   const regularWeak = weak.filter((land) => land !== 'connections' && land !== 'speed');
 
   // Every journey visits all eight worlds. Numbers opens the route; the five
   // regular worlds below are guaranteed once before adaptive repeats begin.
-  const requiredRotationLands: LandId[] = ['echoes', 'forest', 'patterns', 'cars', 'castle'];
+  // Echo and Firefly are short memory challenges. Two consecutive challenges
+  // make their existing deterministic variety visible to the child, instead of
+  // leaving each world immediately after a single sentence/grid.
+  const requiredRotationLands: LandId[] = [
+    'echoes', 'echoes',
+    'forest', 'forest',
+    'patterns', 'cars', 'castle',
+  ];
+  const rounds = Math.max(requestedRounds, requiredRotationLands.length);
   const adaptiveOrder = regularWeak.length > 0 ? regularWeak : requiredRotationLands;
   const rotationLands = [...requiredRotationLands];
   while (rotationLands.length < rounds) {
