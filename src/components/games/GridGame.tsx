@@ -34,10 +34,11 @@ const PHASE_COPY: Record<Phase, { eyebrow: string; title: string; helper: string
 export function GridGame({
   challenge,
   onResult,
-}: GameProps & { challenge: Challenge<GridStimulus, number[]> }) {
+  showPreparation = false,
+}: GameProps & { challenge: Challenge<GridStimulus, number[]>; showPreparation?: boolean }) {
   const stim = challenge.stimulus;
   const total = stim.grid * stim.grid;
-  const [phase, setPhase] = useState<Phase>('showing');
+  const [phase, setPhase] = useState<Phase>(showPreparation ? 'ready' : 'showing');
   const [picked, setPicked] = useState<number[]>([]);
   const pickedRef = useRef<number[]>([]);
   pickedRef.current = picked;
@@ -48,12 +49,13 @@ export function GridGame({
   const copy = PHASE_COPY[phase];
 
   useEffect(() => {
+    if (phase !== 'showing') return undefined;
     timers.current.push(setTimeout(() => {
       setPhase('input');
       startRef.current = performance.now();
     }, stim.viewMs));
     return () => timers.current.forEach(clearTimeout);
-  }, [stim.viewMs]);
+  }, [phase, stim.viewMs]);
 
   function toggle(index: number) {
     setPicked((current) => (
@@ -92,6 +94,14 @@ export function GridGame({
         <p>{copy.helper}</p>
       </header>
 
+      {phase === 'ready' ? (
+        <div className="ml-forest-game__ready">
+          <button type="button" className="ml-forest-game__start ml-pressable" onClick={() => setPhase('showing')}>
+            <span aria-hidden>✦</span>
+            <strong>אני מוכן, הדליקו את הגחליליות</strong>
+          </button>
+        </div>
+      ) : (
       <div className="ml-forest-game__challenge">
           <div className="ml-forest-board" data-forest-grid={stim.grid}>
             <span className="ml-forest-board__vine ml-forest-board__vine--start" aria-hidden>❧</span>
@@ -140,9 +150,6 @@ export function GridGame({
 
           {phase === 'input' ? (
             <div className="ml-forest-game__controls">
-              <span className="ml-forest-game__selection" aria-live="polite">
-                {picked.length === 0 ? 'עוד לא סימנת מקום' : `סימנת ${picked.length} ${picked.length === 1 ? 'מקום' : 'מקומות'}`}
-              </span>
               <Button variant="green" onClick={submit} disabled={picked.length === 0} icon="✓">
                 פותחים את השביל
               </Button>
@@ -156,7 +163,7 @@ export function GridGame({
             </div>
           ) : null}
       </div>
-      <div className="ml-forest-game__world-label" aria-hidden>✦ שביל הגחליליות ✦</div>
+      )}
     </section>
   );
 }

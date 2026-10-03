@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import type { MemoRank, Profile } from '../../types';
-import { rankLabel, rankProgress } from '../../state/rewards';
+import type { ExerciseId, ExerciseStats, MemoRank, Profile } from '../../types';
+import { learningLevelProgress, rankLabel } from '../../state/rewards';
 import { Logo } from '../Logo';
 import { Coin, HeartIcon } from '../svg/Icons';
 import { PlayerIdentity } from './PlayerIdentity';
@@ -9,6 +9,7 @@ interface PlayerHUDProps {
   profile: Profile | null;
   coins: number;
   rank: MemoRank;
+  stats?: Record<ExerciseId, ExerciseStats>;
   equippedHat?: string;
   onSwitchProfile: () => void;
   onOpenAchievements: () => void;
@@ -20,14 +21,15 @@ export function PlayerHUD({
   profile,
   coins,
   rank,
+  stats,
   equippedHat,
   onSwitchProfile,
   onOpenAchievements,
   onOpenCollections,
   onOpenParent,
 }: PlayerHUDProps) {
-  const rankState = rankProgress(coins);
-  const remainingCoins = rankState.next === null ? null : Math.max(0, rankState.next - coins);
+  const learning = learningLevelProgress(stats ?? {});
+  const remainingSkill = learning.next === null ? null : Math.max(0, learning.next - learning.points);
 
   return (
     <section className="ml-player-hud" aria-label="מצב השחקן">
@@ -55,12 +57,12 @@ export function PlayerHUD({
       </div>
 
       <div className="ml-player-hud__lower-row">
-        <div className="ml-hud-progress ml-hud-progress--rank" aria-label={`התקדמות בדרגה. ${remainingCoins === null ? 'דרגת שיא' : `עוד ${remainingCoins} מטבעות`}`}>
+        <div className="ml-hud-progress ml-hud-progress--rank" aria-label={`רמת מיומנות ${learning.level}. ${remainingSkill === null ? 'רמה מרבית' : `עוד ${remainingSkill} נקודות מיומנות`}`}>
           <div className="ml-hud-progress__label">
-            <strong>התקדמות</strong>
-            <small>{remainingCoins === null ? 'דרגת שיא!' : `עוד ${remainingCoins}`}</small>
+            <strong>רמה {learning.level}</strong>
+            <small>{remainingSkill === null ? 'רמה מרבית!' : `עוד ${remainingSkill} נק׳`}</small>
           </div>
-          <ProgressTrack value={rankState.ratio} />
+          <ProgressTrack value={learning.ratio} />
         </div>
 
         <nav className="ml-player-hud__actions" aria-label="פעולות במפה">

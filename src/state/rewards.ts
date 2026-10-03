@@ -1,5 +1,5 @@
 /* חישובי תגמול: מטבעות, דרגת ממו, מדליות. אין ניקוד שלילי לעולם. */
-import type { Medal, MemoRank, SaveState } from '../types';
+import type { ExerciseId, ExerciseStats, Medal, MemoRank, SaveState } from '../types';
 import {
   COINS_CORRECT,
   COINS_SPEED_BONUS,
@@ -37,6 +37,49 @@ export function rankProgress(coins: number): { next: number | null; ratio: numbe
   if (!nxt) return { next: null, ratio: 1 };
   const ratio = (coins - cur.min) / (nxt.min - cur.min);
   return { next: nxt.min, ratio: Math.max(0, Math.min(1, ratio)) };
+}
+
+export interface LearningLevelProgress {
+  level: number;
+  ratio: number;
+  points: number;
+  next: number | null;
+}
+
+const MAX_LEARNING_LEVEL = 15;
+
+function learningLevelThreshold(level: number): number {
+  if (level <= 1) return 0;
+  return Math.round(90 * Math.pow(level - 1, 1.7));
+}
+
+/**
+ * A deliberately slow, skill-based level. Correct answers at higher adaptive
+ * difficulty are worth more, while every next level requires a wider evidence
+ * base. Coins never influence this bar.
+ */
+export function learningLevelProgress(
+  stats: Record<ExerciseId, ExerciseStats>,
+): LearningLevelProgress {
+  const rawPoints = Object.values(stats).reduce((sum, exercise) => {
+    if (exercise.attempts <= 0 || exercise.correct <= 0) return sum;
+    const accuracyWeight = .65 + .35 * (exercise.correct / exercise.attempts);
+    const demonstratedLevel = Math.max(exercise.level, exercise.peakLevel);
+    const difficultyWeight = 1 + (Math.max(1, demonstratedLevel) - 1) / 7;
+    return sum + exercise.correct * accuracyWeight * difficultyWeight;
+  }, 0);
+  const points = Math.max(0, Math.floor(rawPoints));
+  let level = 1;
+  while (level < MAX_LEARNING_LEVEL && points >= learningLevelThreshold(level + 1)) level += 1;
+  if (level >= MAX_LEARNING_LEVEL) return { level, ratio: 1, points, next: null };
+  const current = learningLevelThreshold(level);
+  const next = learningLevelThreshold(level + 1);
+  return {
+    level,
+    ratio: Math.max(0, Math.min(1, (points - current) / (next - current))),
+    points,
+    next,
+  };
 }
 
 /** בודק אילו מדליות חדשות הושגו על סמך המצב, ומחזיר רק חדשות. */

@@ -174,7 +174,7 @@ describe('בניית המסע היומי', () => {
     expect(gameLands.filter((land) => land === 'forest')).toHaveLength(2);
   });
 
-  it.each([10, 15, 20, 25])('כולל שני מקטעים מופרדים של 10 שאלות עיר ב-%i דקות', (minutes) => {
+  it.each([10, 15, 20, 25])('כולל 15 שאלות עיר בשני מקטעים מופרדים ב-%i דקות', (minutes) => {
     const statCases: Record<string, ExerciseStats>[] = [
       {},
       {
@@ -221,6 +221,11 @@ describe('בניית המסע היומי', () => {
           && activity.landId === 'connections' ? index : -1)
         .filter((index) => index >= 0);
       expect(cityIndexes).toHaveLength(15);
+      const cityDifficulty = activities
+        .filter((activity) => activity.kind === 'game' && activity.landId === 'connections')
+        .map((activity) => activity.kind === 'game' ? activity.levelDelta : -1);
+      expect(cityDifficulty).toHaveLength(15);
+      expect(cityDifficulty.some((boost) => boost >= 5)).toBe(true);
       expect(cityIndexes.slice(0, 8)).toEqual(Array.from({ length: 8 }, (_, index) => cityIndexes[0] + index));
       expect(cityIndexes.slice(8)).toEqual(Array.from({ length: 7 }, (_, index) => cityIndexes[8] + index));
       expect(cityIndexes[8] - cityIndexes[7]).toBeGreaterThan(1);
@@ -264,6 +269,7 @@ describe('בניית המסע היומי', () => {
     if (cityQuestion.kind !== 'game' || numbersQuestion.kind !== 'game') return;
 
     expect(shouldAdvanceAfterCompletedIncorrect(cityQuestion, true)).toBe(true);
+    expect(shouldAdvanceAfterCompletedIncorrect(cityQuestion, true, true)).toBe(false);
     expect(shouldAdvanceAfterCompletedIncorrect(cityQuestion, false)).toBe(false);
     expect(shouldAdvanceAfterCompletedIncorrect(numbersQuestion, true)).toBe(false);
   });

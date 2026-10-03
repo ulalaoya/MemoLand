@@ -1,6 +1,6 @@
 /* מסך הבית — מפת ממו לנד: מסלול הרפתקה אנכי שמחבר בין כל הארצות. */
 import { useEffect } from 'react';
-import { DAILY_GOAL, getActiveProfile, getDailyJourneyProgress, getTodayPoints, useProfiles, useStore } from '../state/store';
+import { DAILY_GOAL, getActiveProfile, getDailyJourneyProgress, useProfiles, useStore } from '../state/store';
 import { LAND_ORDER, LANDS, TRACKS_PER_LAND } from '../config/lands';
 import { playableLands } from '../engines';
 import { PlayerHUD } from '../components/world/PlayerHUD';
@@ -28,32 +28,52 @@ export function MapScreen({
   const coins = useStore((s) => s.coins);
   const rank = useStore((s) => s.rank);
   const lands = useStore((s) => s.lands);
+  const stats = useStore((s) => s.stats);
   const equipped = useStore((s) => s.equipped);
-  useStore((s) => s.todayPoints); // רה-רנדר כשמשתנה
   useStore((s) => s.dailyJourney);
   useProfiles((r) => r.activeId);
   const profile = getActiveProfile();
   const playable = playableLands();
-  const todayPoints = getTodayPoints();
   const journey = getDailyJourneyProgress();
   const currentLandIndex = getCurrentLandIndex(playable, lands);
 
   useEffect(() => {
     let saved = 0;
+    let returnLand: LandId | null = null;
     try {
       saved = Number(sessionStorage.getItem('memoland.map-scroll-y'));
+      const storedLand = sessionStorage.getItem('memoland.map-return-land');
+      returnLand = storedLand && LAND_ORDER.includes(storedLand as LandId) ? storedLand as LandId : null;
+      sessionStorage.removeItem('memoland.map-return-land');
     } catch {
       return;
     }
-    if (!Number.isFinite(saved) || saved <= 0) return;
-    const restore = () => window.scrollTo({ top: saved, behavior: 'auto' });
+    const restore = () => {
+      const scroller = document.querySelector<HTMLElement>('.ml-world-map-screen');
+      const target = returnLand
+        ? document.querySelector<HTMLElement>(`.ml-land-row[data-land="${returnLand}"]`)
+        : null;
+      if (target && scroller) {
+        const targetTop = target.offsetTop - Math.max(0, (scroller.clientHeight - target.offsetHeight) / 2);
+        scroller.scrollTo({ top: Math.max(0, targetTop), behavior: 'auto' });
+      } else if (scroller && Number.isFinite(saved) && saved > 0) {
+        scroller.scrollTo({ top: saved, behavior: 'auto' });
+      }
+    };
     const first = window.requestAnimationFrame(() => window.requestAnimationFrame(restore));
-    return () => window.cancelAnimationFrame(first);
+    const afterImages = window.setTimeout(restore, 180);
+    return () => {
+      window.cancelAnimationFrame(first);
+      window.clearTimeout(afterImages);
+    };
   }, []);
 
-  const rememberMapPosition = () => {
+  const rememberMapPosition = (returnLand?: LandId) => {
     try {
-      sessionStorage.setItem('memoland.map-scroll-y', String(window.scrollY));
+      const scroller = document.querySelector<HTMLElement>('.ml-world-map-screen');
+      sessionStorage.setItem('memoland.map-scroll-y', String(scroller?.scrollTop ?? window.scrollY));
+      if (returnLand) sessionStorage.setItem('memoland.map-return-land', returnLand);
+      else sessionStorage.removeItem('memoland.map-return-land');
     } catch {
       // Private-mode storage can be unavailable; map navigation still works.
     }
@@ -68,6 +88,7 @@ export function MapScreen({
           profile={profile}
           coins={coins}
           rank={rank}
+          stats={stats}
           equippedHat={equipped.hat}
           onSwitchProfile={onSwitchProfile}
           onOpenAchievements={onOpenAchievements}
@@ -79,7 +100,7 @@ export function MapScreen({
       <main className="ml-world-map-main">
         <section className="ml-world-map-hero" aria-label="המסע היומי">
           <DailyJourneyBanner
-            todayPoints={todayPoints}
+            todayPoints={journey.earnedPoints}
             dailyGoal={DAILY_GOAL}
             status={journey.status}
             currentActivity={journey.currentActivity}
@@ -113,7 +134,7 @@ export function MapScreen({
                   theme={LAND_THEMES[id]}
                   onSelect={() => {
                     if (!available) return;
-                    rememberMapPosition();
+                    rememberMapPosition(id);
                     onPlayLand(id);
                   }}
                 />

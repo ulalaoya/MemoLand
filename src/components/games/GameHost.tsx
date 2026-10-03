@@ -17,12 +17,18 @@ export function GameHost({
   color,
   speechRate,
   hintMode,
+  connectionsProgress,
+  connectionsProjectIndex,
+  showPreparation,
   onResult,
 }: {
   challenge: Challenge;
   color: string;
   speechRate: number;
   hintMode: boolean;
+  connectionsProgress?: number;
+  connectionsProjectIndex?: number;
+  showPreparation?: boolean;
   onResult: (r: GameResult) => void;
 }) {
   const p = { color, speechRate, hintMode, onResult };
@@ -41,9 +47,16 @@ export function GameHost({
     case 'connections.practice':
     case 'connections.derived':
     case 'connections.link':
-      return <ConnectionsCityGame {...p} challenge={challenge as never} />;
+      return (
+        <ConnectionsCityGame
+          {...p}
+          challenge={challenge as never}
+          puzzleProgress={connectionsProgress}
+          puzzleProjectIndex={connectionsProjectIndex}
+        />
+      );
     case 'forest.grid':
-      return <GridGame {...p} challenge={challenge as never} />;
+      return <GridGame {...p} challenge={challenge as never} showPreparation={showPreparation} />;
     case 'patterns.complete':
       return <PatternGame {...p} challenge={challenge as never} />;
     case 'speed.match':

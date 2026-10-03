@@ -8,6 +8,7 @@ import { Coin, StarIcon } from '../components/svg/Icons';
 import type { AvatarKind } from '../types';
 import {
   CITY_BUILD_PROJECT_COUNT,
+  CityProjectPuzzle,
   cityBuildProject,
   cityProjectCollectibleId,
 } from '../components/games/ConnectionsCityGame';
@@ -88,10 +89,14 @@ function CityBuildCard({ projectIndex, owned }: { projectIndex: number; owned: b
   const name = project.title.replace(/^(בונים|מרכיבים)\s+/, '');
   return (
     <article className={`ml-collection-card ml-collection-card--build${owned ? ' is-owned' : ' is-locked'}`}>
-      <div className="ml-build-collectible" aria-hidden>
-        <span className="ml-build-collectible__star">✦</span>
-        <span className="ml-build-collectible__icon">{owned ? project.icon : '◇'}</span>
-        <span className="ml-build-collectible__path" />
+      <div className={`ml-build-collectible${owned ? ' is-owned' : ''}`} aria-hidden>
+        {!owned ? <span className="ml-build-collectible__star">✦</span> : null}
+        {owned ? (
+          <CityProjectPuzzle project={project} projectIndex={projectIndex} builtCount={15} justAdded={0} />
+        ) : (
+          <span className="ml-build-collectible__icon">◇</span>
+        )}
+        {!owned ? <span className="ml-build-collectible__path" /> : null}
       </div>
       <strong>{owned ? name : 'כרטיס מסתורי'}</strong>
       <span className="ml-build-collectible__status">{owned ? 'הרווחת בעיר הקשרים' : 'השלימו 15 תרגילים כדי לגלות'}</span>

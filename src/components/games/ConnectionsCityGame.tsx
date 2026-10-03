@@ -255,7 +255,7 @@ export function cityPuzzleRevealOrder(projectIndex: number): number[] {
   return order;
 }
 
-function ProjectPuzzle({
+export function CityProjectPuzzle({
   project,
   projectIndex,
   builtCount,
@@ -409,7 +409,17 @@ function isUsefulHintConnection(
   return Boolean(connection && connection.sourceFactId !== factId && connection.operation !== 'same');
 }
 
-export function ConnectionsCityGame({ challenge, onResult }: GameProps & { challenge: CityChallenge }) {
+export function ConnectionsCityGame({
+  challenge,
+  onResult,
+  puzzleProgress,
+  puzzleProjectIndex = 0,
+}: GameProps & {
+  challenge: CityChallenge;
+  /** Daily Journey owns one complete 15-piece puzzle, independent of lifetime progress. */
+  puzzleProgress?: number;
+  puzzleProjectIndex?: number;
+}) {
   const stimulus = challenge.stimulus;
   const type = challengeType(challenge.exerciseId);
   const [digits, setDigits] = useState<number[]>([]);
@@ -424,14 +434,42 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
   const savedMilestones = useStore((state) => state.cityGrowthMilestones);
   // Keep the optimistic building stable until this question unmounts.
   const [persistedMilestones] = useState(() => normalizeCityGrowthMilestones(savedMilestones));
-  const displayedMilestones = normalizeCityGrowthMilestones(
-    persistedMilestones + (phase === 'success' ? 1 : 0),
-  );
-  const completingProject = phase === 'success'
-    && cityDistrictProgress(displayedMilestones).districtComplete;
-  const city = cityProjectDisplayModel(displayedMilestones, completingProject);
+  const controlledPuzzle = typeof puzzleProgress === 'number';
+  const controlledBuilt = Math.max(0, Math.min(
+    CITY_DISTRICT_CAPACITY,
+    Math.floor(puzzleProgress ?? 0) + (phase === 'success' ? 1 : 0),
+  ));
+  const displayedMilestones = controlledPuzzle
+    ? controlledBuilt
+    : normalizeCityGrowthMilestones(persistedMilestones + (phase === 'success' ? 1 : 0));
+  const completingProject = phase === 'success' && (controlledPuzzle
+    ? controlledBuilt === CITY_DISTRICT_CAPACITY
+    : cityDistrictProgress(displayedMilestones).districtComplete);
+  const city = controlledPuzzle
+    ? {
+        totalBuilt: controlledBuilt,
+        completedDistricts: controlledBuilt === CITY_DISTRICT_CAPACITY ? 1 : 0,
+        districtIndex: puzzleProjectIndex % CITY_BUILD_PROJECT_COUNT,
+        districtNumber: (puzzleProjectIndex % CITY_BUILD_PROJECT_COUNT) + 1,
+        builtCount: controlledBuilt,
+        districtComplete: controlledBuilt === CITY_DISTRICT_CAPACITY,
+        backRow: Array.from({ length: CITY_DISTRICT_BACK_ROW_SIZE }, (_, index) => controlledBuilt >= index + 1),
+        frontRow: Array.from(
+          { length: CITY_DISTRICT_FRONT_ROW_SIZE },
+          (_, index) => controlledBuilt >= CITY_DISTRICT_BACK_ROW_SIZE + index + 1,
+        ),
+      }
+    : cityProjectDisplayModel(displayedMilestones, completingProject);
   const project = cityBuildProject(city.districtIndex);
-  const celebration = phase === 'success' ? cityProjectCelebration(displayedMilestones) : null;
+  const celebration = phase === 'success'
+    ? controlledPuzzle
+      ? city.builtCount === CITY_DISTRICT_CAPACITY
+        ? 'כל הכבוד! השלמת את הפאזל!'
+        : city.builtCount === CITY_DISTRICT_BACK_ROW_SIZE
+          ? project.rowCopy
+          : null
+      : cityProjectCelebration(displayedMilestones)
+    : null;
   const justAddedPart = phase === 'success'
     ? cityPuzzleRevealOrder(city.districtIndex)[city.builtCount - 1] ?? 0
     : 0;
@@ -508,7 +546,9 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
     setAttempts(completed);
     setPhase('success');
     setFeedback(null);
-    const completedProgress = cityDistrictProgress(persistedMilestones + 1);
+    const completedProgress = controlledPuzzle
+      ? { districtComplete: controlledBuilt === CITY_DISTRICT_CAPACITY, districtIndex: city.districtIndex }
+      : cityDistrictProgress(persistedMilestones + 1);
     if (completedProgress.districtComplete) {
       addCosmetic({
         id: cityProjectCollectibleId(completedProgress.districtIndex),
@@ -558,6 +598,25 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
     else miss();
   }
 
+  useEffect(() => {
+    if (type === 'link') return undefined;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (phase !== 'answering' || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (/^[0-9]$/.test(event.key)) {
+        event.preventDefault();
+        enterDigit(Number(event.key));
+      } else if (event.key === 'Backspace' || event.key === 'Delete') {
+        event.preventDefault();
+        eraseDigit();
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        submitDigits();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [digits, phase, type]);
+
   return (
     <section
       className={`ml-city-game ml-city-game--${phase}${helpLevel > 0 && phase === 'answering' ? ' is-hint-open' : ''}`}
@@ -570,7 +629,7 @@ export function ConnectionsCityGame({ challenge, onResult }: GameProps & { chall
       <div className={`ml-city-game__scene${city.districtComplete ? ' is-district-complete' : ''}`} aria-hidden>
         <div className="ml-city-game__sun" />
         <div className="ml-city-game__district-label">{project.icon} {project.title}</div>
-        <ProjectPuzzle
+        <CityProjectPuzzle
           project={project}
           projectIndex={city.districtIndex}
           builtCount={city.builtCount}

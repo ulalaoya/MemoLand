@@ -70,6 +70,8 @@ interface JourneyResult {
   streakDays: number;
   castleOpened: boolean;
   reachedGoal: boolean;
+  completionKind: 'daily' | 'world';
+  landId: LandId;
 }
 
 const MAX_ACTIVITIES = 70; // תקרת ביטחון למספר האתגרים במסע
@@ -312,6 +314,8 @@ export function SessionScreen({
       streakDays: streakRes.streakDays,
       castleOpened: trackRes.castleOpened,
       reachedGoal: !landFocus && sessionPoints.current >= DAILY_GOAL,
+      completionKind: isDailyJourney ? 'daily' : 'world',
+      landId: focusLand,
     });
   }
 
@@ -328,6 +332,15 @@ export function SessionScreen({
     if (practiceMode) {
       const completedMinutes = Math.floor((Date.now() - practiceStartedAt.current) / 60_000);
       if (completedMinutes > 0) addMinutes(completedMinutes);
+    }
+    const current = activities[idx];
+    const returnLand = current && 'landId' in current ? current.landId : landFocus;
+    if (returnLand) {
+      try {
+        sessionStorage.setItem('memoland.map-return-land', returnLand);
+      } catch {
+        // Navigation still works if storage is unavailable.
+      }
     }
     onQuit();
   }
@@ -378,7 +391,7 @@ export function SessionScreen({
         }
         // בעיר זו שאלה שהושלמה (אחרי ניסיון ישיר + חשיפה, או אחרי רמז).
         // מתקדמים לשאלת העיר הבאה בלי לבנות חלק; רק תשובה נכונה מקדמת את הפרויקט.
-        if (shouldAdvanceAfterCompletedIncorrect(a, r.newChallengeAfterIncorrect)) {
+        if (shouldAdvanceAfterCompletedIncorrect(a, r.newChallengeAfterIncorrect, isDailyJourney)) {
           next();
           return;
         }
@@ -461,6 +474,14 @@ export function SessionScreen({
   const isConnectionsChallenge = activity.kind === 'game' && activityLand === 'connections';
   const isCarsChallenge = activity.kind === 'game' && activityLand === 'cars';
   const isImmersiveChallenge = isEchoChallenge || isNumbersChallenge || isConnectionsChallenge || isCarsChallenge;
+  const completedCityQuestions = isDailyJourney
+    ? activities.slice(0, idx).filter((item) => item.kind === 'game' && item.landId === 'connections').length
+    : undefined;
+  const cityPuzzleProject = Math.abs(Math.floor(initialRun.seed / 86_400_000)) % 30;
+  const showWorldPreparation = activity.kind === 'game'
+    && activity.landId === 'forest'
+    && retry === 0
+    && !activities.slice(0, idx).some((item) => item.kind === 'game' && item.landId === 'forest');
 
   return (
     <div className={`ml-session-screen ml-session-screen--${activityLand}${practiceMode ? ' ml-session-screen--multiplication-practice' : ''}`}>
@@ -533,7 +554,17 @@ export function SessionScreen({
         {/* key מאלץ remount בכל פעילות ובכל ניסיון חוזר — כדי לאפס state ולתת אתגר חדש */}
         <div key={`${idx}-${retry}`} className="ml-session-board__activity">
           {activity.kind === 'game' && (
-            <GameHostForActivity a={activity} color={color} speechRate={settings.speechRate} softenBy={retry} seed={genSeed.current + idx * 100 + retry} onResult={(r) => handleGameResult(activity, r)} />
+            <GameHostForActivity
+              a={activity}
+              color={color}
+              speechRate={settings.speechRate}
+              softenBy={retry}
+              seed={genSeed.current + idx * 100 + retry}
+              connectionsProgress={isConnectionsChallenge ? completedCityQuestions : undefined}
+              connectionsProjectIndex={isConnectionsChallenge ? cityPuzzleProject : undefined}
+              showPreparation={showWorldPreparation}
+              onResult={(r) => handleGameResult(activity, r)}
+            />
           )}
           {activity.kind === 'quiz' && (
             <QuizGame question={activity.question} answer={activity.answer} options={activity.options} color={color} speechRate={settings.speechRate} onResult={(c) => handleQuizResult(activity, c)} />
@@ -619,7 +650,7 @@ export function SessionScreen({
               <Button variant="green" size="lg" block icon="❤" onClick={revive}>
                 כן! 3 לבבות חדשים
               </Button>
-              <Button variant="red" block onClick={onQuit}>
+              <Button variant="red" block onClick={quit}>
                 חזרה למפה
               </Button>
             </div>
@@ -637,6 +668,9 @@ function GameHostForActivity({
   speechRate,
   softenBy,
   seed,
+  connectionsProgress,
+  connectionsProjectIndex,
+  showPreparation,
   onResult,
 }: {
   a: Extract<Activity, { kind: 'game' }>;
@@ -644,6 +678,9 @@ function GameHostForActivity({
   speechRate: number;
   softenBy: number;
   seed: number;
+  connectionsProgress?: number;
+  connectionsProjectIndex?: number;
+  showPreparation?: boolean;
   onResult: (r: GameResult) => void;
 }) {
   const engine = getEngine(a.exerciseId);
@@ -653,7 +690,7 @@ function GameHostForActivity({
     const currentState = getState();
     const multiplication = currentState.multiplication;
     const level = a.landId === 'connections'
-      ? multiplicationCurriculumLevel(multiplication)
+      ? clampLevel(multiplicationCurriculumLevel(multiplication) + a.levelDelta - softenBy)
       : clampLevel((currentState.stats[a.exerciseId]?.level ?? 1) + a.levelDelta - softenBy);
     return engine
       ? generateVariedChallenge(
@@ -670,7 +707,18 @@ function GameHostForActivity({
     if (fingerprint) rememberChallengeFingerprint(fingerprint);
   }, [fingerprint]);
   if (!engine || !challenge) return <div style={{ textAlign: 'center' }}>האתגר בבנייה 🚧</div>;
-  return <GameHost challenge={challenge} color={color} speechRate={speechRate} hintMode={softenBy > 0} onResult={onResult} />;
+  return (
+    <GameHost
+      challenge={challenge}
+      color={color}
+      speechRate={speechRate}
+      hintMode={softenBy > 0}
+      connectionsProgress={connectionsProgress}
+      connectionsProjectIndex={connectionsProjectIndex}
+      showPreparation={showPreparation}
+      onResult={onResult}
+    />
+  );
 }
 
 function JourneySecretScreen({

@@ -1,9 +1,15 @@
 /* מסך סיום המסע — פשוט ונקי. ספירת מטבעות מתגלגלת, שיא אישי, ותיבת אוצר
    שנותנת צ'ופר (מטבעות בונוס). בלי נצנצים מיותרים. */
-import { useEffect, useRef, useState } from 'react';
-import { addCoins, useProfiles, useStore } from '../state/store';
+import { useRef, useState } from 'react';
+import { addCoins, getState, useProfiles, useStore } from '../state/store';
 import { Coin, Medal, StarIcon } from '../components/svg/Icons';
 import { Character } from '../components/svg/Memo';
+import type { LandId } from '../types';
+import {
+  CoinRewardExperience,
+  createCoinRewardEvent,
+  type CoinRewardEvent,
+} from '../components/CoinRewardExperience';
 import './meta-screens.css';
 
 export interface JourneyResult {
@@ -15,6 +21,8 @@ export interface JourneyResult {
   streakDays: number;
   castleOpened: boolean;
   reachedGoal: boolean;
+  completionKind: 'daily' | 'world';
+  landId: LandId;
 }
 
 export function TreasureScreen({ result, onHome }: { result: JourneyResult; onHome: () => void }) {
@@ -22,52 +30,59 @@ export function TreasureScreen({ result, onHome }: { result: JourneyResult; onHo
     registry.profiles.find((profile) => profile.id === registry.activeId)?.avatar ?? 'memo'
   ));
   const medals = useStore((s) => s.medals);
-  const [display, setDisplay] = useState(result.coinsStart);
+  const coins = useStore((s) => s.coins);
   const [opened, setOpened] = useState(false);
+  const [chestReward, setChestReward] = useState<CoinRewardEvent | null>(null);
+  const openedRef = useRef(false);
   const bonusRef = useRef(20 + Math.floor(Math.random() * 30));
-
-  // ספירת מטבעות מתגלגלת
-  useEffect(() => {
-    const from = result.coinsStart;
-    const to = result.coinsEnd;
-    const t0 = performance.now();
-    let raf = 0;
-    const tick = (t: number) => {
-      const p = Math.min(1, (t - t0) / 1000);
-      setDisplay(Math.round(from + (to - from) * p));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [result]);
+  const chestRef = useRef<HTMLDivElement>(null);
 
   const accuracy = result.total ? Math.round((result.correct / result.total) * 100) : 100;
   const newestMedal = medals[medals.length - 1];
 
   function openBox() {
-    if (opened) return;
+    if (openedRef.current) return;
+    openedRef.current = true;
+    const before = getState().coins;
     addCoins(bonusRef.current);
+    const after = getState().coins;
+    setChestReward(createCoinRewardEvent(1, before, after));
     setOpened(true);
+  }
+
+  function returnToMap() {
+    try {
+      sessionStorage.setItem('memoland.map-return-land', result.landId);
+    } catch {
+      // Navigation still works if storage is unavailable.
+    }
+    onHome();
   }
 
   return (
     <div className="ml-treasure-finale">
       <div className="ml-treasure-finale__backdrop" aria-hidden />
       <div className="ml-treasure-finale__content">
-        <span className="ml-treasure-finale__eyebrow">המסע הושלם</span>
-        <h1>כבשת את המסע של היום!</h1>
+        <span className="ml-treasure-finale__eyebrow">
+          {result.completionKind === 'daily' ? 'המסע היומי הושלם' : 'עוד תחנה הושלמה'}
+        </span>
+        <h1>
+          {result.completionKind === 'daily'
+            ? 'כבשת את המסע של היום!'
+            : 'כל הכבוד — סיימת עוד מסלול בדרך למסע היומי!'}
+        </h1>
         <div className="ml-treasure-finale__memo" aria-hidden><Character kind={avatar} size={150} /></div>
 
         {/* מטבעות מתגלגלים */}
-        <div className="ml-treasure-finale__coins" aria-label={`${display} מטבעות`}>
-          <Coin size={40} />
-          <span className="ltr">{display}</span>
+        <div className="ml-treasure-finale__coins" aria-label={`${coins} מטבעות`}>
+          <span className="ml-treasure-finale__coin-bag" aria-hidden>💰</span>
+          <CoinRewardExperience total={coins} reward={chestReward} sourceRef={chestRef} />
         </div>
 
         {/* שיא אישי */}
         <div className="ml-treasure-finale__stats">
           <Row icon={<StarIcon size={22} />} label="דיוק היום" value={`${accuracy}%`} />
-          <Row icon={<span style={{ fontSize: 20 }}>🔥</span>} label="רצף ימים" value={`${result.streakDays}`} />
+          <Row icon={<span style={{ fontSize: 20 }}>🔥</span>} label="רצף יומי" value={`${result.streakDays} ימים`} />
           {result.bestSpan > 0 && <Row icon={<Coin size={20} />} label="השיא שלך" value={`${result.bestSpan} פריטים`} />}
         </div>
 
@@ -83,21 +98,23 @@ export function TreasureScreen({ result, onHome }: { result: JourneyResult; onHo
         )}
 
         {/* תיבת האוצר — צ'ופר */}
-        {!opened ? (
-          <button className="ml-treasure-finale__chest" onClick={openBox}>
-            <TreasureBox open={false} />
-            <strong>הקש לפתיחת תיבת האוצר</strong>
-          </button>
-        ) : (
-          <div className="ml-treasure-finale__chest is-open">
-            <TreasureBox open />
-            <strong>
-              <Coin size={22} /> צ'ופר: +{bonusRef.current} מטבעות!
-            </strong>
-          </div>
-        )}
+        <div ref={chestRef} className="ml-treasure-finale__chest-stage">
+          {!opened ? (
+            <button className="ml-treasure-finale__chest ml-pressable" onClick={openBox}>
+              <TreasureBox open={false} />
+              <strong>פותחים את אוצר המסע</strong>
+            </button>
+          ) : (
+            <div className="ml-treasure-finale__chest is-open">
+              <TreasureBox open />
+              <strong>
+                <Coin size={22} /> +{bonusRef.current} מטבעות נערמו בשק!
+              </strong>
+            </div>
+          )}
+        </div>
 
-        <button type="button" className="ml-treasure-finale__home ml-pressable" onClick={onHome}>
+        <button type="button" className="ml-treasure-finale__home ml-pressable" onClick={returnToMap}>
           <span aria-hidden>🗺️</span>
           <strong>חזרה למפת ההרפתקה</strong>
           <span aria-hidden>←</span>
@@ -110,28 +127,32 @@ export function TreasureScreen({ result, onHome }: { result: JourneyResult; onHo
 function Row({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="ml-treasure-finale__stat">
-      <span>
-        {icon} {label}
-      </span>
-      <b className="ltr">{value}</b>
+      <span className="ml-treasure-finale__stat-icon" aria-hidden>{icon}</span>
+      <span className="ml-treasure-finale__stat-copy"><small>{label}</small><b className="ltr">{value}</b></span>
     </div>
   );
 }
 
 function TreasureBox({ open }: { open: boolean }) {
   return (
-    <svg width={104} height={94} viewBox="0 0 110 100" aria-hidden>
-      {open && [20, 45, 70, 90].map((x, i) => <circle key={x} cx={x + 5} cy={30 - (i % 2) * 12} r="4" fill="var(--gold-lite)" />)}
-      <rect x="20" y="50" width="70" height="40" rx="6" fill="var(--memo-belt)" stroke="var(--ink)" strokeWidth="3" />
-      <rect x="20" y="58" width="70" height="10" fill="var(--gold-deep)" stroke="var(--ink)" strokeWidth="2" />
-      <path
-        d={open ? 'M18 50 Q55 20 92 50 L92 40 Q55 8 18 40 Z' : 'M16 50 Q55 34 94 50 L94 44 Q55 30 16 44 Z'}
-        fill="var(--ground-dk)"
-        stroke="var(--ink)"
-        strokeWidth="3"
-        strokeLinejoin="round"
-      />
-      <circle cx="55" cy="70" r="5" fill="var(--gold)" stroke="var(--ink)" strokeWidth="2" />
+    <svg className={`ml-magic-chest${open ? ' is-open' : ''}`} width={168} height={138} viewBox="0 0 180 150" aria-hidden>
+      <defs>
+        <linearGradient id="ml-chest-wood" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#9b4f36"/><stop offset="1" stopColor="#3f1d2a"/></linearGradient>
+        <linearGradient id="ml-chest-gold" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#fff0a0"/><stop offset=".48" stopColor="#e8ae34"/><stop offset="1" stopColor="#8d5319"/></linearGradient>
+        <radialGradient id="ml-chest-glow"><stop stopColor="#fff6b0" stopOpacity=".95"/><stop offset="1" stopColor="#5de3ff" stopOpacity="0"/></radialGradient>
+      </defs>
+      <ellipse className="ml-magic-chest__glow" cx="90" cy="70" rx="76" ry="62" fill="url(#ml-chest-glow)" />
+      <g className="ml-magic-chest__lid">
+        <path d="M24 72V55C24 24 48 12 90 12s66 12 66 43v17Z" fill="url(#ml-chest-wood)" stroke="#f7cf62" strokeWidth="6" />
+        <path d="M34 55c7-22 26-30 56-30s49 8 56 30" fill="none" stroke="url(#ml-chest-gold)" strokeWidth="10" />
+        <path d="M90 17v53M49 29v42M131 29v42" stroke="#d9972f" strokeWidth="5" opacity=".86" />
+      </g>
+      <path d="M20 69h140v63c0 7-6 12-13 12H33c-7 0-13-5-13-12Z" fill="url(#ml-chest-wood)" stroke="#f7cf62" strokeWidth="6" />
+      <path d="M24 83h132M38 70v70M142 70v70" stroke="url(#ml-chest-gold)" strokeWidth="9" />
+      <path d="M77 83h26v34c0 8-5 14-13 18-8-4-13-10-13-18Z" fill="#17385f" stroke="#ffe180" strokeWidth="5" />
+      <circle cx="90" cy="103" r="6" fill="#61e0ff" stroke="#fff3a4" strokeWidth="3" />
+      <path d="m90 94 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z" fill="#fff3a4" />
+      {open ? <g className="ml-magic-chest__sparks"><path d="M29 34h14M36 27v14M145 32h12M151 26v12M84 5h12M90 0v12" stroke="#fff0a0" strokeWidth="4" strokeLinecap="round" /></g> : null}
     </svg>
   );
 }

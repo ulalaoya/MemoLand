@@ -20,8 +20,9 @@ const NUMBER_RECALL_EXERCISES: ExerciseId[] = [
 export function shouldAdvanceAfterCompletedIncorrect(
   activity: Extract<Activity, { kind: 'game' }>,
   completedIncorrect: boolean,
+  requireSuccess = false,
 ): boolean {
-  return completedIncorrect && activity.landId === 'connections';
+  return completedIncorrect && activity.landId === 'connections' && !requireSuccess;
 }
 
 /** Free Play remains a short, land-focused sequence and does not inherit Daily Journey quotas. */
@@ -70,6 +71,8 @@ export function buildActivities(
   const activities: Activity[] = [];
   let dueIdx = 0;
   let numberRecallOffset = 0;
+  let cityQuestionOffset = 0;
+  const cityDifficultyBoosts = [0, 0, 5, 0, 2, 7, 0, 3, 0, 6, 0, 3, 8, 0, 5] as const;
 
   function variedExercise(exerciseId: ExerciseId, landId: LandId): ExerciseId {
     if (landId !== 'numbers') return exerciseId;
@@ -99,9 +102,12 @@ export function buildActivities(
             kind: 'game',
             exerciseId: 'connections.direct',
             landId: 'connections',
-            levelDelta: 0,
+            // Even a new learner meets a few challenging facts in every puzzle,
+            // while most questions remain adapted to the child's current level.
+            levelDelta: cityDifficultyBoosts[cityQuestionOffset % cityDifficultyBoosts.length],
             label: step.label,
           });
+          cityQuestionOffset += 1;
         }
         break;
 

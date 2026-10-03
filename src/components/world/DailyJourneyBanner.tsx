@@ -9,8 +9,8 @@ interface DailyJourneyBannerProps {
 }
 
 export function DailyJourneyBanner({ todayPoints, dailyGoal, status, onStart }: DailyJourneyBannerProps) {
-  const progress = Math.max(0, Math.min(1, todayPoints / dailyGoal));
   const completed = status === 'completed';
+  const progress = completed ? 1 : Math.max(0, Math.min(1, todayPoints / dailyGoal));
   const action = status === 'in-progress' ? 'ממשיכים במסע' : 'מתחילים מסע יומי';
   const title = completed
     ? 'המסע הושלם. לאן בא לך ללכת עכשיו?'
@@ -40,11 +40,11 @@ export function DailyJourneyBanner({ todayPoints, dailyGoal, status, onStart }: 
         <span className="ml-daily-journey__eyebrow">מפת ההרפתקה</span>
         <strong>{title}</strong>
         {description ? <span className="ml-daily-journey__description">{description}</span> : null}
-        <span className="ml-daily-journey__progress" aria-label={`${todayPoints} מתוך ${dailyGoal} נקודות היום`}>
+        <span className="ml-daily-journey__progress" aria-label={completed ? 'המסע היומי הושלם במלואו' : `${todayPoints} מתוך ${dailyGoal} נקודות היום`}>
           <span className="ml-daily-journey__track" aria-hidden>
             <span style={{ width: `${progress * 100}%` }} />
           </span>
-          <small className="ml-number-text">{todayPoints}/{dailyGoal}</small>
+          <small className="ml-number-text">{completed ? 'הושלם ✓' : `${todayPoints}/${dailyGoal}`}</small>
         </span>
       </span>
 

@@ -38,4 +38,19 @@ describe('map entry points', () => {
     expect(html).toContain('66/1000');
     expect(html).toContain('מתחילים מסע יומי');
   });
+
+  it('shows a completely full daily bar once the journey is completed', () => {
+    const html = renderToStaticMarkup(createElement(DailyJourneyBanner, {
+      todayPoints: 254,
+      dailyGoal: 1000,
+      status: 'completed',
+      currentActivity: 42,
+      onStart: vi.fn(),
+    }));
+
+    expect(html).toContain('width:100%');
+    expect(html).toContain('הושלם ✓');
+    expect(html).toContain('המסע הושלם. לאן בא לך ללכת עכשיו?');
+    expect(html).not.toContain('254/1000');
+  });
 });
