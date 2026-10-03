@@ -13,12 +13,12 @@ export function DailyJourneyBanner({ todayPoints, dailyGoal, status, onStart }: 
   const progress = completed ? 1 : Math.max(0, Math.min(1, todayPoints / dailyGoal));
   const action = status === 'in-progress' ? 'ממשיכים במסע' : 'מתחילים מסע יומי';
   const title = completed
-    ? 'המסע הושלם. לאן בא לך ללכת עכשיו?'
+    ? 'המסע הושלם!'
     : status === 'in-progress'
       ? 'המסע ממשיך מכאן'
       : 'המסע של היום';
   const description = completed
-    ? 'כל העולמות פתוחים למשחק חופשי.'
+    ? 'לאן ממשיכים עכשיו?'
     : null;
 
   return (

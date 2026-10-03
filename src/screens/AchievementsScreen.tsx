@@ -34,7 +34,7 @@ export function AchievementsScreen({ onExit }: { onExit: () => void }) {
           <small>יומן ההרפתקה</small>
           <h1>ההישגים שלי</h1>
         </div>
-        <button className="ml-meta-close ml-pressable" onClick={onExit} aria-label="חזרה למפה">←</button>
+        <button className="ml-meta-close ml-pressable" onClick={onExit} aria-label="חזרה למפה">→</button>
       </header>
 
       <div className="ml-meta-content">

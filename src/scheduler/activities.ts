@@ -10,6 +10,7 @@ export interface BuiltActivities {
 }
 
 export const FREE_PLAY_ACTIVITY_COUNT = 5;
+export const DAILY_CITY_QUESTION_COUNT = 15;
 
 const NUMBER_RECALL_EXERCISES: ExerciseId[] = [
   'numbers.forward',
@@ -60,6 +61,57 @@ export function buildDailySupplementalActivity(atIndex: number): Activity {
     landId: land,
     levelDelta: 0,
     label: 'הרפתקה',
+  };
+}
+
+function isDailyCityActivity(activity: Activity): boolean {
+  return activity.kind === 'game' && activity.landId === 'connections';
+}
+
+/**
+ * Repairs plans saved by older releases without discarding completed work.
+ * It caps City at one 15-question puzzle and groups all still-pending City
+ * questions together, so an interrupted installed PWA cannot reopen a full
+ * puzzle or award extra City rewards after piece 15.
+ */
+export function normalizeDailyCityPlan(
+  plan: Activity[],
+  currentActivity: number,
+): { activities: Activity[]; currentActivity: number; changed: boolean } {
+  const cursor = Math.max(0, Math.min(Math.floor(currentActivity), plan.length));
+  let cityCount = 0;
+  const retained = plan.map((activity, originalIndex) => {
+    const keep = !isDailyCityActivity(activity) || ++cityCount <= DAILY_CITY_QUESTION_COUNT;
+    return { activity, originalIndex, keep };
+  }).filter((entry) => entry.keep);
+
+  const completed = retained.filter((entry) => entry.originalIndex < cursor);
+  const pending = retained.filter((entry) => entry.originalIndex >= cursor);
+  const firstPendingCity = pending.findIndex((entry) => isDailyCityActivity(entry.activity));
+  let normalizedPending = pending;
+
+  if (firstPendingCity >= 0) {
+    const city = pending.filter((entry) => isDailyCityActivity(entry.activity));
+    const other = pending.filter((entry) => !isDailyCityActivity(entry.activity));
+    const nonCityBefore = pending
+      .slice(0, firstPendingCity)
+      .filter((entry) => !isDailyCityActivity(entry.activity)).length;
+    normalizedPending = [
+      ...other.slice(0, nonCityBefore),
+      ...city,
+      ...other.slice(nonCityBefore),
+    ];
+  }
+
+  const normalizedEntries = [...completed, ...normalizedPending];
+  const activities = normalizedEntries.map((entry) => entry.activity);
+  const changed = activities.length !== plan.length
+    || normalizedEntries.some((entry, index) => entry.originalIndex !== index);
+
+  return {
+    activities,
+    currentActivity: completed.length,
+    changed,
   };
 }
 

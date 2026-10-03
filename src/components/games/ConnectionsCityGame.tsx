@@ -33,7 +33,7 @@ type CityPhase = 'answering' | 'reveal' | 'success';
 
 export const CITY_HINT_ENTRY_COPY = 'רוצה רמז? ממו כאן לעזור';
 export const CITY_RETRY_COPY = 'כמעט, נסה שוב';
-export const CITY_SUCCESS_COPY = 'מצוין, העיר גדלה!';
+export const CITY_SUCCESS_COPY = 'מצוין, עוד שורה בפאזל הושלמה!';
 export const CITY_CORRECT_REVEAL_MS = 1_500;
 export const CITY_SUCCESS_RESULT_MS = 1_920;
 export const CITY_PROJECT_COMPLETE_MS = 3_600;
@@ -557,7 +557,10 @@ export function ConnectionsCityGame({
       });
       sfxLevelUp();
     } else sfxCorrect();
-    finishAfter(citySuccessDelay(persistedMilestones + 1), () => {
+    const successDelay = controlledPuzzle
+      ? completedProgress.districtComplete ? CITY_PROJECT_COMPLETE_MS : CITY_SUCCESS_RESULT_MS
+      : citySuccessDelay(persistedMilestones + 1);
+    finishAfter(successDelay, () => {
       onResult({
         correct: true,
         rtMs: Date.now() - startedAt.current,

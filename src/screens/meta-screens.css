@@ -37,8 +37,10 @@
   padding: calc(10px + var(--safe-top)) 13px 10px;
   display: grid;
   grid-template-columns: 50px minmax(0, 1fr) auto 44px;
+  grid-template-areas: 'icon copy coins close';
   align-items: center;
   gap: 8px;
+  direction: ltr;
   background: linear-gradient(180deg, rgba(8, 29, 58, .97), rgba(17, 49, 83, .92));
   border-bottom: 2px solid rgba(255, 220, 111, .52);
   box-shadow: 0 8px 26px rgba(3, 14, 31, .34);
@@ -46,6 +48,7 @@
 }
 
 .ml-meta-header__icon {
+  grid-area: icon;
   width: 46px;
   height: 46px;
   display: grid;
@@ -58,12 +61,12 @@
 }
 .ml-meta-header__icon svg { width: 29px; height: 29px; }
 
-.ml-meta-header__copy { min-width: 0; display: grid; gap: 1px; text-align: right; }
+.ml-meta-header__copy { grid-area: copy; min-width: 0; display: grid; gap: 1px; direction: rtl; text-align: right; }
 .ml-meta-header__copy small { color: #ffe38a; font-family: var(--ml-font-heading); font-size: .68rem; font-weight: 800; }
 .ml-meta-header__copy h1 { overflow: hidden; color: #fff; font-size: clamp(1.27rem, 5.6vw, 1.65rem); line-height: 1.05; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 2px 0 rgba(0,0,0,.22); }
 
 .ml-meta-close {
-  grid-column: -1;
+  grid-area: close;
   width: 42px;
   height: 42px;
   display: grid;
@@ -78,6 +81,7 @@
 }
 
 .ml-meta-coins {
+  grid-area: coins;
   min-width: 66px;
   height: 38px;
   padding: 3px 8px;

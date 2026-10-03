@@ -50,7 +50,8 @@ describe('map entry points', () => {
 
     expect(html).toContain('width:100%');
     expect(html).toContain('הושלם ✓');
-    expect(html).toContain('המסע הושלם. לאן בא לך ללכת עכשיו?');
+    expect(html).toContain('המסע הושלם!');
+    expect(html).toContain('לאן ממשיכים עכשיו?');
     expect(html).not.toContain('254/1000');
   });
 });

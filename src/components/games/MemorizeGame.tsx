@@ -10,7 +10,7 @@ import './treasure-castle.css';
 type Phase = 'ready' | 'showing' | 'input' | 'done';
 
 const ITEM_GLYPHS: Record<string, string> = {
-  'תפוח': '🍎', 'כלב': '🐕', 'שולחן': '🪑', 'ירח': '🌙', 'ספר': '📘',
+  'תפוח': '🍎', 'כלב': '🐕', 'כיסא': '🪑', 'ירח': '🌙', 'ספר': '📘',
   'פרח': '🌸', 'כדור': '⚽', 'עוגה': '🍰', 'דג': '🐟', 'כובע': '🎩',
   'עץ': '🌳', 'מפתח': '🗝️', 'כוכב': '⭐', 'גשר': '🌉', 'ענן': '☁️',
   'תוף': '🥁', 'נעל': '👟', 'מטרייה': '☂️', 'בלון': '🎈', 'פנס': '🔦',
@@ -28,12 +28,15 @@ export function MemorizeGame({
   const submittedRef = useRef(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   useEffect(() => {
-    timers.current.push(setTimeout(() => {
+    if (phase !== 'showing') return undefined;
+    const previewTimer = setTimeout(() => {
       setPhase('input');
       startRef.current = performance.now();
-    }, stim.viewMs));
-    return () => timers.current.forEach(clearTimeout);
-  }, [stim.viewMs]);
+    }, stim.viewMs);
+    return () => clearTimeout(previewTimer);
+  }, [phase, stim.viewMs]);
+
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   useEffect(() => {
     if (phase === 'input' && assembled.length === stim.items.length) submit();
@@ -56,6 +59,12 @@ export function MemorizeGame({
       }),
       1350,
     ));
+  }
+
+  function replayTreasures() {
+    if (phase !== 'input') return;
+    setAssembled([]);
+    setPhase('showing');
   }
 
   function tile(label: string, onClick: (() => void) | undefined, selected: boolean, key: React.Key) {
@@ -116,6 +125,10 @@ export function MemorizeGame({
               `treasure-${index}`,
             ))}
           </div>
+          <button type="button" className="ml-castle-replay ml-pressable" onClick={replayTreasures}>
+            <span aria-hidden>↻</span>
+            הצג שוב את האוצרות
+          </button>
         </div>
       )}
 

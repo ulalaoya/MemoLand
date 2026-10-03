@@ -6,6 +6,7 @@ import {
   buildActivities,
   buildDailySupplementalActivity,
   buildFreePlayActivities,
+  normalizeDailyCityPlan,
   shouldAdvanceAfterCompletedIncorrect,
 } from '../scheduler/activities';
 import { buildDailySession } from '../scheduler/session';
@@ -112,6 +113,7 @@ export function SessionScreen({
     currentActivity: number;
     seed: number;
     earnedPoints: number;
+    planChanged: boolean;
   } | null>(null);
   if (initialRunRef.current === null) {
     const now = Date.now();
@@ -127,6 +129,7 @@ export function SessionScreen({
         currentActivity: 0,
         seed: now,
         earnedPoints: 0,
+        planChanged: false,
       };
     } else if (landFocus) {
       initialRunRef.current = {
@@ -134,6 +137,7 @@ export function SessionScreen({
         currentActivity: 0,
         seed: now,
         earnedPoints: 0,
+        planChanged: false,
       };
     } else {
       const journey = getDailyJourneyProgress(now);
@@ -141,14 +145,16 @@ export function SessionScreen({
       const seed = journey.seed || now;
       const due = dueItems(st.spaced, now);
       const session = buildDailySession(st.stats, settings.sessionMinutes, due.length > 0, seed);
-      const activities = journey.plan.length > 0
+      const rawActivities = journey.plan.length > 0
         ? journey.plan
         : buildActivities(session, due, seed).activities;
+      const normalized = normalizeDailyCityPlan(rawActivities, journey.currentActivity);
       initialRunRef.current = {
-        activities,
-        currentActivity: Math.min(journey.currentActivity, Math.max(0, activities.length - 1)),
+        activities: normalized.activities,
+        currentActivity: Math.min(normalized.currentActivity, normalized.activities.length),
         seed,
         earnedPoints: journey.earnedPoints,
+        planChanged: normalized.changed || journey.plan.length === 0,
       };
     }
   }
@@ -217,8 +223,9 @@ export function SessionScreen({
     : Math.min(1, sessionPoints.current / DAILY_GOAL);
 
   useEffect(() => {
-    if (!landFocus && getDailyJourneyProgress().plan.length === 0) {
+    if (!landFocus && !practiceMode && initialRun.planChanged) {
       setDailyJourneyPlan(activities);
+      setDailyJourneyActivity(initialRun.currentActivity);
     }
     // Initial plan only; subsequent extensions are persisted in next().
     // eslint-disable-next-line react-hooks/exhaustive-deps

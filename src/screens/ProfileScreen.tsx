@@ -141,7 +141,8 @@ function AvatarPicker({
               onClick={() => onSelect(avatar.kind)}
               aria-label={avatar.label}
             >
-              <Guide kind={avatar.kind} size={50} />
+              <Guide kind={avatar.kind} size={96} />
+              <span>{avatar.label}</span>
             </button>
           ))}
         </div>

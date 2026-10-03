@@ -11,7 +11,9 @@ import {
   buildActivities,
   buildDailySupplementalActivity,
   buildFreePlayActivities,
+  DAILY_CITY_QUESTION_COUNT,
   FREE_PLAY_ACTIVITY_COUNT,
+  normalizeDailyCityPlan,
   shouldAdvanceAfterCompletedIncorrect,
 } from './activities';
 import { SPACED_INTERVALS_MS, floorFromPeak } from '../config/curriculum';
@@ -174,7 +176,7 @@ describe('בניית המסע היומי', () => {
     expect(gameLands.filter((land) => land === 'forest')).toHaveLength(2);
   });
 
-  it.each([10, 15, 20, 25])('כולל 15 שאלות עיר בשני מקטעים מופרדים ב-%i דקות', (minutes) => {
+  it.each([10, 15, 20, 25])('כולל פאזל רציף אחד של 15 שאלות עיר ב-%i דקות', (minutes) => {
     const statCases: Record<string, ExerciseStats>[] = [
       {},
       {
@@ -210,8 +212,8 @@ describe('בניית המסע היומי', () => {
     for (const stats of statCases) {
       const session = buildDailySession(stats, minutes, false, Date.UTC(2026, 7, 28));
       const citySteps = session.steps.filter((step) => step.kind === 'connections-practice');
-      expect(citySteps).toHaveLength(2);
-      expect(citySteps.map((step) => step.rounds)).toEqual([8, 7]);
+      expect(citySteps).toHaveLength(1);
+      expect(citySteps[0].rounds).toBe(DAILY_CITY_QUESTION_COUNT);
       expect(citySteps.every((step) => step.exerciseId === 'connections.direct')).toBe(true);
 
       const { activities } = buildActivities(session, [], 17);
@@ -226,9 +228,7 @@ describe('בניית המסע היומי', () => {
         .map((activity) => activity.kind === 'game' ? activity.levelDelta : -1);
       expect(cityDifficulty).toHaveLength(15);
       expect(cityDifficulty.some((boost) => boost >= 5)).toBe(true);
-      expect(cityIndexes.slice(0, 8)).toEqual(Array.from({ length: 8 }, (_, index) => cityIndexes[0] + index));
-      expect(cityIndexes.slice(8)).toEqual(Array.from({ length: 7 }, (_, index) => cityIndexes[8] + index));
-      expect(cityIndexes[8] - cityIndexes[7]).toBeGreaterThan(1);
+      expect(cityIndexes).toEqual(Array.from({ length: 15 }, (_, index) => cityIndexes[0] + index));
 
       const rotations = session.steps.filter((step) => step.kind === 'rotation');
       expect(rotations).toHaveLength(minutes <= 15 ? 7 : minutes <= 20 ? 8 : 10);
@@ -237,6 +237,32 @@ describe('בניית המסע היומי', () => {
       expect(session.steps.find((step) => step.kind === 'speed')?.landId).toBe('speed');
       expect(session.steps.filter((step) => step.landId === 'speed')).toHaveLength(1);
     }
+  });
+
+  it('מתקן מסע ישן: מרכז את שאלות העיר שנותרו ומסיר כל שאלה מעבר לחלק ה-15', () => {
+    const numbers = buildFreePlayActivities('numbers')[0];
+    const city = buildFreePlayActivities('connections')[0];
+    const forest = buildFreePlayActivities('forest')[0];
+    const oldPlan = [numbers, ...Array(8).fill(city), forest, ...Array(12).fill(city), numbers];
+    const repaired = normalizeDailyCityPlan(oldPlan, 4);
+
+    expect(repaired.changed).toBe(true);
+    expect(repaired.currentActivity).toBe(4);
+    expect(repaired.activities.filter((activity) => activity.kind === 'game' && activity.landId === 'connections'))
+      .toHaveLength(DAILY_CITY_QUESTION_COUNT);
+    expect(repaired.activities.slice(4, 16).every((activity) => activity.kind === 'game' && activity.landId === 'connections'))
+      .toBe(true);
+  });
+
+  it('מדלג על שאלות עיר ישנות שכבר חרגו מהפאזל המלא', () => {
+    const city = buildFreePlayActivities('connections')[0];
+    const forest = buildFreePlayActivities('forest')[0];
+    const oldPlan = [...Array(20).fill(city), forest];
+    const repaired = normalizeDailyCityPlan(oldPlan, 16);
+
+    expect(repaired.activities).toHaveLength(16);
+    expect(repaired.activities[15]).toEqual(forest);
+    expect(repaired.currentActivity).toBe(15);
   });
 
   it('משאיר משחק חופשי קצר בכל עולם; אימון הכפל הרציף נפתח רק מאזור ההורה', () => {

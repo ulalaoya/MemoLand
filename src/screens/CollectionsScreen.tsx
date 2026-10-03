@@ -14,6 +14,7 @@ import {
 } from '../components/games/ConnectionsCityGame';
 import './meta-screens.css';
 import { JourneyCollectionGlyph } from '../components/world/PlayerHUD';
+import { orderedCityProjectIndices } from './collectionOrder';
 
 type Tab = 'build' | 'hat' | 'sticker' | 'theme';
 
@@ -44,7 +45,7 @@ export function CollectionsScreen({ onExit }: { onExit: () => void }) {
         <span className="ml-meta-coins" aria-label={`${coins} מטבעות`}>
           <Coin size={18} /> <span className="ltr">{coins}</span>
         </span>
-        <button className="ml-meta-close ml-pressable" onClick={onExit} aria-label="חזרה למפה">←</button>
+        <button className="ml-meta-close ml-pressable" onClick={onExit} aria-label="חזרה למפה">→</button>
       </header>
 
       <div className="ml-collection-hero">
@@ -71,7 +72,10 @@ export function CollectionsScreen({ onExit }: { onExit: () => void }) {
 
       <div className="ml-collection-grid">
         {tab === 'build'
-          ? Array.from({ length: CITY_BUILD_PROJECT_COUNT }, (_, projectIndex) => {
+          ? orderedCityProjectIndices(
+              Array.from({ length: CITY_BUILD_PROJECT_COUNT }, (_, index) => cityProjectCollectibleId(index)),
+              cosmetics,
+            ).map((projectIndex) => {
               const project = cityBuildProject(projectIndex);
               const owned = cosmetics.some((item) => item.id === cityProjectCollectibleId(projectIndex));
               return <CityBuildCard key={project.kind} projectIndex={projectIndex} owned={owned} />;

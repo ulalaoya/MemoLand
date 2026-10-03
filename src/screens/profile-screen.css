@@ -61,9 +61,12 @@
 .ml-profile-card__change { position: absolute; inset-inline: 10px; bottom: 8px; z-index: 2; padding: 4px 8px; color: #fff7c8; border-radius: 999px; background: rgba(8, 30, 58, .9); font-size: .72rem; font-weight: 900; text-align: center; pointer-events: none; }
 .ml-profile-edit { padding: 9px 18px; color: #fff; background: rgba(13, 31, 67, .82); border: 1px solid rgba(218, 241, 255, .6); border-radius: 999px; font-family: var(--ml-font-heading); font-weight: 800; }
 
-.ml-avatar-picker { position: fixed; z-index: 50; inset: 0; padding: 18px; display: grid; place-items: center; background: rgba(2, 12, 30, .8); backdrop-filter: blur(8px); }
-.ml-avatar-picker__card { width: min(100%, 390px); padding: 22px 18px 18px; display: grid; gap: 16px; color: #fff; text-align: center; border: 3px solid rgba(223, 244, 255, .92); border-radius: 28px; background: linear-gradient(155deg, #143e68, #071a38 72%); box-shadow: 0 8px 0 #031125, 0 24px 60px rgba(0,0,0,.48); }
+.ml-avatar-picker { position: fixed; z-index: 50; inset: 0; padding: 10px; display: grid; place-items: center; background: rgba(2, 12, 30, .8); backdrop-filter: blur(8px); }
+.ml-avatar-picker__card { width: min(100%, 430px); max-height: calc(100dvh - 20px); padding: 18px 14px 14px; overflow-y: auto; display: grid; gap: 12px; color: #fff; text-align: center; border: 3px solid rgba(223, 244, 255, .92); border-radius: 28px; background: linear-gradient(155deg, #143e68, #071a38 72%); box-shadow: 0 8px 0 #031125, 0 24px 60px rgba(0,0,0,.48); }
 .ml-avatar-picker__card h2 { margin: 0; }
+.ml-avatar-picker__card .ml-add-profile__avatars { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.ml-avatar-picker__card .ml-add-profile__avatars button { min-height: 119px; padding: 3px 5px 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; color: #f8fbff; font-family: var(--ml-font-heading); font-size: .78rem; font-weight: 900; }
+.ml-avatar-picker__card .ml-add-profile__avatars button > div { width: 100% !important; max-width: 126px; overflow: hidden; }
 
 .ml-add-profile {
   width: min(100%, 370px);

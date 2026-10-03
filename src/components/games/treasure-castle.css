@@ -322,6 +322,23 @@
 .ml-castle-order-well__placeholder { color: #d5e8f7; font-weight: 800; }
 .ml-castle-divider { width: 82%; border-top: 2px dashed rgba(255, 219, 112, .72); }
 .ml-castle-card__answer { margin: 0; color: #e1effa; font-family: var(--ml-font-heading, var(--font-head)); }
+.ml-castle-replay {
+  min-height: 45px;
+  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff7cf;
+  border: 2px solid rgba(255, 231, 151, .85);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(42, 101, 128, .96), rgba(19, 54, 84, .98));
+  box-shadow: 0 4px 0 rgba(3, 12, 33, .78);
+  font-family: var(--ml-font-heading, var(--font-head));
+  font-size: .92rem;
+  font-weight: 900;
+}
+.ml-castle-replay > span { font-size: 1.2rem; }
 
 @media (max-height: 700px) {
   .ml-castle-preview-treasure,

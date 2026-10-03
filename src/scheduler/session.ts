@@ -1,6 +1,6 @@
 /* =========================================================================
    בניית המסע של היום (הסשן היומי).
-   המסע משלב שני מקטעי שליפה ישירה בעיר לצד רוטציה בין שאר הארצות.
+   המסע משלב מקטע רציף של פאזל עיר לצד רוטציה בין שאר הארצות.
    הרוטציה בוחרת את החלשות ביותר, אך תמיד כוללת לפחות ארץ אחת "חזקה".
    ========================================================================= */
 import type { DailySession, ExerciseId, ExerciseStats, LandId, SessionStep } from '../types';
@@ -50,7 +50,7 @@ export function buildDailySession(
 ): DailySession {
   const weak = landsByWeakness(stats);
   const requestedRounds = rotationRounds(minutes);
-  // City has its two fixed blocks and Speed has its single continuous race.
+  // City has one fixed 15-question puzzle and Speed has its single continuous race.
   const regularWeak = weak.filter((land) => land !== 'connections' && land !== 'speed');
 
   // Every journey visits all eight worlds. Numbers opens the route; the five
@@ -87,13 +87,13 @@ export function buildDailySession(
     rounds: 2,
   });
 
-  // 2. שמונה שליפות בעיר — החלק הראשון של פאזל יומי בן 15 חלקים.
+  // 2. פאזל עיר רציף — כל 15 החלקים נפתרים לפני שעוברים לעולם הבא.
   steps.push({
     kind: 'connections-practice',
-    label: 'בונים את עיר הקשרים',
+    label: 'משלימים את פאזל עיר הקשרים',
     landId: 'connections',
     exerciseId: 'connections.direct',
-    rounds: 8,
+    rounds: 15,
   });
 
   // 3. "מה שזכרת אתמול" — חזרה במרווחים
@@ -124,16 +124,7 @@ export function buildDailySession(
     timerSeconds: 60,
   });
 
-  // 6. שבע שליפות נוספות — משלימות בדיוק את 15 חלקי הפאזל.
-  steps.push({
-    kind: 'connections-practice',
-    label: 'ממשיכים לבנות את העיר',
-    landId: 'connections',
-    exerciseId: 'connections.direct',
-    rounds: 7,
-  });
-
-  // 7. סיום מובטח — קל בוודאות, אחריו שליפת סוד המסע ואז תיבת האוצר
+  // 6. סיום מובטח — קל בוודאות, אחריו שליפת סוד המסע ואז תיבת האוצר
   steps.push({
     kind: 'guaranteed-finish',
     label: 'ישר לטירה — סיבוב ניצחון',
