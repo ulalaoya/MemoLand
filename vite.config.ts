@@ -21,7 +21,10 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: false,
-      includeAssets: ['brand/app-icon-v2.png'],
+      includeAssets: [
+        'brand/app-icon-logo-v1.png',
+        'brand/app-icon-logo-maskable-v1.png',
+      ],
       manifest: {
         name: 'MemoLand — עולם של זיכרון',
         short_name: 'MemoLand',
@@ -34,8 +37,8 @@ export default defineConfig({
         orientation: 'portrait',
         start_url: './',
         icons: [
-          { src: 'brand/app-icon-v2.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: 'brand/app-icon-v2.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'brand/app-icon-logo-v1.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'brand/app-icon-logo-maskable-v1.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {

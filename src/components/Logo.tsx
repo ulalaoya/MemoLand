@@ -8,7 +8,7 @@ export function Logo({ variant = 'full', width = 240 }: { variant?: LogoVariant;
     return (
       <img
         className="ml-brand-icon"
-        src="./brand/app-icon-v2.png"
+        src="./brand/app-icon-logo-v1.png"
         alt="MemoLand"
         draggable={false}
         style={{ width, height: width, borderRadius: width * 0.22 }}
