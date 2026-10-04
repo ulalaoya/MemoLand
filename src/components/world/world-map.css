@@ -1061,9 +1061,10 @@
 
 .ml-daily-journey__button {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 2px;
   min-height: 46px;
   padding: 8px 13px;
   color: #17432f;
@@ -1079,11 +1080,12 @@
 
 .ml-daily-journey__arrow {
   font-size: 1.2em;
+  line-height: .8;
   transition: transform var(--ml-duration-fast) var(--ml-ease-spring);
 }
 
 .ml-daily-journey:hover .ml-daily-journey__arrow {
-  transform: translateX(-3px);
+  transform: translateY(2px);
 }
 
 .ml-daily-journey:focus-visible {
