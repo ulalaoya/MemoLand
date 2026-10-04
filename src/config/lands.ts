@@ -34,10 +34,10 @@ export const LANDS: Record<LandId, LandMeta> = {
   },
   connections: {
     id: 'connections',
-    name: 'עיר הקשרים',
+    name: 'פסיפס הכפל',
     guide: 'ממו',
     colorVar: '--ml-city-teal',
-    subtitle: 'שטף כפל וקשרים בין עובדות',
+    subtitle: 'פותרים מכפלות ומשלימים פסיפס',
     order: 3,
   },
   forest: {

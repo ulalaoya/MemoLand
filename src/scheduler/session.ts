@@ -90,7 +90,7 @@ export function buildDailySession(
   // 2. פאזל עיר רציף — כל 15 החלקים נפתרים לפני שעוברים לעולם הבא.
   steps.push({
     kind: 'connections-practice',
-    label: 'משלימים את פאזל עיר הקשרים',
+    label: 'משלימים את פסיפס הכפל',
     landId: 'connections',
     exerciseId: 'connections.direct',
     rounds: 15,

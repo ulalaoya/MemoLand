@@ -229,7 +229,7 @@ function MultiplicationSummary({ state, days }: { state: ReturnType<typeof getSt
     .slice(0, 3);
 
   return (
-    <Card title="עיר הקשרים — לפי עובדות">
+    <Card title="פסיפס הכפל — לפי עובדות">
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 7, marginBottom: 10 }}>
         <FactStage label="מגלים דרך" value={counts.DISCOVERING} color="#D97848" />
         <FactStage label="מחזקים דרך" value={counts.STRENGTHENING} color="#138F91" />
@@ -384,7 +384,7 @@ function SettingsTab({ onStartMultiplicationPractice }: { onStartMultiplicationP
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <Card title="תרגול ממוקד">
         <p style={{ margin: '0 0 10px', lineHeight: 1.5 }}>
-          פתיחת אימון רציף בעיר הקשרים בלבד. הילד מחליט מתי לסיים.
+          פתיחת אימון רציף בפסיפס הכפל בלבד. הילד מחליט מתי לסיים.
         </p>
         <Button variant="blue" block onClick={onStartMultiplicationPractice}>
           פתיחת תרגול לוח הכפל

@@ -103,7 +103,7 @@ function CityBuildCard({ projectIndex, owned }: { projectIndex: number; owned: b
         {!owned ? <span className="ml-build-collectible__path" /> : null}
       </div>
       <strong>{owned ? name : 'כרטיס מסתורי'}</strong>
-      <span className="ml-build-collectible__status">{owned ? 'הרווחת בעיר הקשרים' : 'השלימו 15 תרגילים כדי לגלות'}</span>
+      <span className="ml-build-collectible__status">{owned ? 'הרווחת בפסיפס הכפל' : 'השלימו 15 תרגילים כדי לגלות'}</span>
     </article>
   );
 }
