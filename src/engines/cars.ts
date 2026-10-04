@@ -14,8 +14,10 @@ export const carPlateMemory: ExerciseEngine<CarPlateStimulus, string> = {
   parentDescription: 'זיכרון עבודה — זכירת רצף ספרות מלוחית רישוי',
   generate(level, seed): Challenge<CarPlateStimulus, string> {
     const safeLevel = clampLevel(level);
-    const length = safeLevel <= 4 ? 3 : safeLevel <= 8 ? 4 : safeLevel <= 12 ? 5 : 6;
-    const exposureMs = Math.round(3100 - ((safeLevel - 1) / 14) * 1200);
+    // Make the first increase visible quickly: the adaptive staircase raises a
+    // level after two consecutive successes, so level 2 already uses 4 digits.
+    const length = safeLevel === 1 ? 3 : safeLevel <= 4 ? 4 : safeLevel <= 8 ? 5 : 6;
+    const exposureMs = Math.round(3200 - ((safeLevel - 1) / 14) * 1500);
     const rng = makeRng(seed);
     const digits = Array.from({ length }, (_, index) => {
       const min = index === 0 ? 1 : 0;

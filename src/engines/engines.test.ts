@@ -116,6 +116,8 @@ describe('actual world difficulty progression', () => {
     expect(carPlateMemory.generate(15, 7).stimulus.exposureMs).toBeLessThan(
       carPlateMemory.generate(1, 7).stimulus.exposureMs,
     );
+    expect([1, 2, 5, 9].map((level) => carPlateMemory.generate(level, 7).stimulus.plate.length))
+      .toEqual([3, 4, 5, 6]);
     expect(memorizeConfig(15).items).toBeGreaterThan(memorizeConfig(1).items);
     expect(memorizeConfig(15).viewMs).toBeLessThan(memorizeConfig(1).viewMs);
   });
