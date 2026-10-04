@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Challenge } from '../../types';
-import type { CarPlateStimulus } from '../../engines/cars';
+import { formatCarPlate, type CarPlateStimulus } from '../../engines/cars';
 import { sfxCorrect, sfxSoft } from '../../audio/sfx';
 import type { GameProps } from './common';
 import { CalculatorKeypad } from './CalculatorKeypad';
@@ -43,9 +43,13 @@ export function CarCityGame({
     window.setTimeout(() => onResult({ correct: isCorrect, rtMs: performance.now() - startedAt.current, span: challenge.stimulus.plate.length }), 720);
   }
 
+  const plateLength = challenge.stimulus.plate.length;
   const visiblePlate = phase === 'show' || phase === 'result'
-    ? challenge.stimulus.plate
-    : '•'.repeat(challenge.stimulus.plate.length);
+    ? formatCarPlate(challenge.stimulus.plate)
+    : formatCarPlate('•'.repeat(plateLength));
+  const enteredPlate = entered
+    ? formatCarPlate(entered, plateLength)
+    : formatCarPlate('—'.repeat(plateLength));
 
   return (
     <div className={`ml-car-city ml-car-city--${phase}${correct === true ? ' is-correct' : correct === false ? ' is-wrong' : ''}`}>
@@ -60,15 +64,15 @@ export function CarCityGame({
           <span className="ml-car-city__window" />
           <span className="ml-car-city__light ml-car-city__light--left" />
           <span className="ml-car-city__light ml-car-city__light--right" />
-          <span className="ml-car-city__plate ml-number-text">{visiblePlate}</span>
+          <span className="ml-car-city__plate ml-number-text" data-length={plateLength}>{visiblePlate}</span>
           <span className="ml-car-city__wheel ml-car-city__wheel--left" />
           <span className="ml-car-city__wheel ml-car-city__wheel--right" />
         </div>
 
         {phase !== 'show' ? (
           <div className="ml-car-city__console">
-            <div className="ml-car-city__entered ml-number-text" aria-live="polite">
-              {entered || <span>{'—'.repeat(challenge.stimulus.plate.length)}</span>}
+            <div className="ml-car-city__entered ml-number-text" data-length={plateLength} aria-live="polite">
+              {entered ? enteredPlate : <span>{enteredPlate}</span>}
             </div>
             {phase === 'answer' ? (
               <>

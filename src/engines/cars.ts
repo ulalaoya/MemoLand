@@ -7,6 +7,12 @@ export interface CarPlateStimulus {
   exposureMs: number;
 }
 
+/** Displays a numeric memory value like a local plate: 123-4 / 123-45 / 123-456. */
+export function formatCarPlate(value: string, totalLength = value.length): string {
+  if (totalLength <= 3 || value.length < 3) return value;
+  return `${value.slice(0, 3)}-${value.slice(3)}`;
+}
+
 export const carPlateMemory: ExerciseEngine<CarPlateStimulus, string> = {
   id: 'cars.plates',
   landId: 'cars',

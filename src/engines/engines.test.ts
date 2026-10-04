@@ -14,7 +14,7 @@ import {
 import { connectionsLink } from './connections';
 import { factsAvailableAtLevel } from '../learning/multiplicationFacts';
 import { speedMatch } from './speed';
-import { carPlateMemory } from './cars';
+import { carPlateMemory, formatCarPlate } from './cars';
 import { challengeFingerprint, generateVariedChallenge } from './variety';
 
 /** בדיקת יסוד: כל generator מייצר אתגר פתיר שהתשובה נגזרת מהגירוי,
@@ -126,5 +126,14 @@ describe('actual world difficulty progression', () => {
     const first = digitForward.generate(4, 99);
     const varied = generateVariedChallenge(digitForward, 4, 99, [challengeFingerprint(first)]);
     expect(challengeFingerprint(varied)).not.toBe(challengeFingerprint(first));
+  });
+});
+
+describe('car plate display', () => {
+  it('groups every longer plate after the first three digits', () => {
+    expect(formatCarPlate('123')).toBe('123');
+    expect(formatCarPlate('1234')).toBe('123-4');
+    expect(formatCarPlate('12345')).toBe('123-45');
+    expect(formatCarPlate('123456')).toBe('123-456');
   });
 });
