@@ -68,6 +68,7 @@ export function PlayerHUD({
         <nav className="ml-player-hud__actions" aria-label="פעולות במפה">
           <HudAction label="הישגים" onClick={onOpenAchievements} icon={<JourneyAchievementGlyph />} />
           <HudAction label="אוספים" onClick={onOpenCollections} icon={<JourneyCollectionGlyph />} />
+          <HudAction label="הורים" onClick={onOpenParent} icon={<ParentAccessGlyph />} />
         </nav>
       </div>
     </section>
@@ -152,6 +153,16 @@ export function JourneyAchievementGlyph() {
       <path d="M7 5H3v2c0 3 2 5 5 5M17 5h4v2c0 3-2 5-5 5" fill="none" stroke="#dff3ff" strokeWidth="1.8" strokeLinecap="round" />
       <path d="M12 14v4M8 21h8" stroke="#dff3ff" strokeWidth="2" strokeLinecap="round" />
       <path d="m12 5 .9 1.8 2 .3-1.5 1.4.4 2-1.8-.9-1.8.9.4-2-1.5-1.4 2-.3z" fill="#fff5c7" />
+    </svg>
+  );
+}
+
+export function ParentAccessGlyph() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
+      <circle cx="8" cy="8" r="3" fill="#67c8ff" stroke="#143255" strokeWidth="1.6" />
+      <circle cx="16.5" cy="9" r="2.5" fill="#ffd75e" stroke="#143255" strokeWidth="1.6" />
+      <path d="M3.5 20v-2.2c0-3 2-5.1 4.5-5.1s4.5 2.1 4.5 5.1V20M12.4 20v-1.6c0-2.5 1.7-4.3 4.1-4.3s4 1.8 4 4.3V20" fill="none" stroke="#dff3ff" strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 }

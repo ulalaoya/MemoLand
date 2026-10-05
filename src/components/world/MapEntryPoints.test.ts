@@ -5,7 +5,7 @@ import { DailyJourneyBanner } from './DailyJourneyBanner';
 import { PlayerHUD } from './PlayerHUD';
 
 describe('map entry points', () => {
-  it('keeps the parent area out of the visible child navigation', () => {
+  it('shows a protected parent entry point alongside the map actions', () => {
     const html = renderToStaticMarkup(createElement(PlayerHUD, {
       profile: null,
       coins: 66,
@@ -16,7 +16,7 @@ describe('map entry points', () => {
       onOpenParent: vi.fn(),
     }));
 
-    expect(html).not.toContain('הורים');
+    expect(html).toContain('הורים');
     expect(html).toContain('aria-label="MemoLand"');
     expect(html).toContain('הישגים');
     expect(html).toContain('אוספים');

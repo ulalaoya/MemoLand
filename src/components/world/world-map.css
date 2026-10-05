@@ -321,7 +321,7 @@
 
 .ml-player-hud__actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 5px;
 }
 
@@ -385,7 +385,9 @@
 
   .ml-hud-action {
     padding-inline: 4px;
-    font-size: 0.7rem;
+    flex-direction: column;
+    gap: 1px;
+    font-size: 0.62rem;
   }
 
   .ml-player-hud__lower-row {
